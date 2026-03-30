@@ -1,0 +1,20 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Wazuh AI Analyzer",
+  "version": "0.1.0",
+  "identifier": "local.wazuh.ai.analyzer",
+  "build": {
+    "beforeBuildCommand": "cmd /c cd ../../frontend && npm run build",
+    "frontendDist": "../../frontend/dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "title": "Wazuh AI Analyzer",
+        "width": 1440,
+        "height": 960,
+        "resizable": true
+      }
+    ]
+  }
+}
