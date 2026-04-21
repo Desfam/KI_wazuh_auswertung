@@ -171,7 +171,7 @@ def ensure_default_connection() -> None:
             """,
             (
                 "Default Wazuh Connection",
-                "https://localhost:9200",
+                "https://172.21.5.91:9200",
                 "admin",
                 "",
                 "wazuh-alerts-*",

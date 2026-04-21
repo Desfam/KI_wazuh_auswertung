@@ -85,6 +85,7 @@ def chat_with_context(
     message: str,
     history: list[dict[str, str]] | None = None,
     report_context: str | None = None,
+    direct_question: bool = False,
 ) -> str:
     def _is_raw_report_like(content: str) -> bool:
         lowered = content.lower()
@@ -114,10 +115,17 @@ def chat_with_context(
         for item in filtered_history[-8:]
         if item.get("content")
     )
+    # Cap report_context so the total prompt stays within Ollama's context window.
+    # ~12 000 chars ≈ ~3 000 tokens, leaving room for the system prompt + history.
+    _MAX_CTX_CHARS = 12_000
+    if report_context and len(report_context) > _MAX_CTX_CHARS:
+        report_context = report_context[:_MAX_CTX_CHARS] + "\n... [context truncated] ..."
+
     prompt = build_chat_assistant_prompt(
         report_context=report_context,
         history_text=history_text,
         message=message,
+        direct_question=direct_question,
     )
     last_error: Exception | None = None
     with httpx.Client(timeout=150.0) as client:
@@ -126,6 +134,7 @@ def chat_with_context(
                 "model": connection["ollama_model"],
                 "stream": False,
                 "prompt": prompt,
+                "options": {"num_ctx": 16384},
             }
             try:
                 response = client.post(f"{connection['ollama_url'].rstrip('/')}/api/generate", json=payload)

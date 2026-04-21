@@ -9,7 +9,7 @@ from services.grouping import group_alerts, is_relevant
 from services.ollama_client import assess_group
 from services.reporting import build_report
 from services.scoring import score_group
-from services.wazuh_indexer import fetch_alerts, normalize_alert
+from services.wazuh_indexer import fetch_alerts, fetch_vulnerabilities, normalize_alert
 
 
 def run_analysis_job(job_id: int, connection: dict[str, Any], request: AnalysisRunRequest) -> dict[str, Any]:
@@ -19,6 +19,7 @@ def run_analysis_job(job_id: int, connection: dict[str, Any], request: AnalysisR
         query_size=request.query_size,
         host_filter=request.host_filter,
     )
+    vulnerabilities = fetch_vulnerabilities(connection=connection, query_size=500, host_filter=request.host_filter)
     normalized_alerts = [normalize_alert(item) for item in raw_alerts]
 
     if request.platform_filter:
@@ -81,10 +82,12 @@ def run_analysis_job(job_id: int, connection: dict[str, Any], request: AnalysisR
         findings=findings,
         total_alerts=len(raw_alerts),
         relevant_alerts=len(relevant_alerts),
+        vulnerabilities=vulnerabilities,
     )
     return {
         "total_alerts": len(raw_alerts),
         "relevant_alerts": len(relevant_alerts),
+        "vulnerabilities_total": len(vulnerabilities),
         "findings": findings,
         "report_markdown": report_markdown,
         "report_json": report_json,

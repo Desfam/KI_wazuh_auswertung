@@ -181,6 +181,15 @@ class ChatTaskItem(BaseModel):
     title: str
     details: str
     recommended_checks: list[str] = Field(default_factory=list)
+    # Structured event fields (shown directly in the task card)
+    event_id: str | None = None
+    rule_id: str | None = None
+    rule_description: str | None = None
+    platform: str | None = None
+    count: int = 1
+    reason: str | None = None
+    local_score: float | None = None
+    mitre_ids: list[str] = Field(default_factory=list)
 
 
 class ChatResponse(BaseModel):
@@ -217,12 +226,19 @@ class HostTrendPoint(BaseModel):
 
 # ── Snipen / Threat Hunting models ───────────────────────────────────────────
 
+class SnipenHostProfileRef(BaseModel):
+    name: str
+    display_name: str
+    risk_tolerance: str = "medium"
+
+
 class SnipenHostInfo(BaseModel):
     host: str
     alert_count: int
     top_rule_level: int | None = None
     last_seen: str | None = None
     platforms: list[str] = Field(default_factory=list)
+    profile: SnipenHostProfileRef | None = None
 
 
 class SnipenSmartEvent(BaseModel):
@@ -248,6 +264,20 @@ class SnipenSmartEvent(BaseModel):
     mitre_tactic: str | None = None
     decoder: str | None = None
     location: str | None = None
+    system_message: str | None = None
+    # Extended normalisation fields
+    parent_process: str | None = None
+    target_user: str | None = None
+    subject_user: str | None = None
+    workstation: str | None = None
+    substatus: str | None = None
+    service_type: str | None = None
+    start_type: str | None = None
+    image_path: str | None = None
+    process_id: str | None = None
+    new_process_id: str | None = None
+    event_family: str | None = None
+    summary: str | None = None
 
 
 class SnipenEvent(BaseModel):
@@ -295,6 +325,7 @@ class SnipenAnalysisResult(BaseModel):
 
 
 class SnipenExplainResult(BaseModel):
+    narrative: str | None = None
     summary: str
     why_suspicious: str | None = None
     against_it: str | None = None
@@ -308,6 +339,15 @@ class SnipenExplainResult(BaseModel):
     risk_score: float | None = None
     confidence: str | None = None
     mitre_techniques: list[str] = Field(default_factory=list)
+  
+
+class TimelinePointDTO(BaseModel):
+    """A single time bucket in a host event timeline."""
+    bucket_start: str
+    bucket_end: str
+    event_count: int
+    is_peak: bool = False
+    is_anomaly: bool = False
 
 
 class SnipenHostOverview(BaseModel):
@@ -318,9 +358,13 @@ class SnipenHostOverview(BaseModel):
     critical_alerts: int
     last_activity: str | None = None
     top_event_ids: list[str] = Field(default_factory=list)
+    top_rule_ids: list[str] = Field(default_factory=list)
     top_processes: list[str] = Field(default_factory=list)
     top_users: list[str] = Field(default_factory=list)
+    top_ips: list[str] = Field(default_factory=list)
     top_rule_descriptions: list[str] = Field(default_factory=list)
+    severity_distribution: dict[str, int] = Field(default_factory=dict)
+    timeline: list[TimelinePointDTO] = Field(default_factory=list)
 
 
 class SnipenAIQueryRequest(BaseModel):
@@ -334,3 +378,148 @@ class SnipenAIQueryResult(BaseModel):
     answer: str
     matched_events: list[SnipenEvent] = Field(default_factory=list)
     ran_ai: bool = False
+
+
+# ── Host Profile models ───────────────────────────────────────────────────────
+
+class HostProfile(BaseModel):
+    id: int | None = None
+    name: str
+    display_name: str
+    description: str = ""
+    risk_tolerance: Literal["low", "medium", "high"] = "medium"
+    expected_behaviors: dict[str, bool] = Field(default_factory=dict)
+    allowed_process_patterns: list[str] = Field(default_factory=list)
+    suspicious_patterns: list[str] = Field(default_factory=list)
+    always_critical_event_ids: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+    is_builtin: bool = False
+    created_at: str | None = None
+    updated_at: str | None = None
+
+
+class HostProfileCreate(BaseModel):
+    name: str
+    display_name: str
+    description: str = ""
+    risk_tolerance: Literal["low", "medium", "high"] = "medium"
+    expected_behaviors: dict[str, bool] = Field(default_factory=dict)
+    allowed_process_patterns: list[str] = Field(default_factory=list)
+    suspicious_patterns: list[str] = Field(default_factory=list)
+    always_critical_event_ids: list[str] = Field(default_factory=list)
+    notes: list[str] = Field(default_factory=list)
+
+
+class HostProfileAssignment(BaseModel):
+    host: str
+    profile_id: int
+    profile_name: str | None = None
+    profile_display_name: str | None = None
+    risk_tolerance: str | None = None
+    assigned_by: str = "manual"
+    notes: str | None = None
+    assigned_at: str | None = None
+    updated_at: str | None = None
+
+
+class HostProfileAssignRequest(BaseModel):
+    profile_id: int
+    assigned_by: str = "manual"
+    notes: str | None = None
+
+
+# ── Host Baseline models ──────────────────────────────────────────────────────
+
+class BaselineFeatureItem(BaseModel):
+    """A single counted item inside a Top-N list in a snapshot (e.g. top process)."""
+    key: str
+    count: int
+
+
+class BaselineSnapshot(BaseModel):
+    id: int | None = None
+    host: str
+    computed_at: str
+    window_hours: int = 168
+    profile_id: int | None = None
+    total_events: int = 0
+    high_alerts: int = 0
+    critical_alerts: int = 0
+    top_event_ids: list[BaselineFeatureItem] = Field(default_factory=list)
+    top_rule_ids: list[BaselineFeatureItem] = Field(default_factory=list)
+    top_processes: list[BaselineFeatureItem] = Field(default_factory=list)
+    top_users: list[BaselineFeatureItem] = Field(default_factory=list)
+    top_ips: list[BaselineFeatureItem] = Field(default_factory=list)
+    top_event_families: list[BaselineFeatureItem] = Field(default_factory=list)
+    event_volume_per_hour: dict[str, int] = Field(default_factory=dict)
+    notes: list[str] = Field(default_factory=list)
+    deviation_count: int = 0  # new deviations found during this run
+
+
+class BaselineFeature(BaseModel):
+    id: int | None = None
+    host: str
+    feature_type: str
+    feature_key: str
+    count_seen: int = 0
+    first_seen: str
+    last_seen: str
+    stability_score: float = 0.0
+    is_expected: bool = True
+    notes: str | None = None
+
+
+class BaselineDeviation(BaseModel):
+    id: int | None = None
+    host: str
+    detected_at: str
+    feature_type: str
+    feature_key: str
+    deviation_type: str
+    severity_hint: str = "info"
+    # Risk scoring
+    risk_score: int = 0           # 0–100
+    risk_level: str = "info"      # info | low | medium | high | critical
+    reason: str = ""
+    confidence: float = 0.0
+    details: dict[str, Any] = Field(default_factory=dict)
+    resolved: bool = False
+    resolved_at: str | None = None
+
+
+class BaselineDiff(BaseModel):
+    """Comparison between last baseline snapshot and current feature set."""
+    host: str
+    computed_at: str
+    new_processes: list[str] = Field(default_factory=list)
+    new_users: list[str] = Field(default_factory=list)
+    new_services: list[str] = Field(default_factory=list)
+    new_ips: list[str] = Field(default_factory=list)
+    new_event_ids: list[str] = Field(default_factory=list)
+    new_event_families: list[str] = Field(default_factory=list)
+    volume_spike: bool = False
+    volume_ratio: float = 0.0
+    open_deviations: int = 0
+    top_risk_deviations: list[dict[str, Any]] = Field(default_factory=list)
+
+
+class BaselineComputeRequest(BaseModel):
+    window_hours: int = Field(default=168, ge=24, le=720)
+
+
+class BaselineSummary(BaseModel):
+    """Compact baseline overview for use in AI prompts and UI cards."""
+    host: str
+    computed_at: str | None = None
+    window_hours: int = 168
+    total_events: int = 0
+    daily_avg_events: float = 0.0
+    high_alerts: int = 0
+    critical_alerts: int = 0
+    top_processes: list[str] = Field(default_factory=list)
+    top_event_ids: list[str] = Field(default_factory=list)
+    top_users: list[str] = Field(default_factory=list)
+    top_event_families: list[str] = Field(default_factory=list)
+    open_deviations: int = 0
+    deviation_types: list[str] = Field(default_factory=list)
+    top_deviations: list[dict[str, Any]] = Field(default_factory=list)

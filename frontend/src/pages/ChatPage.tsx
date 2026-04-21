@@ -28,6 +28,14 @@ type ChatPageProps = {
     title: string;
     details: string;
     recommended_checks: string[];
+    event_id?: string | null;
+    rule_id?: string | null;
+    rule_description?: string | null;
+    platform?: string | null;
+    count?: number;
+    reason?: string | null;
+    local_score?: number | null;
+    mitre_ids?: string[];
   }>;
   onSend: (message: string, runScript: boolean) => void;
   onSwitchTab: (tab: 'chat' | 'tasks') => void;
@@ -59,6 +67,19 @@ export function ChatPage({
   const shouldAutoScrollRef = useRef(true);
   const hasReportFiles = Boolean(lastReportTxt || lastReportJson);
 
+  const dark = theme === 'dark';
+
+  const D = {
+    bg:       'var(--soc-background)',
+    surface:  'var(--soc-panel)',
+    surface2: 'var(--soc-card)',
+    border:   'var(--soc-border)',
+    text:     'var(--soc-foreground)',
+    muted:    'var(--soc-muted-fg)',
+  };
+  const accent = 'var(--soc-warning)';
+  const accentCyan = 'var(--soc-success)';
+
   let formattedReportJson = lastReportJson ?? '(keine Daten)';
   if (lastReportJson) {
     try {
@@ -69,17 +90,13 @@ export function ChatPage({
   }
 
   useEffect(() => {
-    if (!shouldAutoScrollRef.current) {
-      return;
-    }
+    if (!shouldAutoScrollRef.current) return;
     bottomRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages, generatedTasks, busy]);
 
   function handleScroll() {
     const node = scrollerRef.current;
-    if (!node) {
-      return;
-    }
+    if (!node) return;
     const distanceFromBottom = node.scrollHeight - node.scrollTop - node.clientHeight;
     shouldAutoScrollRef.current = distanceFromBottom < 120;
   }
@@ -92,217 +109,241 @@ export function ChatPage({
     setInput('');
   }
 
+  const hasContext = Boolean(reportContext?.trim());
+
+  if (!active) return null;
+
   return (
-    <div className={`flex h-full flex-col ${theme === 'dark' ? 'bg-transparent text-slate-50' : 'bg-shell bg-grid bg-[size:26px_26px] text-ink'} ${!active ? 'hidden' : ''}`}>
+    <div className="flex h-full flex-col" style={{ background: D.bg, color: D.text }}>
 
-      <section className={`page-shell-x grid gap-3 border-b py-3 md:grid-cols-4 ${theme === 'dark' ? 'dark-panel dark-divider' : 'border-ink/10 bg-white/70'}`}>
-        <article className={`ui-fade-up ui-fade-up-delay-1 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-sm ${theme === 'dark' ? 'dark-panel-soft dark-text-main' : 'border-ink/10 bg-white text-ink'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>Mode</p>
-          <p className="mt-2 text-sm font-medium">VM Script + Chat</p>
-        </article>
-        <article className={`ui-fade-up ui-fade-up-delay-2 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-sm ${theme === 'dark' ? 'dark-panel-soft dark-text-main' : 'border-ink/10 bg-white text-ink'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>Lookback</p>
-          <p className="mt-2 text-sm font-medium">{selectedLookbackHours}h</p>
-        </article>
-        <article className={`ui-fade-up ui-fade-up-delay-3 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-sm ${theme === 'dark' ? 'dark-panel-soft dark-text-main' : 'border-ink/10 bg-white text-ink'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>Relevant Alerts</p>
-          <p className="mt-2 text-sm font-medium">{lastScriptSummary?.relevant_alerts ?? 0}</p>
-        </article>
-        <article className={`ui-fade-up ui-fade-up-delay-4 rounded-2xl border px-4 py-3 transition hover:-translate-y-0.5 hover:shadow-sm ${theme === 'dark' ? 'dark-panel-soft dark-text-main' : 'border-ink/10 bg-white text-ink'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>Total Alerts</p>
-          <p className="mt-2 text-sm font-medium">{lastScriptSummary?.total_alerts ?? 0}</p>
-        </article>
-        {hasReportFiles && (
-          <div className="ui-fade-up ui-fade-up-delay-4 col-span-full flex justify-end">
-            <button
-              type="button"
-              onClick={() => { setDrawerOpen(true); setDrawerTab('txt'); }}
-              title="Report-Dateien anzeigen"
-              className={`rounded-xl border px-4 py-2 text-xs font-medium transition hover:-translate-y-0.5 ${theme === 'dark' ? 'dark-outline-button' : 'border-ink/15 bg-shell text-ink hover:bg-ink hover:text-shell'}`}
-            >
-              Report-Dateien anzeigen (.txt / .json)
-            </button>
-          </div>
-        )}
-      </section>
+      {/* ── Messages area ── */}
+      <div ref={scrollerRef} onScroll={handleScroll}
+        className="flex-1 overflow-y-auto px-5 py-5 min-h-0">
+        <div className="flex w-full flex-col gap-3">
 
-      {/* ── Narrow file-viewer drawer ─────────────────────────────── */}
-      {drawerOpen && (
-        <div className="fixed inset-0 z-50 flex justify-end">
-          {/* translucent backdrop */}
-          <div
-            className="drawer-backdrop flex-1 bg-black/20"
-            onClick={() => setDrawerOpen(false)}
-          />
-          {/* drawer panel */}
-          <div className={`drawer-panel flex w-[420px] flex-col border-l shadow-2xl ${theme === 'dark' ? 'dark-panel-strong' : 'border-ink/20 bg-white'}`}>
-            {/* header */}
-            <div className={`flex items-center justify-between border-b px-4 py-3 ${theme === 'dark' ? 'dark-divider' : 'border-ink/10'}`}>
-              <div className="flex gap-1">
-                <button
-                  type="button"
-                  onClick={() => setDrawerTab('txt')}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${drawerTab === 'txt' ? 'bg-ember text-white' : theme === 'dark' ? 'dark-text-soft hover:text-white' : 'text-slate hover:text-ink'}`}
-                >
-                  .txt
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setDrawerTab('json')}
-                  className={`rounded-lg px-3 py-1.5 text-xs font-medium transition ${drawerTab === 'json' ? 'bg-ember text-white' : theme === 'dark' ? 'dark-text-soft hover:text-white' : 'text-slate hover:text-ink'}`}
-                >
-                  .json
+          {/* Empty state */}
+          {messages.length === 0 && !busy && (
+            <div className="flex flex-col items-center justify-center py-16 text-center">
+              <div className="mb-4 flex h-16 w-16 items-center justify-center rounded-2xl"
+                style={{ background: `${accent}15`, border: `1px solid ${accent}33` }}>
+                <span className="text-3xl">🤖</span>
+              </div>
+              <p className="text-sm font-semibold mb-1" style={{ color: D.text }}>
+                {hasContext ? 'Report-Kontext geladen' : 'KI Chat bereit'}
+              </p>
+              <p className="text-xs max-w-sm" style={{ color: D.muted }}>
+                {hasContext
+                  ? 'Stelle Fragen zu den Findings oder lass Tasks generieren.'
+                  : 'Kein Report-Kontext. Stelle SOC/Wazuh-Fragen oder starte das Skript für eine Analyse.'}
+              </p>
+            </div>
+          )}
+
+          {/* Messages */}
+          {messages.map((message, index) => {
+            const isUser = message.role === 'user';
+            return (
+              <div key={`${message.role}-${index}`}
+                className={`flex ${isUser ? 'justify-end' : 'justify-start'}`}>
+                <div className="max-w-[82%]">
+                  <div className="mb-1 flex items-center gap-2"
+                    style={{ justifyContent: isUser ? 'flex-end' : 'flex-start' }}>
+                    {!isUser && (
+                      <div className="flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-full text-[0.6rem]"
+                        style={{ background: `${accent}20`, border: `1px solid ${accent}40` }}>
+                        🤖
+                      </div>
+                    )}
+                    <span className="text-[0.6rem] font-bold uppercase tracking-widest"
+                      style={{ color: D.muted }}>
+                      {isUser ? 'Du' : 'KI'}
+                    </span>
+                  </div>
+                  <div className="rounded-xl px-4 py-3 text-sm leading-6"
+                    style={isUser
+                      ? { background: `${accent}18`, border: `1px solid ${accent}35`, color: D.text }
+                      : { background: D.surface, border: `1px solid ${D.border}`, color: D.text }}>
+                    {isUser
+                      ? <p className="whitespace-pre-wrap">{message.content}</p>
+                      : <div className="chat-markdown">
+                          <ReactMarkdown remarkPlugins={[remarkGfm]}>{message.content}</ReactMarkdown>
+                        </div>
+                    }
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          {/* Generated tasks card */}
+          {generatedTasks.length > 0 && (
+            <div className="flex justify-start">
+              <div className="max-w-[82%] w-full rounded-xl p-4"
+                style={{ background: D.surface, border: `1px solid ${accent}40` }}>
+                <p className="mb-3 text-[0.65rem] font-bold uppercase tracking-widest"
+                  style={{ color: accent }}>⚡ Automatische Tasks erstellt</p>
+                <div className="space-y-1.5 mb-4">
+                  {generatedTasks.slice(0, 10).map((task) => {
+                    const sevColor: Record<string, string> = {
+                      critical: 'var(--soc-critical)', high: 'var(--soc-warning)', medium: 'var(--soc-primary)', low: accentCyan,
+                    };
+                    const c = sevColor[task.severity.toLowerCase()] ?? accentCyan;
+                    return (
+                      <div key={task.task_id}
+                        className="flex items-center gap-2 rounded-lg px-3 py-1.5 text-xs"
+                        style={{ background: `${c}12`, border: `1px solid ${c}25` }}>
+                        <span className="font-bold flex-shrink-0" style={{ color: c }}>
+                          [{task.severity.toUpperCase()}]
+                        </span>
+                        <span className="truncate" style={{ color: D.text }}>
+                          {task.host} – {task.title.slice(0, 50)}
+                        </span>
+                      </div>
+                    );
+                  })}
+                  {generatedTasks.length > 10 && (
+                    <p className="text-[0.65rem] italic pl-1" style={{ color: D.muted }}>
+                      +{generatedTasks.length - 10} weitere Tasks…
+                    </p>
+                  )}
+                </div>
+                <button type="button" onClick={() => onSwitchTab('tasks')}
+                  className="w-full rounded-lg py-2 text-sm font-bold transition hover:opacity-90"
+                  style={{ background: accent, color: 'var(--soc-background)' }}>
+                  → Alle Tasks anzeigen ({generatedTasks.length} gesamt)
                 </button>
               </div>
-              <button
-                type="button"
-                onClick={() => setDrawerOpen(false)}
-                className={`rounded-lg px-3 py-1.5 text-xs transition ${theme === 'dark' ? 'dark-text-soft hover:text-white' : 'text-slate hover:text-ink'}`}
-              >
+            </div>
+          )}
+
+          {/* Busy / typing indicator */}
+          {busy && (
+            <div className="flex justify-start">
+              <div className="rounded-xl px-4 py-3"
+                style={{ background: D.surface, border: `1px solid ${D.border}` }}>
+                <div className="mb-1 flex items-center gap-2">
+                  <div className="flex h-5 w-5 items-center justify-center rounded-full text-[0.6rem]"
+                    style={{ background: `${accent}20`, border: `1px solid ${accent}40` }}>🤖</div>
+                  <span className="text-[0.6rem] font-bold uppercase tracking-widest" style={{ color: D.muted }}>KI</span>
+                </div>
+                <div className="typing-indicator">
+                  <span /><span /><span />
+                  <span className="ml-2 text-sm" style={{ color: D.muted }}>KI analysiert…</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          <div ref={bottomRef} />
+        </div>
+      </div>
+
+      {/* ── Input bar ── */}
+      <div style={{ background: D.surface, borderTop: `1px solid ${D.border}` }}
+        className="flex-shrink-0 px-5 py-4">
+        <div className="w-full flex flex-col gap-3">
+          {/* Textarea */}
+          <div className="relative rounded-xl overflow-hidden"
+            style={{ background: D.surface2, border: `1px solid ${D.border}` }}>
+            <textarea
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(false); }
+              }}
+              placeholder="Schreibe direkt an die KI… (Enter zum Senden, Shift+Enter für neue Zeile)"
+              rows={3}
+              disabled={busy}
+              className="w-full resize-none px-4 py-3 text-sm bg-transparent outline-none"
+              style={{ color: D.text }}
+            />
+          </div>
+          {/* Actions row */}
+          <div className="flex items-center gap-2 flex-wrap">
+            <button type="button" onClick={() => submit(true)} disabled={busy}
+              className="rounded-lg px-4 py-2 text-sm font-semibold transition hover:opacity-90 disabled:opacity-40"
+              style={{ background: D.surface2, color: D.text, border: `1px solid ${D.border}` }}>
+              {busy ? 'Läuft…' : `▶ Skript starten (${selectedLookbackHours}h)`}
+            </button>
+            <button type="button" onClick={() => submit(false)} disabled={busy}
+              className="rounded-lg px-5 py-2 text-sm font-bold transition hover:opacity-90 disabled:opacity-40"
+              style={{ background: accent, color: 'var(--soc-background)' }}>
+              {busy ? 'Warten…' : 'Senden ↑'}
+            </button>
+            {/* Lookback presets */}
+            <div className="flex items-center gap-1">
+              {lookbackPresets.map((hours) => {
+                const selected = selectedLookbackHours === hours;
+                return (
+                  <button key={hours} type="button" onClick={() => onSelectLookback(hours)} disabled={busy}
+                    className="rounded px-2.5 py-1.5 text-[0.65rem] font-semibold transition"
+                    style={{
+                      background: selected ? accent : 'transparent',
+                      color:      selected ? 'var(--soc-background)' : D.muted,
+                      border:     `1px solid ${selected ? accent : D.border}`,
+                    }}>
+                    {hours === 24 ? '24h' : hours === 168 ? '7d' : '30d'}
+                  </button>
+                );
+              })}
+            </div>
+            {hasReportFiles && (
+              <button type="button"
+                onClick={() => { setDrawerOpen(true); setDrawerTab('txt'); }}
+                className="rounded px-2.5 py-1.5 text-[0.65rem] font-semibold transition hover:opacity-80"
+                style={{ background: `${accent}1a`, color: accent, border: `1px solid ${accent}33` }}>
+                Report ↗
+              </button>
+            )}
+            <span className="ml-auto text-xs" style={{ color: D.muted }}>
+              {hasContext ? '✓ Kontext' : '○ Kein Kontext'}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── File drawer ── */}
+      {drawerOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end">
+          <div className="flex-1 bg-black/40" onClick={() => setDrawerOpen(false)} />
+          <div className="flex w-[440px] flex-col shadow-2xl"
+            style={{ background: D.surface, borderLeft: `1px solid ${D.border}` }}>
+            {/* drawer header */}
+            <div className="flex items-center justify-between px-4 py-3"
+              style={{ borderBottom: `1px solid ${D.border}` }}>
+              <div className="flex gap-1">
+                {(['txt', 'json'] as const).map((t) => (
+                  <button key={t} type="button" onClick={() => setDrawerTab(t)}
+                    className="rounded px-3 py-1.5 text-xs font-semibold transition"
+                    style={{
+                      background: drawerTab === t ? accent : 'transparent',
+                      color:      drawerTab === t ? 'var(--soc-background)' : D.muted,
+                      border:     `1px solid ${drawerTab === t ? accent : D.border}`,
+                    }}>
+                    .{t}
+                  </button>
+                ))}
+              </div>
+              <button type="button" onClick={() => setDrawerOpen(false)}
+                className="text-xs transition hover:opacity-70" style={{ color: D.muted }}>
                 ✕ Schließen
               </button>
             </div>
-            {/* label */}
-            <p className={`border-b px-4 py-2 text-[0.65rem] uppercase tracking-widest ${theme === 'dark' ? 'dark-panel-faint dark-text-main dark-divider' : 'border-ink/5 bg-shell text-slate'}`}>
+            {/* filename label */}
+            <div className="px-4 py-2 text-[0.62rem] font-mono"
+              style={{ color: D.muted, borderBottom: `1px solid ${D.border}`, background: D.surface2 }}>
               {drawerTab === 'txt' ? 'ai_wazuh_24h_report.txt' : 'ai_wazuh_24h_report.json'}
-            </p>
-            {/* scrollable content */}
+            </div>
+            {/* content */}
             <div className="flex-1 overflow-auto p-4">
-              <pre className={`whitespace-pre-wrap break-words rounded-xl px-3 py-3 font-mono text-[0.76rem] leading-6 ${theme === 'dark' ? 'dark-code-block' : 'text-ink'}`}>
+              <pre className="whitespace-pre-wrap break-words rounded-lg p-3 font-mono text-[0.72rem] leading-5"
+                style={{ background: D.surface2, border: `1px solid ${D.border}`, color: D.text }}>
                 {drawerTab === 'txt' ? (lastReportTxt ?? '(keine Daten)') : formattedReportJson}
               </pre>
             </div>
           </div>
         </div>
       )}
-
-
-      <div className="flex min-h-0 flex-1 flex-col">
-        <div ref={scrollerRef} onScroll={handleScroll} className="page-shell-x flex-1 overflow-auto py-4">
-          <div className="page-content-max mx-auto flex w-full flex-col gap-4">
-            {messages.length ? messages.map((message, index) => (
-              <div
-                key={`${message.role}-${index}`}
-                className={message.role === 'user' ? `message-enter ml-auto max-w-[85%] rounded-2xl px-4 py-3 text-sm ${theme === 'dark' ? 'dark-message-user backdrop-blur' : 'bg-ink text-shell'}` : `message-enter self-start mr-auto ml-0 w-fit max-w-[85%] rounded-2xl border px-4 py-3 text-sm shadow-sm text-left ${theme === 'dark' ? 'dark-message-assistant backdrop-blur' : 'border-ink/10 bg-white text-ink'}`}
-              >
-                <p className={`mb-2 text-[0.65rem] uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>{message.role}</p>
-                {message.role === 'assistant' ? (
-                  <div className="chat-markdown">
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                      {message.content}
-                    </ReactMarkdown>
-                  </div>
-                ) : (
-                  <p className="whitespace-pre-wrap leading-6">{message.content}</p>
-                )}
-              </div>
-            )) : (
-              <div className={`self-start mr-auto ml-0 w-fit max-w-[85%] rounded-2xl border border-dashed p-5 text-sm text-left backdrop-blur ${theme === 'dark' ? 'dark-panel-soft dark-text-main' : 'border-ink/15 bg-white text-slate'}`}>
-                Die App verbindet sich automatisch mit Ollama. Schreibe eine Nachricht oder starte direkt das Remote-Skript.
-              </div>
-            )}
-            {generatedTasks.length > 0 && (
-              <div className={`message-enter self-start mr-auto ml-0 w-fit max-w-[85%] rounded-2xl border-2 px-4 py-3 text-sm shadow-md backdrop-blur text-left ${theme === 'dark' ? 'dark-attention-panel' : 'border-amber-300 bg-amber-50 text-ink'}`}>
-                <p className={`mb-3 text-[0.65rem] uppercase tracking-[0.2em] font-bold ${theme === 'dark' ? 'text-amber-400' : 'text-amber-700'}`}>⚡ Automatische Tasks erstellt</p>
-                <div className="space-y-2 mb-4">
-                  {generatedTasks.slice(0, 10).map((task) => {
-                    const severityColors: Record<string, { bg: string; text: string }> = theme === 'dark'
-                      ? {
-                          critical: { bg: 'bg-red-900/40', text: 'text-red-300' },
-                          high: { bg: 'bg-orange-900/40', text: 'text-orange-300' },
-                          medium: { bg: 'bg-yellow-900/40', text: 'text-yellow-300' },
-                          low: { bg: 'bg-green-900/40', text: 'text-green-300' },
-                        }
-                      : {
-                          critical: { bg: 'bg-red-100', text: 'text-red-700' },
-                          high: { bg: 'bg-orange-100', text: 'text-orange-700' },
-                          medium: { bg: 'bg-yellow-100', text: 'text-yellow-700' },
-                          low: { bg: 'bg-green-100', text: 'text-green-700' },
-                        };
-                    const colors = severityColors[task.severity.toLowerCase()] || severityColors.low;
-                    return (
-                      <div key={task.task_id} className={`text-xs ${colors.bg} ${colors.text} rounded-lg px-2 py-1.5 whitespace-nowrap truncate ${theme === 'dark' ? 'font-medium brightness-125' : ''}`}>
-                        <span className="font-semibold">[{task.severity.toUpperCase()}]</span> {task.host} - {task.title.slice(0, 40)}
-                      </div>
-                    );
-                  })}
-                  {generatedTasks.length > 10 && (
-                    <div className={`text-xs italic ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
-                      {generatedTasks.length - 10} weitere Tasks...
-                    </div>
-                  )}
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onSwitchTab('tasks')}
-                  className={`w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition hover:-translate-y-0.5 animate-pulse hover:animate-none ${theme === 'dark' ? 'bg-amber-600 text-amber-100' : 'bg-amber-400 text-amber-900'}`}
-                >
-                  → Alle Tasks anzeigen ({generatedTasks.length} gesamt)
-                </button>
-              </div>
-            )}
-            {busy && (
-                <div className={`message-enter self-start mr-auto ml-0 w-fit max-w-[85%] rounded-2xl border px-4 py-3 text-sm shadow-sm backdrop-blur text-left ${theme === 'dark' ? 'dark-message-assistant' : 'border-ink/10 bg-white text-ink'}`}>
-                <p className={`mb-2 text-[0.65rem] uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>assistant</p>
-                <div className="typing-indicator">
-                  <span />
-                  <span />
-                  <span />
-                  <span className={`ml-2 text-sm ${theme === 'dark' ? 'dark-text-main' : 'text-slate'}`}>KI analysiert...</span>
-                </div>
-              </div>
-            )}
-            <div ref={bottomRef} />
-          </div>
-        </div>
-
-        <div className={`page-shell-x border-t py-3 backdrop-blur ${theme === 'dark' ? 'dark-panel-strong dark-divider' : 'border-ink/10 bg-white/80'}`}>
-          <div className="page-content-max mx-auto flex w-full flex-col gap-3">
-            <div className="flex flex-wrap items-center gap-2">
-              {lookbackPresets.map((hours) => (
-                <button
-                  key={hours}
-                  type="button"
-                  onClick={() => onSelectLookback(hours)}
-                  className={`rounded-2xl px-4 py-2 text-sm font-medium transition ${selectedLookbackHours === hours ? 'bg-ember text-white' : theme === 'dark' ? 'dark-outline-button' : 'border border-ink/15 bg-white text-ink hover:bg-shell'}`}
-                  disabled={busy}
-                >
-                  {hours === 24 ? 'Last 24h' : hours === 168 ? 'Last 7 days' : 'Last 30 days'}
-                </button>
-              ))}
-            </div>
-
-            <div className={`rounded-2xl border p-3 shadow-sm backdrop-blur ${theme === 'dark' ? 'dark-panel-strong' : 'border-ink/10 bg-white'}`}>
-              <textarea
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                placeholder="Schreibe direkt an die KI..."
-                className={`min-h-28 w-full resize-none rounded-xl border px-4 py-3 text-sm outline-none transition ${theme === 'dark' ? 'dark-input focus:border-amber-400' : 'border-ink/10 text-ink focus:border-ember'}`}
-                disabled={busy}
-              />
-              <div className="mt-3 flex flex-wrap items-center gap-3">
-                <button
-                  type="button"
-                  onClick={() => submit(true)}
-                  disabled={busy}
-                  className={`rounded-2xl px-4 py-3 text-sm font-medium transition hover:-translate-y-0.5 disabled:opacity-50 ${theme === 'dark' ? 'dark-outline-button' : 'bg-ink text-shell'}`}
-                >
-                  {busy ? 'Laeuft...' : `Skript starten (${selectedLookbackHours}h)`}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => submit(false)}
-                  disabled={busy}
-                  className="rounded-2xl bg-ember px-4 py-3 text-sm font-medium text-white transition hover:-translate-y-0.5 disabled:opacity-50"
-                >
-                  {busy ? 'Warten...' : 'Senden'}
-                </button>
-                <span className={`text-sm ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>{reportContext?.trim() ? 'Report-Kontext geladen' : 'Kein Report-Kontext geladen'}</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

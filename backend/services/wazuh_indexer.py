@@ -6,6 +6,49 @@ from typing import Any
 import httpx
 
 
+DOCVALUE_DATE_FIELDS: list[str] = [
+    "data.aws.createdAt",
+    "data.aws.end",
+    "data.aws.resource.instanceDetails.launchTime",
+    "data.aws.service.eventFirstSeen",
+    "data.aws.service.eventLastSeen",
+    "data.aws.start",
+    "data.aws.updatedAt",
+    "data.ms-graph.activityDateTime",
+    "data.ms-graph.complianceGracePeriodExpirationDateTime",
+    "data.ms-graph.createdDateTime",
+    "data.ms-graph.deviceActionResults.lastUpdatedDateTime",
+    "data.ms-graph.deviceActionResults.startDateTime",
+    "data.ms-graph.deviceHealthAttestationState.issuedDateTime",
+    "data.ms-graph.deviceHealthAttestationState.lastUpdateDateTime",
+    "data.ms-graph.easActivationDateTime",
+    "data.ms-graph.enrolledDateTime",
+    "data.ms-graph.exchangeLastSuccessfulSyncDateTime",
+    "data.ms-graph.firstActivityDateTime",
+    "data.ms-graph.lastActivityDateTime",
+    "data.ms-graph.lastSyncDateTime",
+    "data.ms-graph.lastUpdateDateTime",
+    "data.ms-graph.managementCertificateExpirationDate",
+    "data.ms-graph.resolvedDateTime",
+    "data.timestamp",
+    "data.vulnerability.published",
+    "data.vulnerability.updated",
+    "syscheck.mtime_after",
+    "syscheck.mtime_before",
+    "timestamp",
+]
+
+VULNERABILITY_DOCVALUE_FIELDS: list[dict[str, str]] = [
+    {"field": "package.installed", "format": "date_time"},
+    {"field": "vulnerability.detected_at", "format": "date_time"},
+    {"field": "vulnerability.published_at", "format": "date_time"},
+]
+
+
+def _docvalue_fields() -> list[dict[str, str]]:
+    return [{"field": field, "format": "date_time"} for field in DOCVALUE_DATE_FIELDS]
+
+
 def build_auth(connection: dict[str, Any] | Any) -> tuple[str, str]:
     return connection["indexer_username"], connection["indexer_password"]
 
@@ -31,35 +74,144 @@ def ping_indexer(connection: dict[str, Any] | Any) -> tuple[bool, str]:
 def fetch_alerts(connection: dict[str, Any], lookback_hours: int, query_size: int, host_filter: str | None = None) -> list[dict[str, Any]]:
     now = datetime.now(timezone.utc)
     start = now - timedelta(hours=lookback_hours)
-    payload: dict[str, Any] = {
-        "size": query_size,
-        "sort": [{"@timestamp": {"order": "desc"}}],
-        "query": {
-            "bool": {
-                "filter": [
-                    {
-                        "range": {
-                            "@timestamp": {
-                                "gte": start.isoformat(),
-                                "lte": now.isoformat(),
-                            }
-                        }
-                    }
-                ]
+    filters: list[dict[str, Any]] = [
+        {"match_all": {}},
+        {
+            "range": {
+                "timestamp": {
+                    "gte": start.isoformat(),
+                    "lte": now.isoformat(),
+                    "format": "strict_date_optional_time",
+                }
             }
         },
-    }
+    ]
     if host_filter:
-        payload["query"]["bool"]["filter"].append(
-            {"wildcard": {"agent.name": f"*{host_filter}*"}}
-        )
+        filters.append({"wildcard": {"agent.name": f"*{host_filter}*"}})
+
+    payload: dict[str, Any] = {
+        "sort": [
+            {
+                "timestamp": {
+                    "order": "desc",
+                    "unmapped_type": "boolean",
+                }
+            }
+        ],
+        "size": query_size,
+        "version": True,
+        "aggs": {
+            "2": {
+                "date_histogram": {
+                    "field": "timestamp",
+                    "fixed_interval": "30m",
+                    "time_zone": "Europe/Berlin",
+                    "min_doc_count": 1,
+                }
+            }
+        },
+        "stored_fields": ["*"],
+        "script_fields": {},
+        "docvalue_fields": _docvalue_fields(),
+        "_source": {
+            "excludes": ["@timestamp"],
+        },
+        "query": {
+            "bool": {
+                "must": [],
+                "filter": filters,
+                "should": [],
+                "must_not": [],
+            }
+        },
+        "highlight": {
+            "pre_tags": ["@opensearch-dashboards-highlighted-field@"],
+            "post_tags": ["@/opensearch-dashboards-highlighted-field@"],
+            "fields": {"*": {}},
+            "fragment_size": 2147483647,
+        },
+    }
 
     index_pattern = connection.get("indexer_index_pattern", "wazuh-alerts-*")
     with httpx.Client(verify=build_verify(connection), timeout=45.0, auth=build_auth(connection)) as client:
         response = client.post(f"{build_base_url(connection)}/{index_pattern}/_search", json=payload)
         response.raise_for_status()
         hits = response.json().get("hits", {}).get("hits", [])
-    return [item.get("_source", {}) for item in hits]
+    normalized_hits: list[dict[str, Any]] = []
+    for item in hits:
+        source = item.get("_source", {}) or {}
+        if not isinstance(source, dict):
+            continue
+        if not source.get("timestamp"):
+            ts = item.get("fields", {}).get("timestamp") if isinstance(item.get("fields"), dict) else None
+            if isinstance(ts, list) and ts:
+                source["timestamp"] = ts[0]
+        normalized_hits.append(source)
+    return normalized_hits
+
+
+def fetch_vulnerabilities(connection: dict[str, Any], query_size: int = 500, host_filter: str | None = None) -> list[dict[str, Any]]:
+    filters: list[dict[str, Any]] = [{"match_all": {}}]
+    if host_filter:
+        filters.append({"wildcard": {"agent.name": f"*{host_filter}*"}})
+
+    payload: dict[str, Any] = {
+        "sort": [],
+        "size": int(max(1, min(query_size, 500))),
+        "version": True,
+        "stored_fields": ["*"],
+        "script_fields": {},
+        "docvalue_fields": VULNERABILITY_DOCVALUE_FIELDS,
+        "_source": {"excludes": []},
+        "query": {
+            "bool": {
+                "must": [],
+                "filter": filters,
+                "should": [],
+                "must_not": [],
+            }
+        },
+        "highlight": {
+            "pre_tags": ["@opensearch-dashboards-highlighted-field@"],
+            "post_tags": ["@/opensearch-dashboards-highlighted-field@"],
+            "fields": {"*": {}},
+            "fragment_size": 2147483647,
+        },
+    }
+
+    with httpx.Client(verify=build_verify(connection), timeout=45.0, auth=build_auth(connection)) as client:
+        response = client.post(f"{build_base_url(connection)}/wazuh-states-vulnerabilities-*/_search", json=payload)
+        response.raise_for_status()
+        hits = response.json().get("hits", {}).get("hits", [])
+
+    normalized: list[dict[str, Any]] = []
+    for hit in hits:
+        source = hit.get("_source", {}) or {}
+        if not isinstance(source, dict):
+            continue
+
+        agent = source.get("agent") if isinstance(source.get("agent"), dict) else {}
+        vuln = source.get("vulnerability") if isinstance(source.get("vulnerability"), dict) else {}
+        package = source.get("package") if isinstance(source.get("package"), dict) else {}
+        score = vuln.get("score") if isinstance(vuln.get("score"), dict) else {}
+
+        normalized.append(
+            {
+                "agent_id": agent.get("id"),
+                "host": agent.get("name") or "unknown-host",
+                "cve": vuln.get("id"),
+                "severity": vuln.get("severity") or "Unknown",
+                "score_base": score.get("base"),
+                "package_name": package.get("name"),
+                "package_version": package.get("version"),
+                "detected_at": vuln.get("detected_at"),
+                "published_at": vuln.get("published_at"),
+                "description": vuln.get("description"),
+                "raw": source,
+            }
+        )
+
+    return normalized
 
 
 def _pick(source: dict[str, Any], *paths: str) -> Any:

@@ -1,175 +1,301 @@
 import { useEffect, useState } from 'react';
+import type { HostProfileAssignment } from '../types';
+import { ProfileBadge } from '../components/ProfileBadge';
+import { IncidentCard } from '../components/soc/IncidentCard';
+import type { GeneratedTask as SocTask } from '../components/soc/IncidentCard';
+import { ContextPanel } from '../components/soc/ContextPanel';
+
+// ── Types ─────────────────────────────────────────────────────────────────────
+
+type TaskStatus = 'neu' | 'investigating' | 'resolved' | 'false_positive';
+
+type GeneratedTask = {
+  task_id: string;
+  host: string;
+  severity: string;
+  title: string;
+  details: string;
+  recommended_checks: string[];
+  event_id?: string | null;
+  rule_id?: string | null;
+  rule_description?: string | null;
+  platform?: string | null;
+  count?: number;
+  reason?: string | null;
+  local_score?: number | null;
+  mitre_ids?: string[];
+};
 
 type TasksPageProps = {
   active: boolean;
   theme: 'light' | 'dark';
   onThemeToggle: () => void;
-  generatedTasks: Array<{
-    task_id: string;
-    host: string;
-    severity: string;
-    title: string;
-    details: string;
-    recommended_checks: string[];
-  }>;
-  onSwitchTab: (tab: 'chat' | 'tasks') => void;
+  generatedTasks: GeneratedTask[];
+  onSwitchTab: (tab: 'chat' | 'tasks' | 'snipen', context?: { host?: string }) => void;
+  profileAssignments: Record<string, HostProfileAssignment>;
 };
 
-export function TasksPage({ active, theme, onThemeToggle, generatedTasks, onSwitchTab }: TasksPageProps) {
-  const [doneTaskIds, setDoneTaskIds] = useState<string[]>([]);
+// ── Severity helpers ──────────────────────────────────────────────────────────
+
+const SEV_BORDER: Record<string, string> = {
+  critical: 'border-l-red-500',
+  high:     'border-l-orange-400',
+  medium:   'border-l-amber-400',
+  low:      'border-l-emerald-500',
+  info:     'border-l-sky-400',
+};
+
+const SEV_BADGE_DARK: Record<string, string> = {
+  critical: 'bg-red-500/15 text-red-300 border border-red-400/30',
+  high:     'bg-orange-500/15 text-orange-300 border border-orange-400/30',
+  medium:   'bg-amber-400/15 text-amber-300 border border-amber-400/30',
+  low:      'bg-emerald-500/15 text-emerald-300 border border-emerald-500/30',
+  info:     'bg-sky-500/15 text-sky-300 border border-sky-400/30',
+};
+
+const SEV_BADGE_LIGHT: Record<string, string> = {
+  critical: 'bg-red-100 text-red-700 border border-red-200',
+  high:     'bg-orange-100 text-orange-700 border border-orange-200',
+  medium:   'bg-yellow-100 text-yellow-700 border border-yellow-200',
+  low:      'bg-green-100 text-green-700 border border-green-200',
+  info:     'bg-sky-100 text-sky-700 border border-sky-200',
+};
+
+function sevBorder(sev: string) {
+  return SEV_BORDER[sev.toLowerCase()] ?? 'border-l-slate-500';
+}
+
+function sevBadge(sev: string, dark: boolean) {
+  const map = dark ? SEV_BADGE_DARK : SEV_BADGE_LIGHT;
+  return map[sev.toLowerCase()] ?? (dark ? 'bg-slate-700 text-slate-300 border border-slate-600' : 'bg-slate-100 text-slate-600 border border-slate-200');
+}
+
+// ── Status helpers ────────────────────────────────────────────────────────────
+
+const STATUS_LABELS: Record<TaskStatus, string> = {
+  neu:            '🟡 Neu',
+  investigating:  '🔵 Investigation',
+  resolved:       '🟢 Resolved',
+  false_positive: '⚪ False Positive',
+};
+
+const STATUS_BADGE_DARK: Record<TaskStatus, string> = {
+  neu:            'bg-amber-800/30 text-amber-300 border border-amber-600/30',
+  investigating:  'bg-sky-800/30 text-sky-300 border border-sky-600/30',
+  resolved:       'bg-emerald-800/30 text-emerald-300 border border-emerald-600/30',
+  false_positive: 'bg-slate-700/50 text-slate-400 border border-slate-600/30',
+};
+
+const STATUS_BADGE_LIGHT: Record<TaskStatus, string> = {
+  neu:            'bg-amber-100 text-amber-700 border border-amber-200',
+  investigating:  'bg-sky-100 text-sky-700 border border-sky-200',
+  resolved:       'bg-emerald-100 text-emerald-700 border border-emerald-200',
+  false_positive: 'bg-slate-100 text-slate-500 border border-slate-200',
+};
+
+function statusBadgeCls(status: TaskStatus, dark: boolean) {
+  return dark ? STATUS_BADGE_DARK[status] : STATUS_BADGE_LIGHT[status];
+}
+
+// ── Component ─────────────────────────────────────────────────────────────────
+
+export function TasksPage({ active, theme, generatedTasks, onSwitchTab, profileAssignments }: TasksPageProps) {
+  const dark = theme === 'dark';
+
+  const [taskStatuses, setTaskStatuses] = useState<Record<string, TaskStatus>>({});
   const [visibleTasks, setVisibleTasks] = useState<number>(0);
+  const [severityFilter, setSeverityFilter] = useState<string>('all');
+  const [statusFilter, setStatusFilter] = useState<'all' | TaskStatus>('all');
+  const [selectedTaskId, setSelectedTaskId] = useState<string | null>(null);
 
-  // Animate in tasks one by one
   useEffect(() => {
-    if (!active || generatedTasks.length === 0) {
-      setVisibleTasks(0);
-      return;
-    }
-
-    let index = 0;
-    const interval = setInterval(() => {
-      index++;
-      if (index > generatedTasks.length) {
-        clearInterval(interval);
-        return;
-      }
-      setVisibleTasks(index);
-    }, 120);
-
-    return () => clearInterval(interval);
+    if (!active || generatedTasks.length === 0) { setVisibleTasks(0); return; }
+    let idx = 0;
+    const iv = setInterval(() => {
+      idx++;
+      if (idx > generatedTasks.length) { clearInterval(iv); return; }
+      setVisibleTasks(idx);
+    }, 80);
+    return () => clearInterval(iv);
   }, [active, generatedTasks.length]);
 
-  function toggleTask(taskId: string) {
-    setDoneTaskIds((current) =>
-      current.includes(taskId)
-        ? current.filter((item) => item !== taskId)
-        : [...current, taskId]
-    );
+  function setStatus(taskId: string, status: TaskStatus) {
+    setTaskStatuses((p) => ({ ...p, [taskId]: status }));
   }
 
-  const completedCount = doneTaskIds.length;
-  const severityOrder: Record<string, number> = {
-    critical: 4,
-    high: 3,
-    medium: 2,
-    low: 1,
-  };
+  function handleIncidentStatusChange(taskId: string, status: SocTask['status']) {
+    const mapped: TaskStatus = status === 'new' ? 'neu' : (status ?? 'neu');
+    setStatus(taskId, mapped);
+  }
 
-  const sortedTasks = [...generatedTasks].sort((a, b) => {
-    const aOrder = severityOrder[a.severity.toLowerCase()] || 0;
-    const bOrder = severityOrder[b.severity.toLowerCase()] || 0;
-    return bOrder - aOrder;
-  });
+  function toggleExpand(_taskId: string) {
+    // Replaced by ContextPanel selection — kept for API compatibility
+  }
 
-  const getSeverityColor = (severity: string) => {
-    const darkColors = {
-      critical: 'text-white border-red-400/35 bg-[linear-gradient(180deg,rgba(72,20,28,0.95),rgba(38,12,18,0.95))] shadow-[0_18px_48px_rgba(2,6,18,0.34)]',
-      high: 'text-white border-orange-400/30 bg-[linear-gradient(180deg,rgba(70,34,16,0.95),rgba(37,18,9,0.95))] shadow-[0_18px_48px_rgba(2,6,18,0.34)]',
-      medium: 'text-white border-amber-300/28 bg-[linear-gradient(180deg,rgba(69,54,17,0.95),rgba(37,28,9,0.95))] shadow-[0_18px_48px_rgba(2,6,18,0.34)]',
-      low: 'text-white border-emerald-300/28 bg-[linear-gradient(180deg,rgba(17,58,46,0.95),rgba(10,31,24,0.95))] shadow-[0_18px_48px_rgba(2,6,18,0.34)]',
-    };
-    const lightColors = {
-      critical: 'border-red-300 bg-red-50',
-      high: 'border-orange-300 bg-orange-50',
-      medium: 'border-yellow-300 bg-yellow-50',
-      low: 'border-green-300 bg-green-50',
-    };
-    const colors = theme === 'dark' ? darkColors : lightColors;
-    return colors[severity.toLowerCase() as keyof typeof colors] || (theme === 'dark' ? 'border-slate-700 bg-slate-800/50' : 'border-ink/10 bg-white');
-  };
+  const severityOrder: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
 
-  const getSeverityBadgeColor = (severity: string) => {
-    const darkColors = {
-      critical: 'bg-red-400/18 text-red-100 border border-red-300/25',
-      high: 'bg-orange-400/18 text-orange-100 border border-orange-300/25',
-      medium: 'bg-amber-300/18 text-amber-50 border border-amber-200/25',
-      low: 'bg-emerald-300/18 text-emerald-50 border border-emerald-200/25',
-    };
-    const lightColors = {
-      critical: 'bg-red-200 text-red-700',
-      high: 'bg-orange-200 text-orange-700',
-      medium: 'bg-yellow-200 text-yellow-700',
-      low: 'bg-green-200 text-green-700',
-    };
-    const colors = theme === 'dark' ? darkColors : lightColors;
-    return colors[severity.toLowerCase() as keyof typeof colors] || (theme === 'dark' ? 'text-white bg-slate-700 border border-slate-400/25' : 'bg-slate-200 text-slate-700');
-  };
+  const sortedTasks = [...generatedTasks]
+    .sort((a, b) => (severityOrder[b.severity.toLowerCase()] ?? 0) - (severityOrder[a.severity.toLowerCase()] ?? 0))
+    .filter((task) => {
+      if (severityFilter !== 'all' && task.severity.toLowerCase() !== severityFilter) return false;
+      const st = taskStatuses[task.task_id] ?? 'neu';
+      if (statusFilter !== 'all' && st !== statusFilter) return false;
+      return true;
+    });
+
+  const totalCount = generatedTasks.length;
+  const resolvedCount = Object.values(taskStatuses).filter((s) => s === 'resolved').length;
+  const investigatingCount = Object.values(taskStatuses).filter((s) => s === 'investigating').length;
+  const fpCount = Object.values(taskStatuses).filter((s) => s === 'false_positive').length;
+  const openCount = Math.max(0, totalCount - resolvedCount - investigatingCount - fpCount);
+
+  const selectedTask = selectedTaskId
+    ? sortedTasks.find((t) => t.task_id === selectedTaskId) ?? null
+    : null;
+  const selectedTaskStatus = selectedTask
+    ? (taskStatuses[selectedTask.task_id] ?? 'neu')
+    : null;
+
+  // Map internal 'neu' status to IncidentCard's 'new'
+  function toSocStatus(s: TaskStatus): SocTask['status'] {
+    return s === 'neu' ? 'new' : s;
+  }
 
   return (
-    <div className={`flex h-full flex-col ${theme === 'dark' ? 'bg-transparent text-slate-50' : 'bg-shell bg-grid bg-[size:26px_26px] text-ink'} ${!active ? 'hidden' : ''}`}>
+    <div
+      className={`flex h-full flex-col overflow-hidden${!active ? ' hidden' : ''}`}
+      style={{ background: 'var(--soc-background)', color: 'var(--soc-foreground)' }}
+    >
+      {/* KPI strip */}
+      <div className="soc-kpi-strip flex-shrink-0" style={{ gridTemplateColumns: 'repeat(4, 1fr)' }}>
+        <div className="soc-kpi-cell">
+          <div className="font-mono text-[9.5px] uppercase tracking-wider" style={{ color: 'var(--soc-muted-fg)' }}>Total</div>
+          <div className="font-mono text-[22px] font-bold leading-tight tabular-nums" style={{ color: 'var(--soc-foreground)' }}>{totalCount}</div>
+        </div>
+        <div className="soc-kpi-cell">
+          <div className="font-mono text-[9.5px] uppercase tracking-wider" style={{ color: 'var(--soc-muted-fg)' }}>Open</div>
+          <div className="font-mono text-[22px] font-bold leading-tight tabular-nums" style={{ color: openCount > 0 ? 'var(--soc-warning)' : 'var(--soc-foreground)' }}>{openCount}</div>
+        </div>
+        <div className="soc-kpi-cell">
+          <div className="font-mono text-[9.5px] uppercase tracking-wider" style={{ color: 'var(--soc-muted-fg)' }}>Investigating</div>
+          <div className="font-mono text-[22px] font-bold leading-tight tabular-nums" style={{ color: investigatingCount > 0 ? 'var(--soc-info)' : 'var(--soc-foreground)' }}>{investigatingCount}</div>
+        </div>
+        <div className="soc-kpi-cell">
+          <div className="font-mono text-[9.5px] uppercase tracking-wider" style={{ color: 'var(--soc-muted-fg)' }}>Resolved</div>
+          <div className="font-mono text-[22px] font-bold leading-tight tabular-nums" style={{ color: 'var(--soc-success)' }}>{resolvedCount}</div>
+        </div>
+      </div>
 
-      <section className={`grid gap-3 border-b px-6 py-4 md:grid-cols-3 ${theme === 'dark' ? 'dark-panel dark-divider' : 'border-ink/10 bg-white/70'}`}>
-        <article className={`rounded-2xl border px-4 py-3 ${theme === 'dark' ? 'dark-panel-soft' : 'border-ink/10 bg-white'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>Gesamt</p>
-          <p className={`mt-2 text-2xl font-bold ${theme === 'dark' ? 'text-slate-50' : 'text-ink'}`}>{generatedTasks.length}</p>
-        </article>
-        <article className={`rounded-2xl border px-4 py-3 ${theme === 'dark' ? 'border-emerald-600/70 bg-emerald-950/72' : 'border-emerald-300 bg-emerald-50'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-emerald-300' : 'text-emerald-700'}`}>Erledigt</p>
-          <p className={`mt-2 text-2xl font-bold ${theme === 'dark' ? 'text-emerald-300' : 'text-emerald-700'}`}>{completedCount}</p>
-        </article>
-        <article className={`rounded-2xl border px-4 py-3 ${theme === 'dark' ? 'border-amber-600/70 bg-amber-950/72' : 'border-amber-300 bg-amber-50'}`}>
-          <p className={`text-xs uppercase tracking-[0.2em] ${theme === 'dark' ? 'text-amber-300' : 'text-amber-700'}`}>Offen</p>
-          <p className={`mt-2 text-2xl font-bold ${theme === 'dark' ? 'text-amber-300' : 'text-amber-700'}`}>{Math.max(0, generatedTasks.length - completedCount)}</p>
-        </article>
-      </section>
+      {/* Two-column layout */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: filter header + incident list */}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid var(--soc-border)' }}>
 
-      <div className="flex-1 overflow-auto px-6 py-6">
-        <div className="mx-auto w-full max-w-5xl space-y-3">
-          {sortedTasks.length === 0 ? (
-            <div className={`rounded-2xl border border-dashed p-8 text-center text-sm ${theme === 'dark' ? 'dark-panel dark-text-soft' : 'border-ink/15 bg-white text-slate'}`}>
-              Keine Tasks vorhanden. Starten Sie das Skript, um Tasks zu generieren.
-            </div>
-          ) : (
-            sortedTasks.map((task, index) => {
+          {/* Section header + filters */}
+          <div className="soc-section-header flex-shrink-0 gap-1">
+            <span style={{ color: 'var(--soc-muted-fg)' }}>INCIDENTS</span>
+            <span
+              className="rounded px-1.5 font-mono text-[10px] font-bold leading-5"
+              style={{ background: 'var(--soc-muted)', color: 'var(--soc-muted-fg)' }}
+            >
+              {sortedTasks.length}
+            </span>
+            <div className="flex-1" />
+            {/* Severity filters */}
+            {(['all', 'critical', 'high', 'medium', 'low'] as const).map((sev) => (
+              <button
+                key={sev}
+                type="button"
+                onClick={() => setSeverityFilter(sev)}
+                className="h-5 px-2 rounded-sm border font-mono text-[10px] transition-colors"
+                style={{
+                  borderColor: severityFilter === sev ? 'var(--soc-primary)' : 'var(--soc-border)',
+                  color: severityFilter === sev ? 'var(--soc-primary)' : 'var(--soc-muted-fg)',
+                  background: severityFilter === sev ? 'color-mix(in srgb, var(--soc-primary) 12%, transparent)' : 'transparent',
+                }}
+              >
+                {sev === 'all' ? 'All' : sev.charAt(0).toUpperCase() + sev.slice(1)}
+              </button>
+            ))}
+            <span style={{ color: 'var(--soc-border)' }}>|</span>
+            {/* Status filters */}
+            {(['all', 'neu', 'investigating', 'resolved'] as const).map((st) => {
+              const lbl = st === 'all' ? 'All Status' : st === 'investigating' ? 'Active' : st === 'neu' ? 'Open' : 'Resolved';
+              return (
+                <button
+                  key={st}
+                  type="button"
+                  onClick={() => setStatusFilter(st)}
+                  className="h-5 px-2 rounded-sm border font-mono text-[10px] transition-colors"
+                  style={{
+                    borderColor: statusFilter === st ? 'var(--soc-primary)' : 'var(--soc-border)',
+                    color: statusFilter === st ? 'var(--soc-primary)' : 'var(--soc-muted-fg)',
+                    background: statusFilter === st ? 'color-mix(in srgb, var(--soc-primary) 12%, transparent)' : 'transparent',
+                  }}
+                >
+                  {lbl}
+                </button>
+              );
+            })}
+          </div>
+
+          {/* Incident list */}
+          <div className="flex-1 overflow-y-auto soc-scroll">
+            {generatedTasks.length === 0 && (
+              <div className="px-4 py-10 text-center font-mono text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>
+                No incidents. Run script in the Chat tab to generate tasks.
+              </div>
+            )}
+            {generatedTasks.length > 0 && sortedTasks.length === 0 && (
+              <div className="px-4 py-8 text-center font-mono text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>
+                No incidents match the active filter.
+              </div>
+            )}
+            {sortedTasks.map((task, index) => {
+              const taskStatus = taskStatuses[task.task_id] ?? 'neu';
+              const mergedTask: SocTask = {
+                ...task,
+                status: toSocStatus(taskStatus),
+              };
               const isVisible = index < visibleTasks;
-              const done = doneTaskIds.includes(task.task_id);
-
               return (
                 <div
                   key={task.task_id}
-                  className={`task-item-enter border-2 rounded-2xl p-4 transition ${getSeverityColor(task.severity)} ${done ? 'opacity-50' : ''} ${isVisible ? 'opacity-100' : 'opacity-0'}`}
+                  className="transition-all duration-300"
                   style={{
+                    opacity: isVisible ? 1 : 0,
+                    transform: isVisible ? 'translateY(0)' : 'translateY(4px)',
                     transitionDelay: `${index * 50}ms`,
                   }}
                 >
-                  <div className="flex items-start gap-4">
-                    <input
-                      type="checkbox"
-                      checked={done}
-                      onChange={() => toggleTask(task.task_id)}
-                      className="mt-1 h-5 w-5 cursor-pointer flex-shrink-0"
-                    />
-                    <div className="min-w-0 flex-1">
-                      <div className="mb-2 flex flex-wrap items-center gap-2">
-                        <span className={`text-xs font-bold uppercase px-2.5 py-1 rounded-full ${getSeverityBadgeColor(task.severity)}`}>
-                          {task.severity}
-                        </span>
-                        <span className={`text-xs font-medium ${theme === 'dark' ? 'text-slate-200' : 'text-slate'}`}>{task.host}</span>
-                        <span className={`text-[0.65rem] ${theme === 'dark' ? 'text-slate-300' : 'text-slate/60'}`}>{task.task_id}</span>
-                      </div>
-                      <h3 className={`text-sm font-semibold ${done ? (theme === 'dark' ? 'line-through text-slate-500' : 'line-through text-slate') : (theme === 'dark' ? 'text-slate-50' : 'text-ink')}`}>
-                        {task.title}
-                      </h3>
-                      <p className={`mt-2 text-xs ${theme === 'dark' ? 'text-white' : 'text-slate'}`}>{task.details}</p>
-
-                      {task.recommended_checks && task.recommended_checks.length > 0 && (
-                        <div className="mt-3 space-y-1.5">
-                          <p className={`text-xs font-medium uppercase tracking-widest ${theme === 'dark' ? 'text-slate-200' : 'text-slate'}`}>Empfohlene Checks:</p>
-                          <ul className="space-y-1">
-                            {task.recommended_checks.map((check, idx) => (
-                              <li key={idx} className={`flex items-start gap-2 text-xs ${theme === 'dark' ? 'text-slate-100' : 'text-slate/80'}`}>
-                                <span className={`mt-1 h-1.5 w-1.5 flex-shrink-0 rounded-full ${theme === 'dark' ? 'bg-slate-500' : 'bg-ink/40'}`} />
-                                <span>{check}</span>
-                              </li>
-                            ))}
-                          </ul>
-                        </div>
-                      )}
-                    </div>
-                  </div>
+                  <IncidentCard
+                    task={mergedTask}
+                    selected={selectedTaskId === task.task_id}
+                    onSelect={() => setSelectedTaskId((id) => (id === task.task_id ? null : task.task_id))}
+                    onInvestigate={(host) => onSwitchTab('snipen', { host })}
+                    onStatusChange={handleIncidentStatusChange}
+                  />
+                  <div style={{ borderBottom: '1px solid var(--soc-border)' }} />
                 </div>
               );
-            })
+            })}
+          </div>
+        </div>
+
+        {/* Right: ContextPanel */}
+        <div
+          className="flex-shrink-0 flex flex-col overflow-hidden"
+          style={{ width: 340, background: 'var(--soc-panel)' }}
+        >
+          {selectedTask && selectedTaskStatus ? (
+            <ContextPanel
+              kind="task"
+              task={{ ...selectedTask, status: toSocStatus(selectedTaskStatus) }}
+              onInvestigate={(host) => onSwitchTab('snipen', { host })}
+              onStatusChange={handleIncidentStatusChange}
+            />
+          ) : (
+            <ContextPanel kind="empty" />
           )}
         </div>
       </div>

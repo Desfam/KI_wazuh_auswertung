@@ -1,13 +1,20 @@
 import { useEffect, useState } from 'react';
+import { CheckSquare, Cpu, Crosshair, Database, LayoutDashboard, MessageSquare, Search, Server, Settings, Shield } from 'lucide-react';
 import { ChatPage } from './pages/ChatPage';
 import { DashboardPage } from './pages/DashboardPage';
+import { HostsPage } from './pages/HostsPage';
 import { SnipenPage } from './pages/SnipenPage';
 import { TasksPage } from './pages/TasksPage';
+import FullScanTab from './pages/FullScanTab';
+import { BaselinePage } from './pages/BaselinePage';
 import { FluidWaves } from './components/FluidWaves';
+import { AppStartOverlay, type PreflightCheck } from './components/AppStartOverlay';
 import { SettingsModal } from './components/SettingsModal';
 import { VideoBackground } from './components/VideoBackground';
-import { getAIServiceStatus, getAnalysisProfile, saveAnalysisProfile, sendChatMessage, startAIService } from './services/api';
-import type { AIServiceStatus, AnalysisProfileConfig, ChatMessage } from './types';
+import { LiquidBackground } from './components/LiquidBackground';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { getAIServiceStatus, getActiveConnection, getAllProfileAssignments, getAnalysisProfile, getBackendHealth, getHostsCentral, getIndexerHealth, getOllamaHealth, getProfiles, saveAnalysisProfile, sendChatMessage, startAIService } from './services/api';
+import type { AIServiceStatus, AnalysisProfileConfig, ChatMessage, HostProfile, HostProfileAssignment } from './types';
 
 const LOOKBACK_PRESETS = [24, 168, 720] as const;
 const DEFAULT_ANALYSIS_PROFILE: AnalysisProfileConfig = {
@@ -21,8 +28,56 @@ const DEFAULT_ANALYSIS_PROFILE: AnalysisProfileConfig = {
   include_mitre_mapping: false,
 };
 
+function createInitialPreflightChecks(): PreflightCheck[] {
+  return [
+    { key: 'backend', label: 'Backend API', detail: 'Waiting for backend heartbeat', state: 'pending', required: true },
+    { key: 'connection', label: 'Active connection', detail: 'Loading active Wazuh connection', state: 'pending', required: true },
+    { key: 'indexer', label: 'Indexer', detail: 'Testing indexer reachability', state: 'pending', required: true },
+    { key: 'hosts', label: 'Host feed', detail: 'Sampling central host feed', state: 'pending' },
+    { key: 'profile', label: 'Analysis profile', detail: 'Loading analyst defaults', state: 'pending' },
+    { key: 'ollama', label: 'Ollama endpoint', detail: 'Checking model endpoint', state: 'pending' },
+    { key: 'ai', label: 'AI runtime', detail: 'Validating local AI service', state: 'pending' },
+  ];
+}
+
+function describeError(error: unknown, fallback: string): string {
+  if (error instanceof Error && error.message.trim()) {
+    return error.message.trim();
+  }
+  return fallback;
+}
+
+function isHealthy(status: { status: string; reachable?: boolean }): boolean {
+  if (status.reachable === false) {
+    return false;
+  }
+
+  const normalized = status.status.trim().toLowerCase();
+  return normalized === 'ok' || normalized === 'healthy' || normalized === 'running';
+}
+
+const TAB_LABELS: Record<string, string> = {
+  dashboard: 'Dashboard',
+  chat: 'Chat',
+  tasks: 'Incidents',
+  hosts: 'Hosts',
+  snipen: 'Investigation',
+  fullscan: 'Full Scan',
+  baseline: 'Baseline',
+};
+
+function fmtClock(): string {
+  return new Date().toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
 function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'snipen'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'snipen' | 'fullscan' | 'baseline'>('chat');
+  const [clockStr, setClockStr] = useState(fmtClock);
+
+  useEffect(() => {
+    const id = setInterval(() => setClockStr(fmtClock()), 1000);
+    return () => clearInterval(id);
+  }, []);
   const [theme, setTheme] = useState<'light' | 'dark'>(
     () => (localStorage.getItem('theme') as 'light' | 'dark') ?? 'dark'
   );
@@ -34,10 +89,24 @@ function App() {
   const [lastScriptSummary, setLastScriptSummary] = useState<{ lookback_hours: number; total_alerts: number; relevant_alerts: number } | null>(null);
   const [lastReportTxt, setLastReportTxt] = useState<string | null>(null);
   const [lastReportJson, setLastReportJson] = useState<string | null>(null);
-  const [generatedTasks, setGeneratedTasks] = useState<Array<{ task_id: string; host: string; severity: string; title: string; details: string; recommended_checks: string[] }>>([]);
+  const [generatedTasks, setGeneratedTasks] = useState<Array<{ task_id: string; host: string; severity: string; title: string; details: string; recommended_checks: string[]; event_id?: string | null; rule_id?: string | null; rule_description?: string | null; platform?: string | null; count?: number; reason?: string | null; local_score?: number | null; mitre_ids?: string[]; }>>([]);
+  const [snipenPrefillHost, setSnipenPrefillHost] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [videoSource, setVideoSource] = useState<string | null>(null);
   const [analysisProfile, setAnalysisProfile] = useState<AnalysisProfileConfig>(DEFAULT_ANALYSIS_PROFILE);
+  const [bootReady, setBootReady] = useState(false);
+  const [introMinElapsed, setIntroMinElapsed] = useState(false);
+  const [introVisible, setIntroVisible] = useState(true);
+  const [introMounted, setIntroMounted] = useState(true);
+  const [bootStatusText, setBootStatusText] = useState('Initialisiere Analyseumgebung');
+  const [preflightChecks, setPreflightChecks] = useState<PreflightCheck[]>(() => createInitialPreflightChecks());
+  const [bootAttempt, setBootAttempt] = useState(0);
+  const [profiles, setProfiles] = useState<HostProfile[]>([]);
+  const [profileAssignments, setProfileAssignments] = useState<Record<string, HostProfileAssignment>>({});
+
+  const hasBlockingFailure = preflightChecks.some((check) => check.required && check.state === 'error');
+  const preflightSettled = preflightChecks.every((check) => check.state !== 'pending' && check.state !== 'running');
+  const canEnter = bootReady && preflightSettled && !hasBlockingFailure;
 
   useEffect(() => {
     return () => {
@@ -46,6 +115,18 @@ function App() {
       }
     };
   }, [videoSource]);
+
+  useEffect(() => {
+    const isDark = theme === 'dark';
+    document.documentElement.classList.toggle('dark', isDark);
+    document.documentElement.classList.toggle('theme-dark', isDark);
+    document.body.classList.toggle('theme-dark', isDark);
+
+    return () => {
+      document.documentElement.classList.remove('dark', 'theme-dark');
+      document.body.classList.remove('theme-dark');
+    };
+  }, [theme]);
 
   function handleVideoSelect(file: File) {
     if (videoSource?.startsWith('blob:')) {
@@ -73,31 +154,174 @@ function App() {
   }
 
   useEffect(() => {
+    const timer = window.setTimeout(() => {
+      setIntroMinElapsed(true);
+    }, 2200);
+    return () => window.clearTimeout(timer);
+  }, []);
+
+  useEffect(() => {
+    if (!canEnter || !introMinElapsed || !introVisible) return;
+    setBootStatusText('Launch sequence complete');
+    const timer = window.setTimeout(() => {
+      setIntroVisible(false);
+    }, 700);
+    return () => window.clearTimeout(timer);
+  }, [canEnter, introMinElapsed, introVisible]);
+
+  useEffect(() => {
     let active = true;
 
+    const setCheck = (key: string, state: PreflightCheck['state'], detail: string) => {
+      if (!active) return;
+      setPreflightChecks((current) =>
+        current.map((check) => (check.key === key ? { ...check, state, detail } : check))
+      );
+    };
+
     async function boot() {
+      setPreflightChecks(createInitialPreflightChecks());
+      setBootReady(false);
       setChatBusy(true);
+      setBootStatusText('Initialisiere Systempruefung');
+
+      let blockingFailure = false;
+      let runtimeStatus: AIServiceStatus | null = null;
+
       try {
-        let status = await getAIServiceStatus();
-        if (!status.running) {
-          status = await startAIService();
+        setBootStatusText('Pruefe Backend API');
+        setCheck('backend', 'running', 'Requesting backend health endpoint');
+        try {
+          const backend = await getBackendHealth();
+          if (isHealthy(backend)) {
+            setCheck('backend', 'success', backend.detail || 'Backend API responded successfully');
+          } else {
+            blockingFailure = true;
+            setCheck('backend', 'error', backend.detail || 'Backend health check reported an unhealthy state');
+          }
+        } catch (error) {
+          blockingFailure = true;
+          setCheck('backend', 'error', describeError(error, 'Backend health request failed'));
         }
+
+        setBootStatusText('Lade aktive Verbindung');
+        setCheck('connection', 'running', 'Resolving configured Wazuh connection');
+        try {
+          const connection = await getActiveConnection();
+          const connectionLabel = connection.name || connection.indexer_url;
+          setCheck('connection', 'success', `Using ${connectionLabel}`);
+        } catch (error) {
+          blockingFailure = true;
+          setCheck('connection', 'error', describeError(error, 'No active connection available'));
+        }
+
+        setBootStatusText('Pruefe Indexer');
+        setCheck('indexer', 'running', 'Contacting Wazuh indexer');
+        try {
+          const indexer = await getIndexerHealth();
+          if (isHealthy(indexer)) {
+            setCheck('indexer', 'success', indexer.detail || 'Indexer is reachable');
+          } else {
+            blockingFailure = true;
+            setCheck('indexer', 'error', indexer.detail || 'Indexer health check failed');
+          }
+        } catch (error) {
+          blockingFailure = true;
+          setCheck('indexer', 'error', describeError(error, 'Indexer health request failed'));
+        }
+
+        setBootStatusText('Pruefe Host-Datenstrom');
+        setCheck('hosts', 'running', 'Sampling /hosts/central feed');
+        try {
+          const hosts = await getHostsCentral(24);
+          if (hosts.length > 0) {
+            setCheck('hosts', 'success', `${hosts.length} hosts detected in the last 24h feed`);
+          } else {
+            setCheck('hosts', 'warning', 'No hosts returned by the central feed');
+          }
+        } catch (error) {
+          setCheck('hosts', 'warning', describeError(error, 'Host feed check failed'));
+        }
+
+        // Load profiles + assignments (best-effort, never blocks boot)
+        try {
+          const [profileList, assignmentList] = await Promise.all([getProfiles(), getAllProfileAssignments()]);
+          if (active) {
+            setProfiles(profileList);
+            const amap: Record<string, HostProfileAssignment> = {};
+            for (const asgn of assignmentList) amap[asgn.host] = asgn;
+            setProfileAssignments(amap);
+          }
+        } catch {
+          // non-blocking
+        }
+
+        setBootStatusText('Lade Analyseprofil');
+        setCheck('profile', 'running', 'Loading analysis profile defaults');
+        try {
+          const profile = await getAnalysisProfile();
+          if (!active) return;
+          setAnalysisProfile(profile);
+          setCheck('profile', 'success', `Profile ready with min rule level ${profile.min_rule_level}`);
+        } catch (error) {
+          if (!active) return;
+          setAnalysisProfile(DEFAULT_ANALYSIS_PROFILE);
+          setCheck('profile', 'warning', describeError(error, 'Using default analysis profile'));
+        }
+
+        setBootStatusText('Pruefe Ollama Endpoint');
+        setCheck('ollama', 'running', 'Contacting configured model endpoint');
+        try {
+          const ollama = await getOllamaHealth();
+          if (isHealthy(ollama)) {
+            setCheck('ollama', 'success', ollama.detail || 'Ollama endpoint responded');
+          } else {
+            setCheck('ollama', 'warning', ollama.detail || 'Ollama endpoint is not fully reachable');
+          }
+        } catch (error) {
+          setCheck('ollama', 'warning', describeError(error, 'Ollama health request failed'));
+        }
+
+        setBootStatusText('Pruefe AI Runtime');
+        setCheck('ai', 'running', 'Checking local AI process state');
+        try {
+          runtimeStatus = await getAIServiceStatus();
+          if (!runtimeStatus.running) {
+            if (!active) return;
+            setCheck('ai', 'running', 'Runtime offline, attempting startup');
+            runtimeStatus = await startAIService();
+          }
+          if (!active) return;
+          setAIStatus(runtimeStatus);
+          if (runtimeStatus.running) {
+            setCheck('ai', 'success', 'AI runtime is online');
+          } else {
+            setCheck('ai', 'warning', runtimeStatus.last_error || 'AI runtime did not confirm as running');
+          }
+        } catch (error) {
+          if (!active) return;
+          setAIStatus(null);
+          setCheck('ai', 'warning', describeError(error, 'AI runtime startup failed'));
+        }
+
         if (!active) return;
-        setAIStatus(status);
         setChatMessages([
           {
             role: 'assistant',
-            content: status.running
-              ? 'Ollama ist verbunden. Du kannst direkt losschreiben.'
-              : 'Ollama wurde angefordert. Wenn der Start noch laeuft, kannst du trotzdem schon schreiben.',
+            content: runtimeStatus?.running
+              ? 'Startup checks abgeschlossen. Die AI-Laufzeit ist online.'
+              : 'Startup checks abgeschlossen. Die App ist verfuegbar, aber die AI-Laufzeit ist nur eingeschraenkt erreichbar.',
           },
         ]);
+        setBootStatusText(blockingFailure ? 'Kritische Pruefung fehlgeschlagen' : 'Startup checks abgeschlossen');
       } catch (error) {
         if (!active) return;
-        const detail = error instanceof Error ? error.message : 'AI startup failed';
-        setChatMessages([{ role: 'assistant', content: `AI-Start fehlgeschlagen: ${detail}` }]);
+        const detail = describeError(error, 'Startup preflight failed unexpectedly');
+        setBootStatusText('Startup checks abgebrochen');
+        setChatMessages([{ role: 'assistant', content: `Startup-Pruefung fehlgeschlagen: ${detail}` }]);
       } finally {
         if (active) {
+          setBootReady(true);
           setChatBusy(false);
         }
       }
@@ -112,26 +336,21 @@ function App() {
       active = false;
       clearInterval(timer);
     };
-  }, []);
+  }, [bootAttempt]);
 
-  useEffect(() => {
-    let active = true;
-    async function loadProfile() {
-      try {
-        const profile = await getAnalysisProfile();
-        if (!active) return;
-        setAnalysisProfile(profile);
-      } catch {
+  function handleProfileAssignmentChanged(host: string, assignment: HostProfileAssignment | null) {
+    setProfileAssignments((prev) => {
+      const next = { ...prev };
+      if (assignment === null) {
+        delete next[host];
+      } else {
+        next[host] = assignment;
       }
-    }
-    void loadProfile();
-    return () => {
-      active = false;
-    };
-  }, []);
+      return next;
+    });
+  }
 
-  async function handleSaveAnalysisProfile(next: AnalysisProfileConfig) {
-    setAnalysisProfile(next);
+  async function handleSaveAnalysisProfile(next: AnalysisProfileConfig) {    setAnalysisProfile(next);
     try {
       const saved = await saveAnalysisProfile(next);
       setAnalysisProfile(saved);
@@ -200,162 +419,232 @@ function App() {
   }
 
   return (
-    <div className={`flex h-screen overflow-hidden ${theme === 'dark' ? 'theme-dark-accent' : ''}`}>
-      {/* Dark background layer */}
-      {theme === 'dark' && (
-        <div className="fixed inset-0 z-0 bg-[#0f1117]">
-          {videoSource && (
-            <>
-              <VideoBackground videoSource={videoSource} />
-              <div className="absolute inset-0 bg-black/40" />
-            </>
-          )}
-        </div>
+    <div className="flex h-screen overflow-hidden font-mono" style={{ background: 'var(--soc-background)', color: 'var(--soc-foreground)' }}>
+      {introMounted && (
+        <AppStartOverlay
+          theme={theme}
+          visible={introVisible}
+          statusText={bootStatusText}
+          checks={preflightChecks}
+          canEnter={canEnter}
+          hasBlockingFailure={hasBlockingFailure}
+          onRetry={() => {
+            setIntroVisible(true);
+            setIntroMounted(true);
+            setBootAttempt((current) => current + 1);
+          }}
+          onContinue={() => setIntroVisible(false)}
+          onExited={() => setIntroMounted(false)}
+        />
       )}
 
-      {/* Sidebar */}
-      <aside className={`relative z-10 flex h-full w-16 flex-shrink-0 flex-col border-r lg:w-[var(--app-sidebar-expanded)] ${theme === 'dark' ? 'border-slate-700/60 bg-[#151823]' : 'border-ink/10 bg-white/95'}`}>
+      {/* Dark background overlay removed — was z-0 and leaked visually into sidebar */}
+
+      {/* Sidebar – SOC design matching redesign */}
+      <aside className="w-[200px] shrink-0 border-r flex flex-col h-full overflow-y-auto" style={{ borderColor: 'var(--soc-border)', background: 'var(--soc-sidebar)' }}>
         {/* Logo */}
-        <div className={`flex items-center gap-3 border-b px-3 py-4 ${theme === 'dark' ? 'dark-divider' : 'border-ink/10'}`}>
-          <span className="flex-shrink-0 text-2xl">🛡️</span>
-          <span className={`hidden truncate text-sm font-bold lg:block ${theme === 'dark' ? 'dark-text-main' : 'text-ink'}`}>Wazuh AI</span>
+        <div className="h-10 px-3 flex items-center gap-2 border-b shrink-0" style={{ borderColor: 'var(--soc-border)' }}>
+          <div className="h-5 w-5 rounded-sm grid place-items-center" style={{ background: 'color-mix(in srgb, var(--soc-primary) 20%, transparent)', border: '1px solid color-mix(in srgb, var(--soc-primary) 40%, transparent)' }}>
+            <Shield size={12} style={{ color: 'var(--soc-primary)' }} />
+          </div>
+          <div className="text-[12px] font-semibold tracking-wide" style={{ color: 'var(--soc-foreground)' }}>SENTINEL/OPS</div>
         </div>
 
         {/* Nav */}
-        <nav className="flex flex-1 flex-col gap-1 p-2 pt-4">
-          <button
-            type="button"
-            onClick={() => setActiveTab('dashboard')}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:-translate-y-0.5 ${
-              activeTab === 'dashboard'
-                ? theme === 'dark' ? 'bg-amber-600/25 text-amber-200' : 'bg-ember/10 text-ember'
-                : theme === 'dark' ? 'dark-text-soft hover:bg-white/5 hover:text-slate-200' : 'text-slate hover:bg-shell hover:text-ink'
-            }`}
-          >
-            <span className="flex-shrink-0 text-lg">📊</span>
-            <span className="hidden lg:block">Dashboard</span>
-            {lastReportJson && (
-              <span className={`hidden rounded-full px-2 py-0.5 text-[0.6rem] font-bold lg:block ${
-                theme === 'dark' ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-100 text-emerald-700'
-              }`}>●</span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('chat')}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:-translate-y-0.5 ${
-              activeTab === 'chat'
-                ? theme === 'dark' ? 'bg-amber-600/25 text-amber-200' : 'bg-ember/10 text-ember'
-                : theme === 'dark' ? 'dark-text-soft hover:bg-white/5 hover:text-slate-200' : 'text-slate hover:bg-shell hover:text-ink'
-            }`}
-          >
-            <span className="flex-shrink-0 text-lg">💬</span>
-            <span className="hidden lg:block">Chat</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('tasks')}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:-translate-y-0.5 ${
-              activeTab === 'tasks'
-                ? theme === 'dark' ? 'bg-amber-600/25 text-amber-200' : 'bg-ember/10 text-ember'
-                : theme === 'dark' ? 'dark-text-soft hover:bg-white/5 hover:text-slate-200' : 'text-slate hover:bg-shell hover:text-ink'
-            }`}
-          >
-            <span className="flex-shrink-0 text-lg">✅</span>
-            <span className="hidden flex-1 text-left lg:block">Tasks</span>
-            {generatedTasks.length > 0 && (
-              <span className={`hidden rounded-full px-2 py-0.5 text-[0.6rem] font-bold lg:block ${
-                theme === 'dark' ? 'bg-amber-500/25 text-amber-200' : 'bg-ember/15 text-ember'
-              }`}>
-                {generatedTasks.length}
-              </span>
-            )}
-          </button>
-          <button
-            type="button"
-            onClick={() => setActiveTab('snipen')}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition hover:-translate-y-0.5 ${
-              activeTab === 'snipen'
-                ? theme === 'dark' ? 'bg-amber-600/25 text-amber-200' : 'bg-ember/10 text-ember'
-                : theme === 'dark' ? 'dark-text-soft hover:bg-white/5 hover:text-slate-200' : 'text-slate hover:bg-shell hover:text-ink'
-            }`}
-          >
-            <span className="flex-shrink-0 text-lg">🎯</span>
-            <span className="hidden lg:block">Snipen</span>
-          </button>
+        <nav className="flex-1 py-2">
+          {([
+            { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard, badge: null as string | null },
+            { id: 'chat' as const, label: 'Chat', icon: MessageSquare, badge: null },
+            { id: 'tasks' as const, label: 'Incidents', icon: CheckSquare, badge: generatedTasks.length > 0 ? String(generatedTasks.length) : null },
+            { id: 'hosts' as const, label: 'Hosts', icon: Server, badge: null },
+            { id: 'snipen' as const, label: 'Investigation', icon: Crosshair, badge: null },
+            { id: 'fullscan' as const, label: 'Full Scan', icon: Cpu, badge: null },
+            { id: 'baseline' as const, label: 'Baseline', icon: Database, badge: null },
+          ]).map(({ id, label, icon: Icon, badge }) => {
+            const active = activeTab === id;
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                className="flex items-center gap-2 w-full h-8 mx-1 rounded-sm text-[12.5px] transition-colors"
+                style={{
+                  paddingLeft: '11px',
+                  paddingRight: '8px',
+                  color: active ? 'var(--soc-foreground)' : 'var(--soc-sidebar-fg)',
+                  background: active ? 'var(--soc-sidebar-accent)' : 'transparent',
+                  borderLeft: active ? '2px solid var(--soc-primary)' : '2px solid transparent',
+                  marginLeft: active ? '-1px' : undefined,
+                  width: active ? 'calc(100% - 7px)' : 'calc(100% - 8px)',
+                }}
+                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--soc-sidebar-accent)'; }}
+                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
+              >
+                <Icon size={14} className="shrink-0" />
+                <span className="flex-1 text-left">{label}</span>
+                {badge && (
+                  <span className="text-[10px] font-mono px-1 rounded-sm" style={{ background: 'var(--soc-critical)', color: 'oklch(0.98 0 0)' }}>
+                    {badge}
+                  </span>
+                )}
+              </button>
+            );
+          })}
         </nav>
 
-        {/* Bottom controls */}
-        <div className={`space-y-1 border-t p-2 ${theme === 'dark' ? 'dark-divider' : 'border-ink/10'}`}>
-          {/* AI status */}
-          <div className={`flex items-center gap-3 rounded-xl px-3 py-2 text-xs ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
-            <span className={`h-2 w-2 flex-shrink-0 rounded-full ${
-              aiStatus?.running ? 'bg-emerald-400' : chatBusy ? 'bg-amber-400' : 'bg-rose-400'
-            }`} />
-            <span className="hidden lg:block">{aiStatus?.running ? 'AI online' : chatBusy ? 'Laeuft...' : 'AI offline'}</span>
+        {/* Bottom info strip */}
+        <div className="border-t p-2 text-[10.5px] font-mono space-y-0.5" style={{ borderColor: 'var(--soc-border)', color: 'var(--soc-muted-fg)' }}>
+          <div className="flex justify-between">
+            <span>ai status</span>
+            <span style={{ color: aiStatus?.running ? 'var(--soc-success)' : chatBusy ? 'var(--soc-warning)' : 'var(--soc-critical)' }}>
+              {aiStatus?.running ? 'online' : chatBusy ? 'running' : 'offline'}
+            </span>
           </div>
-          {/* Theme toggle */}
-          <button
-            type="button"
-            onClick={() => { const next = theme === 'light' ? 'dark' : 'light'; setTheme(next); localStorage.setItem('theme', next); }}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:-translate-y-0.5 ${
-              theme === 'dark' ? 'dark-text-soft hover:bg-white/5 hover:text-slate-200' : 'text-slate hover:bg-shell hover:text-ink'
-            }`}
-          >
-            <span className="flex-shrink-0">{theme === 'light' ? '🌙' : '☀️'}</span>
-            <span className="hidden lg:block">{theme === 'light' ? 'Dark Mode' : 'Light Mode'}</span>
-          </button>
-          {/* Settings */}
+          <div className="flex justify-between"><span>time</span><span>{clockStr}</span></div>
           <button
             type="button"
             onClick={() => setSettingsOpen(true)}
-            className={`flex w-full items-center gap-3 rounded-xl px-3 py-2 text-sm transition hover:-translate-y-0.5 ${
-              theme === 'dark' ? 'dark-text-soft hover:bg-white/5 hover:text-slate-200' : 'text-slate hover:bg-shell hover:text-ink'
-            }`}
+            className="w-full flex items-center gap-1.5 mt-1 h-6 px-2 rounded-sm border text-[11px] font-mono"
+            style={{ borderColor: 'var(--soc-border)', color: 'var(--soc-muted-fg)' }}
+            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--soc-sidebar-accent)'}
+            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
           >
-            <span className="flex-shrink-0">⚙️</span>
-            <span className="hidden lg:block">Einstellungen</span>
+            <Settings size={11} />
+            <span>Settings</span>
           </button>
         </div>
       </aside>
 
       {/* Main content */}
-      <main className="relative z-10 flex-1 overflow-hidden">
-        <ChatPage
-          active={activeTab === 'chat'}
-          theme={theme}
-          onThemeToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          messages={chatMessages}
-          busy={chatBusy}
-          aiStatus={aiStatus}
-          reportContext={chatReportContext}
-          selectedLookbackHours={selectedLookbackHours}
-          lookbackPresets={[...LOOKBACK_PRESETS]}
-          onSelectLookback={setSelectedLookbackHours}
-          lastScriptSummary={lastScriptSummary}
-          lastReportTxt={lastReportTxt}
-          lastReportJson={lastReportJson}
-          generatedTasks={generatedTasks}
-          onSwitchTab={(tab) => setActiveTab(tab)}
-          onSend={(message, runScript) => void handleChatSend(message, runScript)}
-        />
-        <DashboardPage
-          active={activeTab === 'dashboard'}
-          theme={theme}
-          reportJson={lastReportJson}
-          scriptSummary={lastScriptSummary}
-        />
-        <TasksPage
-          active={activeTab === 'tasks'}
-          theme={theme}
-          onThemeToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')}
-          generatedTasks={generatedTasks}
-          onSwitchTab={(tab) => setActiveTab(tab)}
-        />
-        <SnipenPage
-          active={activeTab === 'snipen'}
-          theme={theme}
-        />
+      <main className="relative z-10 flex flex-col flex-1 overflow-hidden">
+        {/* SOC topbar matching redesign */}
+        <header className="h-10 shrink-0 border-b flex items-center px-3 gap-3" style={{ borderColor: 'var(--soc-border)', background: 'var(--soc-panel)' }}>
+          <div className="flex items-baseline gap-2">
+            <div className="text-[12.5px] font-semibold tracking-wide">{TAB_LABELS[activeTab] ?? activeTab}</div>
+          </div>
+
+          <div className="ml-4 flex items-center gap-2 flex-1 max-w-[480px]">
+            <div className="flex items-center gap-2 h-7 w-full px-2 rounded-sm border" style={{ background: 'var(--soc-input)', borderColor: 'var(--soc-border)' }}>
+              <Search size={14} style={{ color: 'var(--soc-muted-fg)' }} />
+              <input
+                placeholder="host:, user:, eid:, hash:, ip:…"
+                className="bg-transparent flex-1 outline-none text-[12px] font-mono"
+                style={{ color: 'var(--soc-foreground)' }}
+              />
+            </div>
+          </div>
+
+          <div className="ml-auto flex items-center gap-2">
+            {generatedTasks.length > 0 && (
+              <button
+                type="button"
+                onClick={() => setActiveTab('tasks')}
+                className="flex items-center gap-1 font-mono text-[10.5px]"
+                style={{ color: 'var(--soc-critical)' }}
+              >
+                <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: 'var(--soc-critical)' }} />
+                {generatedTasks.length} ALERT{generatedTasks.length !== 1 ? 'S' : ''}
+              </button>
+            )}
+            <span className="flex items-center gap-1.5 text-[11px] font-mono" style={{ color: 'var(--soc-muted-fg)' }}>
+              <span className="h-1.5 w-1.5 rounded-full animate-pulse" style={{ background: aiStatus?.running ? 'var(--soc-success)' : chatBusy ? 'var(--soc-warning)' : 'var(--soc-critical)' }} />
+              {aiStatus?.running ? 'live' : chatBusy ? 'running' : 'offline'} · {clockStr}
+            </span>
+          </div>
+        </header>
+        {/* Page content area — only the active page is mounted */}
+        <div className="relative flex-1 overflow-hidden">
+          {activeTab === 'chat' && (
+            <ErrorBoundary label="Chat">
+              <ChatPage
+                active
+                theme={theme}
+                onThemeToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                messages={chatMessages}
+                busy={chatBusy}
+                aiStatus={aiStatus}
+                reportContext={chatReportContext}
+                selectedLookbackHours={selectedLookbackHours}
+                lookbackPresets={[...LOOKBACK_PRESETS]}
+                onSelectLookback={setSelectedLookbackHours}
+                lastScriptSummary={lastScriptSummary}
+                lastReportTxt={lastReportTxt}
+                lastReportJson={lastReportJson}
+                generatedTasks={generatedTasks}
+                onSwitchTab={(tab) => setActiveTab(tab)}
+                onSend={(message, runScript) => void handleChatSend(message, runScript)}
+              />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'dashboard' && (
+            <ErrorBoundary label="Dashboard">
+              <DashboardPage
+                active
+                theme={theme}
+                profileAssignments={profileAssignments}
+                onSwitchTab={(tab, context) => {
+                  if (context?.host) setSnipenPrefillHost(context.host);
+                  setActiveTab(tab);
+                }}
+              />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'tasks' && (
+            <ErrorBoundary label="Tasks">
+              <TasksPage
+                active
+                theme={theme}
+                onThemeToggle={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+                generatedTasks={generatedTasks}
+                profileAssignments={profileAssignments}
+                onSwitchTab={(tab, context) => {
+                  if (context?.host) setSnipenPrefillHost(context.host);
+                  setActiveTab(tab);
+                }}
+              />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'hosts' && (
+            <ErrorBoundary label="Hosts">
+              <HostsPage
+                active
+                theme={theme}
+                profiles={profiles}
+                profileAssignments={profileAssignments}
+                onProfileAssignmentChanged={handleProfileAssignmentChanged}
+                onSwitchTab={(tab) => setActiveTab(tab)}
+              />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'snipen' && (
+            <ErrorBoundary label="Snipen">
+              <SnipenPage
+                active
+                theme={theme}
+                profileAssignments={profileAssignments}
+                prefillHost={snipenPrefillHost}
+                onPrefillConsumed={() => setSnipenPrefillHost(null)}
+              />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'fullscan' && (
+            <ErrorBoundary label="FullScan">
+              <FullScanTab theme={theme} profileAssignments={profileAssignments} />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'baseline' && (
+            <ErrorBoundary label="Baseline">
+              <BaselinePage
+                active
+                theme={theme}
+                onSwitchTab={(tab, context) => {
+                  if (context?.host) setSnipenPrefillHost(context.host);
+                  setActiveTab(tab as typeof activeTab);
+                }}
+              />
+            </ErrorBoundary>
+          )}
+        </div>
       </main>
 
       {/* Settings Modal */}

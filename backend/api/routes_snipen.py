@@ -15,6 +15,7 @@ from schemas.types import (
     SnipenExplainRequest,
     SnipenExplainResult,
     SnipenHostInfo,
+    SnipenHostOverview,
     SnipenRelatedRequest,
     SnipenRemediateRequest,
 )
@@ -23,6 +24,7 @@ from services.snipen_service import (
     analyze_host,
     explain_event,
     get_host_events,
+    get_host_snipen_overview,
     get_related_events,
     get_snipen_hosts,
     remediate_event,
@@ -73,6 +75,31 @@ def snipen_host_events(
             min_rule_level=min_rule_level,
             category_filter=category,
             event_ids_filter=ids_filter,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/host/{host}/overview")
+def snipen_host_overview(
+    host: str,
+    hours: int = Query(default=24, ge=1, le=168),
+    limit: int = Query(default=500, ge=10, le=2000),
+    buckets: int = Query(default=24, ge=4, le=96),
+) -> SnipenHostOverview:
+    """
+    Return a pre-computed host overview: severity distribution, top counters
+    (event IDs, rule IDs, processes, users, IPs) and a bucketed event timeline.
+    No AI – fast and lightweight.
+    """
+    conn = _get_active_connection_dict()
+    try:
+        return get_host_snipen_overview(
+            conn,
+            host=host,
+            hours=hours,
+            limit=limit,
+            num_timeline_buckets=buckets,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

@@ -98,8 +98,11 @@ def _build_tasks(parsed_report: dict) -> list[ChatTaskItem]:
     tasks: list[ChatTaskItem] = []
     for index, finding in enumerate(sorted_findings[:25], start=1):
         severity = str(finding.get("ai_severity") or finding.get("local_severity") or "low").lower()
-        event_label = finding.get("event_id") or finding.get("rule_id") or "n/a"
-        title = f"[{severity.upper()}] {finding.get('host', '?')} - {finding.get('rule_description') or event_label}"
+        event_id = finding.get("event_id")
+        rule_id = finding.get("rule_id")
+        event_label = event_id or rule_id or "n/a"
+        rule_description = finding.get("rule_description")
+        title = f"[{severity.upper()}] {finding.get('host', '?')} - {rule_description or event_label}"
         details = (
             f"Platform={finding.get('platform', '?')} | Event={event_label} | "
             f"Count={finding.get('count', 0)} | Reason={finding.get('reason', 'n/a')}"
@@ -107,6 +110,12 @@ def _build_tasks(parsed_report: dict) -> list[ChatTaskItem]:
         checks = finding.get("recommended_checks") or []
         if not isinstance(checks, list):
             checks = [str(checks)]
+
+        # Extract MITRE IDs
+        mitre_raw = finding.get("mitre_ids") or finding.get("mitre_techniques") or []
+        if not isinstance(mitre_raw, list):
+            mitre_raw = []
+        mitre_ids = [str(m) for m in mitre_raw[:4]]
 
         tasks.append(
             ChatTaskItem(
@@ -116,6 +125,14 @@ def _build_tasks(parsed_report: dict) -> list[ChatTaskItem]:
                 title=title,
                 details=details,
                 recommended_checks=[str(check) for check in checks[:5]],
+                event_id=str(event_id) if event_id else None,
+                rule_id=str(rule_id) if rule_id else None,
+                rule_description=str(rule_description) if rule_description else None,
+                platform=str(finding.get("platform", "")) or None,
+                count=int(finding.get("count") or 1),
+                reason=str(finding.get("reason", "")) or None,
+                local_score=float(finding["local_score"]) if finding.get("local_score") is not None else None,
+                mitre_ids=mitre_ids,
             )
         )
     return tasks
@@ -296,7 +313,7 @@ def handle_chat(request: ChatRequest) -> ChatResponse:
     ran_script = False
     parsed_report: dict = {}
 
-    should_run_script = bool(request.run_script) or not (request.report_context or "").strip()
+    should_run_script = bool(request.run_script)
     if should_run_script:
         requested_lookback = request.lookback_hours if request.lookback_hours is not None else int(connection.get("lookback_hours") or 24)
         profile = request.analysis_profile
@@ -339,6 +356,7 @@ def handle_chat(request: ChatRequest) -> ChatResponse:
                 parsed_report = {}
 
     message = request.message.strip()
+
     ai_prompt = message if message else default_chat_request_prompt()
     if message:
         ai_prompt += conversation_context_guidance()
@@ -351,6 +369,7 @@ def handle_chat(request: ChatRequest) -> ChatResponse:
             message=ai_prompt,
             history=[item.model_dump() for item in request.history] if message else [],
             report_context=report_context,
+            direct_question=bool(message),
         )
         if _looks_like_raw_report_dump(reply):
             reply = _build_question_fallback_answer(ai_prompt, parsed_report, generated_tasks)

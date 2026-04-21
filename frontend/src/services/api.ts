@@ -1,4 +1,4 @@
-﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, ChatMessage, ChatResponse, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostOverview, HostRanking, HostTrendPoint, Report, RunAnalysisPayload, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo } from '../types';
+﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, Report, RunAnalysisPayload, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview } from '../types';
 
 const isDesktopShell =
   window.location.protocol === 'tauri:' ||
@@ -76,6 +76,10 @@ export function getReports(): Promise<Report[]> {
   return request<Report[]>('/reports');
 }
 
+export function getBackendHealth(): Promise<HealthResponse> {
+  return request<HealthResponse>('/health');
+}
+
 export function getLatestReport(): Promise<Report> {
   return request<Report>('/reports/latest');
 }
@@ -136,6 +140,14 @@ export function getHostOverview(host: string): Promise<HostOverview> {
 
 export function getHostTrend(host: string, limit = 14): Promise<HostTrendPoint[]> {
   return request<HostTrendPoint[]>(`/hosts/${encodeURIComponent(host)}/trend?limit=${limit}`);
+}
+
+export function getHostsCentral(hours = 24): Promise<HostCentralListItem[]> {
+  return request<HostCentralListItem[]>(`/hosts/central?hours=${hours}`);
+}
+
+export function getHostCentralDetail(host: string, hours = 168, limit = 250): Promise<HostCentralDetail> {
+  return request<HostCentralDetail>(`/hosts/${encodeURIComponent(host)}/central?hours=${hours}&limit=${limit}`);
 }
 
 // ── Snipen / Threat Hunting API ───────────────────────────────────────────────
@@ -209,4 +221,88 @@ export function aiQuerySnipen(
     method: 'POST',
     body: JSON.stringify({ query, hours, limit })
   });
+}
+
+export function getSnipenHostOverview(
+  host: string,
+  params: { hours?: number; limit?: number; buckets?: number } = {}
+): Promise<SnipenHostOverview> {
+  const q = new URLSearchParams();
+  if (params.hours != null) q.set('hours', String(params.hours));
+  if (params.limit != null) q.set('limit', String(params.limit));
+  if (params.buckets != null) q.set('buckets', String(params.buckets));
+  return request<SnipenHostOverview>(`/snipen/host/${encodeURIComponent(host)}/overview?${q.toString()}`);
+}
+
+// ── Host Profile API ──────────────────────────────────────────────────────────
+
+export function getProfiles(): Promise<HostProfile[]> {
+  return request<HostProfile[]>('/profiles');
+}
+
+export function getAllProfileAssignments(): Promise<HostProfileAssignment[]> {
+  return request<HostProfileAssignment[]>('/profiles/assignments/all');
+}
+
+export function getHostProfileAssignment(host: string): Promise<HostProfileAssignment> {
+  return request<HostProfileAssignment>(`/profiles/assignments/host/${encodeURIComponent(host)}`);
+}
+
+export function setHostProfileAssignment(
+  host: string,
+  profile_id: number,
+  notes?: string
+): Promise<HostProfileAssignment> {
+  return request<HostProfileAssignment>(`/profiles/assignments/host/${encodeURIComponent(host)}`, {
+    method: 'PUT',
+    body: JSON.stringify({ profile_id, assigned_by: 'user', notes: notes ?? null })
+  });
+}
+
+export function removeHostProfileAssignment(host: string): Promise<void> {
+  return request<void>(`/profiles/assignments/host/${encodeURIComponent(host)}`, {
+    method: 'DELETE'
+  });
+}
+
+// ── Baseline ──────────────────────────────────────────────────────────────────
+
+export function computeBaseline(host: string, windowHours = 168): Promise<BaselineSnapshot> {
+  return request<BaselineSnapshot>(`/baseline/${encodeURIComponent(host)}/compute`, {
+    method: 'POST',
+    body: JSON.stringify({ window_hours: windowHours })
+  });
+}
+
+export function getBaselineLatest(host: string): Promise<BaselineSnapshot> {
+  return request<BaselineSnapshot>(`/baseline/${encodeURIComponent(host)}/latest`);
+}
+
+export function getBaselineHistory(host: string, limit = 10): Promise<BaselineSnapshot[]> {
+  return request<BaselineSnapshot[]>(`/baseline/${encodeURIComponent(host)}/history?limit=${limit}`);
+}
+
+export function getBaselineSummary(host: string): Promise<BaselineSummary> {
+  return request<BaselineSummary>(`/baseline/${encodeURIComponent(host)}/summary`);
+}
+
+export function getBaselineFeatures(host: string, featureType?: string): Promise<BaselineFeature[]> {
+  const qs = featureType ? `?feature_type=${encodeURIComponent(featureType)}` : '';
+  return request<BaselineFeature[]>(`/baseline/${encodeURIComponent(host)}/features${qs}`);
+}
+
+export function getBaselineDeviations(host: string, unresolvedOnly = true): Promise<BaselineDeviation[]> {
+  return request<BaselineDeviation[]>(
+    `/baseline/${encodeURIComponent(host)}/deviations?unresolved_only=${unresolvedOnly}`
+  );
+}
+
+export function resolveDeviation(deviationId: number): Promise<{ status: string }> {
+  return request<{ status: string }>(`/baseline/deviations/${deviationId}/resolve`, {
+    method: 'POST'
+  });
+}
+
+export function getBaselineDiff(host: string): Promise<BaselineDiff> {
+  return request<BaselineDiff>(`/baseline/${encodeURIComponent(host)}/diff`);
 }

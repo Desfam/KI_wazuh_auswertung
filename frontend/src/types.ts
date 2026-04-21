@@ -157,6 +157,14 @@ export type ChatResponse = {
     title: string;
     details: string;
     recommended_checks: string[];
+    event_id?: string | null;
+    rule_id?: string | null;
+    rule_description?: string | null;
+    platform?: string | null;
+    count?: number;
+    reason?: string | null;
+    local_score?: number | null;
+    mitre_ids?: string[];
   }>;
   report_txt_content?: string | null;
   report_json_content?: string | null;
@@ -194,7 +202,62 @@ export type HostTrendPoint = {
   max_local_score: number;
 };
 
+export type HostCentralListItem = {
+  host: string;
+  ip?: string | null;
+  platforms: string[];
+  last_activity?: string | null;
+  alerts_24h: number;
+  findings_count: number;
+  risk_score: number;
+  fullscan_status: string;
+  last_scan_at?: string | null;
+  status: 'online' | 'offline';
+  // ── Access (SSH / RDP) ──────────────────────────────────────────────────────
+  ssh_enabled: boolean;
+  rdp_enabled: boolean;
+  connection_status: 'reachable' | 'unreachable' | 'unknown';
+  last_connection?: string | null;
+};
+
+export type HostCentralTabPayload = {
+  items: unknown[] | Record<string, unknown>;
+  ai_assessment: string;
+};
+
+export type HostCentralDetail = {
+  header: {
+    host: string;
+    ip?: string | null;
+    platforms: string[];
+    agent_id?: string | null;
+    status: string;
+    last_activity?: string | null;
+    last_full_scan?: string | null;
+  };
+  summary: {
+    risk_score: number;
+    findings_count: number;
+    high_findings: number;
+    medium_findings: number;
+    low_findings: number;
+    ti_matches: number;
+    last_scan_time?: string | null;
+    ai_assessment: string;
+  };
+  tabs: Record<string, HostCentralTabPayload>;
+  overview?: HostOverview | null;
+  findings?: FindingGroup[];
+  trend?: HostTrendPoint[];
+};
+
 // ── Snipen / Threat Hunting types ────────────────────────────────────────────
+
+export type SnipenHostProfileRef = {
+  name: string;
+  display_name: string;
+  risk_tolerance: string;
+};
 
 export type SnipenHostInfo = {
   host: string;
@@ -202,6 +265,7 @@ export type SnipenHostInfo = {
   top_rule_level: number | null;
   last_seen: string | null;
   platforms: string[];
+  profile?: SnipenHostProfileRef | null;
 };
 
 export type SnipenSmartEvent = {
@@ -210,6 +274,7 @@ export type SnipenSmartEvent = {
   platform?: string | null;
   event_id?: string | null;
   event_explanation?: string | null;
+  system_message?: string | null;
   rule_id?: string | null;
   rule_level?: number | null;
   rule_description?: string | null;
@@ -226,6 +291,19 @@ export type SnipenSmartEvent = {
   mitre_tactic?: string | null;
   decoder?: string | null;
   location?: string | null;
+  // Extended fields (Phase 1)
+  parent_process?: string | null;
+  target_user?: string | null;
+  subject_user?: string | null;
+  workstation?: string | null;
+  substatus?: string | null;
+  service_type?: string | null;
+  start_type?: string | null;
+  image_path?: string | null;
+  process_id?: string | null;
+  new_process_id?: string | null;
+  event_family?: string | null;
+  summary?: string | null;
 };
 
 export type SnipenEvent = {
@@ -269,4 +347,151 @@ export type SnipenAIQueryResult = {
   answer: string;
   matched_events: SnipenEvent[];
   ran_ai: boolean;
+};
+
+export type TimelinePointDTO = {
+  bucket_start: string;
+  bucket_end: string;
+  event_count: number;
+  is_peak: boolean;
+  is_anomaly: boolean;
+};
+
+export type SnipenHostOverview = {
+  host: string;
+  hours: number;
+  total_events: number;
+  severity_distribution: Record<string, number>;
+  top_event_ids: string[];
+  top_rule_ids: string[];
+  top_processes: string[];
+  top_users: string[];
+  top_ips: string[];
+  top_rule_descriptions: string[];
+  timeline: TimelinePointDTO[];
+};
+
+// ── Host Profile types ────────────────────────────────────────────────────────
+
+export type HostProfile = {
+  id: number | null;
+  name: string;
+  display_name: string;
+  description: string;
+  risk_tolerance: 'low' | 'medium' | 'high';
+  expected_behaviors: Record<string, boolean>;
+  allowed_process_patterns: string[];
+  suspicious_patterns: string[];
+  always_critical_event_ids: string[];
+  notes: string[];
+  is_builtin: boolean;
+  created_at?: string | null;
+  updated_at?: string | null;
+};
+
+export type HostProfileAssignment = {
+  host: string;
+  profile_id: number;
+  profile_name?: string | null;
+  profile_display_name?: string | null;
+  risk_tolerance?: string | null;
+  assigned_by: string;
+  notes?: string | null;
+  assigned_at?: string | null;
+  updated_at?: string | null;
+};
+
+// ── Baseline ──────────────────────────────────────────────────────────────────
+
+export type BaselineFeatureItem = {
+  key: string;
+  count: number;
+};
+
+export type BaselineSnapshot = {
+  id: number;
+  host: string;
+  computed_at: string;
+  window_hours: number;
+  profile_id: number | null;
+  total_events: number;
+  high_alerts: number;
+  critical_alerts: number;
+  top_event_ids: BaselineFeatureItem[];
+  top_rule_ids: BaselineFeatureItem[];
+  top_processes: BaselineFeatureItem[];
+  top_users: BaselineFeatureItem[];
+  top_ips: BaselineFeatureItem[];
+  top_event_families: BaselineFeatureItem[];
+  event_volume_per_hour: Record<string, number>;
+  notes: string[];
+  deviation_count: number;
+};
+
+export type BaselineFeature = {
+  id: number;
+  host: string;
+  feature_type: string;
+  feature_key: string;
+  count_seen: number;
+  first_seen: string;
+  last_seen: string;
+  stability_score: number;
+  is_expected: boolean;
+  notes: string | null;
+};
+
+export type BaselineDeviation = {
+  id: number;
+  host: string;
+  detected_at: string;
+  feature_type: string;
+  feature_key: string;
+  deviation_type: string;
+  severity_hint: string;
+  risk_score: number;
+  risk_level: string;
+  reason: string;
+  confidence: number;
+  details: Record<string, unknown>;
+  resolved: boolean;
+  resolved_at: string | null;
+};
+
+export type BaselineDiff = {
+  host: string;
+  computed_at: string;
+  new_processes: string[];
+  new_users: string[];
+  new_services: string[];
+  new_ips: string[];
+  new_event_ids: string[];
+  new_event_families: string[];
+  volume_spike: boolean;
+  volume_ratio: number;
+  open_deviations: number;
+  top_risk_deviations: Record<string, unknown>[];
+};
+
+export type BaselineSummary = {
+  host: string;
+  computed_at: string | null;
+  window_hours: number;
+  total_events: number;
+  daily_avg_events: number;
+  high_alerts: number;
+  critical_alerts: number;
+  top_processes: string[];
+  top_event_ids: string[];
+  top_users: string[];
+  top_event_families: string[];
+  open_deviations: number;
+  deviation_types: string[];
+  top_deviations: Array<{
+    type: string;
+    key: string;
+    risk_score: number;
+    risk_level: string;
+    reason: string;
+  }>;
 };

@@ -21,8 +21,18 @@ type FieldProps = {
 function Field({ label, value, type = 'text', onChange }: FieldProps) {
   return (
     <label className="block">
-      <span className="text-xs uppercase tracking-[0.2em] text-slate">{label}</span>
-      <input type={type} value={value} onChange={(event) => onChange(event.target.value)} className="mt-2 w-full rounded-2xl border border-ink/10 bg-shell/70 px-4 py-3 text-sm text-ink outline-none transition focus:border-ember" />
+      <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--soc-muted-fg)' }}>{label}</span>
+      <input
+        type={type}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className="mt-1.5 w-full rounded px-3 py-1.5 text-[12.5px] outline-none transition"
+        style={{
+          background: 'var(--soc-input)',
+          border: '1px solid var(--soc-border)',
+          color: 'var(--soc-foreground)',
+        }}
+      />
     </label>
   );
 }
@@ -31,19 +41,24 @@ export function SettingsPage({ connection, onChange, onSave, onTest, testing, sa
   const [showSecrets, setShowSecrets] = useState(false);
 
   return (
-    <div className="grid gap-6 xl:grid-cols-[1.2fr,0.8fr]">
-      <section className="rounded-[1.75rem] border border-ink/10 bg-white/95 p-5 shadow-panel">
-        <div className="flex items-start justify-between gap-4">
+    <div className="grid gap-4 xl:grid-cols-[1.2fr,0.8fr] h-full overflow-y-auto" style={{ padding: '12px' }}>
+      <section className="rounded-lg p-4" style={{ background: 'var(--soc-panel)', border: '1px solid var(--soc-border)' }}>
+        <div className="flex items-start justify-between gap-4 border-b pb-3" style={{ borderColor: 'var(--soc-border)' }}>
           <div>
-            <p className="text-xs uppercase tracking-[0.3em] text-slate">Connections</p>
-            <h3 className="mt-2 font-['Space_Grotesk'] text-xl font-semibold text-ink">Indexer, Manager and Ollama</h3>
+            <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--soc-muted-fg)' }}>Connections</p>
+            <h3 className="mt-1 text-sm font-semibold" style={{ color: 'var(--soc-foreground)' }}>Indexer, Manager and Ollama</h3>
           </div>
-          <button type="button" className="rounded-2xl border border-ink/10 px-4 py-3 text-sm text-ink" onClick={() => setShowSecrets((value) => !value)}>
+          <button
+            type="button"
+            className="rounded px-3 py-1 text-[12px] transition"
+            style={{ border: '1px solid var(--soc-border)', color: 'var(--soc-foreground)', background: 'var(--soc-card)' }}
+            onClick={() => setShowSecrets((value) => !value)}
+          >
             {showSecrets ? 'Hide secrets' : 'Show secrets'}
           </button>
         </div>
 
-        <div className="mt-6 grid gap-4 md:grid-cols-2">
+        <div className="mt-4 grid gap-3 md:grid-cols-2">
           <Field label="Connection name" value={connection.name} onChange={(value) => onChange({ ...connection, name: value })} />
           <Field label="Lookback hours" value={connection.lookback_hours} type="number" onChange={(value) => onChange({ ...connection, lookback_hours: Number(value) })} />
           <Field label="Indexer URL" value={connection.indexer_url} onChange={(value) => onChange({ ...connection, indexer_url: value })} />
@@ -57,11 +72,11 @@ export function SettingsPage({ connection, onChange, onSave, onTest, testing, sa
           <Field label="Ollama model" value={connection.ollama_model} onChange={(value) => onChange({ ...connection, ollama_model: value })} />
         </div>
 
-        <div className="mt-8 border-t border-ink/10 pt-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate">Remote VM Script</p>
-          <h4 className="mt-2 font-['Space_Grotesk'] text-lg font-semibold text-ink">SSH trigger for the Wazuh VM</h4>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
-            <label className="inline-flex items-center gap-2 text-sm text-slate md:col-span-2">
+        <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--soc-border)' }}>
+          <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--soc-muted-fg)' }}>Remote VM Script</p>
+          <h4 className="mt-1 text-sm font-semibold" style={{ color: 'var(--soc-foreground)' }}>SSH trigger for the Wazuh VM</h4>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
+            <label className="inline-flex items-center gap-2 text-[12px] md:col-span-2" style={{ color: 'var(--soc-muted-fg)' }}>
               <input type="checkbox" checked={connection.vm_enabled} onChange={(event) => onChange({ ...connection, vm_enabled: event.target.checked })} />
               Enable remote VM script execution
             </label>
@@ -76,70 +91,87 @@ export function SettingsPage({ connection, onChange, onSave, onTest, testing, sa
           </div>
         </div>
 
-        <div className="mt-8 border-t border-ink/10 pt-6">
-          <p className="text-xs uppercase tracking-[0.3em] text-slate">Run Presets</p>
-          <h4 className="mt-2 font-['Space_Grotesk'] text-lg font-semibold text-ink">Preconfigured checkboxes for app-triggered runs</h4>
-          <div className="mt-4 grid gap-4 md:grid-cols-2">
+        <div className="mt-5 border-t pt-4" style={{ borderColor: 'var(--soc-border)' }}>
+          <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--soc-muted-fg)' }}>Run Presets</p>
+          <h4 className="mt-1 text-sm font-semibold" style={{ color: 'var(--soc-foreground)' }}>Preconfigured checkboxes for app-triggered runs</h4>
+          <div className="mt-3 grid gap-3 md:grid-cols-2">
             <label className="block">
-              <span className="text-xs uppercase tracking-[0.2em] text-slate">Default mode</span>
-              <select value={connection.default_analysis_mode} onChange={(event) => onChange({ ...connection, default_analysis_mode: event.target.value as 'local' | 'vm-script' })} className="mt-2 w-full rounded-2xl border border-ink/10 bg-shell/70 px-4 py-3 text-sm text-ink outline-none transition focus:border-ember">
+              <span className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--soc-muted-fg)' }}>Default mode</span>
+              <select
+                value={connection.default_analysis_mode}
+                onChange={(event) => onChange({ ...connection, default_analysis_mode: event.target.value as 'local' | 'vm-script' })}
+                className="mt-1.5 w-full rounded px-3 py-1.5 text-[12.5px] outline-none transition"
+                style={{ background: 'var(--soc-input)', border: '1px solid var(--soc-border)', color: 'var(--soc-foreground)' }}
+              >
                 <option value="local">Local backend analysis</option>
                 <option value="vm-script">Remote VM script</option>
               </select>
             </label>
             <Field label="Default query size" value={connection.default_query_size} type="number" onChange={(value) => onChange({ ...connection, default_query_size: Number(value) })} />
-            <label className="inline-flex items-center gap-2 text-sm text-slate">
+            <label className="inline-flex items-center gap-2 text-[12px]" style={{ color: 'var(--soc-muted-fg)' }}>
               <input type="checkbox" checked={connection.default_only_windows} onChange={(event) => onChange({ ...connection, default_only_windows: event.target.checked, default_only_linux: event.target.checked ? false : connection.default_only_linux })} />
               Windows only
             </label>
-            <label className="inline-flex items-center gap-2 text-sm text-slate">
+            <label className="inline-flex items-center gap-2 text-[12px]" style={{ color: 'var(--soc-muted-fg)' }}>
               <input type="checkbox" checked={connection.default_only_linux} onChange={(event) => onChange({ ...connection, default_only_linux: event.target.checked, default_only_windows: event.target.checked ? false : connection.default_only_windows })} />
               Linux only
             </label>
-            <label className="inline-flex items-center gap-2 text-sm text-slate">
+            <label className="inline-flex items-center gap-2 text-[12px]" style={{ color: 'var(--soc-muted-fg)' }}>
               <input type="checkbox" checked={connection.default_include_noise} onChange={(event) => onChange({ ...connection, default_include_noise: event.target.checked })} />
               Include noise / benign patterns
             </label>
-            <label className="inline-flex items-center gap-2 text-sm text-slate">
+            <label className="inline-flex items-center gap-2 text-[12px]" style={{ color: 'var(--soc-muted-fg)' }}>
               <input type="checkbox" checked={connection.default_run_ai} onChange={(event) => onChange({ ...connection, default_run_ai: event.target.checked })} />
               Run AI assessment
             </label>
           </div>
         </div>
 
-        <div className="mt-6 flex flex-wrap items-center gap-3">
-          <button type="button" onClick={onSave} className="rounded-2xl bg-ember px-4 py-3 text-sm font-medium text-white" disabled={saving}>
+        <div className="mt-5 flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            onClick={onSave}
+            className="rounded px-3 py-1.5 text-[12.5px] font-medium text-white transition"
+            style={{ background: 'var(--soc-primary)' }}
+            disabled={saving}
+          >
             {saving ? 'Saving...' : 'Save connection'}
           </button>
-          <button type="button" onClick={onTest} className="rounded-2xl border border-ink/10 px-4 py-3 text-sm font-medium text-ink" disabled={testing}>
+          <button
+            type="button"
+            onClick={onTest}
+            className="rounded px-3 py-1.5 text-[12.5px] font-medium transition"
+            style={{ border: '1px solid var(--soc-border)', color: 'var(--soc-foreground)', background: 'var(--soc-card)' }}
+            disabled={testing}
+          >
             {testing ? 'Testing...' : 'Test connectivity'}
           </button>
-          <label className="inline-flex items-center gap-2 text-sm text-slate">
+          <label className="inline-flex items-center gap-2 text-[12px]" style={{ color: 'var(--soc-muted-fg)' }}>
             <input type="checkbox" checked={connection.verify_ssl} onChange={(event) => onChange({ ...connection, verify_ssl: event.target.checked })} />
             Verify SSL certificates
           </label>
         </div>
       </section>
 
-      <section className="rounded-[1.75rem] border border-ink/10 bg-white/95 p-5 shadow-panel">
-        <p className="text-xs uppercase tracking-[0.3em] text-slate">Connectivity</p>
-        <h3 className="mt-2 font-['Space_Grotesk'] text-xl font-semibold text-ink">Last Test Result</h3>
+      <section className="rounded-lg p-4 h-fit" style={{ background: 'var(--soc-panel)', border: '1px solid var(--soc-border)' }}>
+        <p className="text-[10px] uppercase tracking-[0.3em]" style={{ color: 'var(--soc-muted-fg)' }}>Connectivity</p>
+        <h3 className="mt-1 text-sm font-semibold" style={{ color: 'var(--soc-foreground)' }}>Last Test Result</h3>
 
-        <div className="mt-5 space-y-4">
-          <div className="rounded-2xl bg-shell/70 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate">Indexer</p>
-            <p className="mt-2 font-medium text-ink">{testResult?.indexer.ok ? 'Reachable' : 'Not tested / failed'}</p>
-            <p className="mt-2 text-sm text-slate">{testResult?.indexer.detail || 'No connectivity test executed yet.'}</p>
+        <div className="mt-4 space-y-3">
+          <div className="rounded p-3" style={{ background: 'var(--soc-card)', border: '1px solid var(--soc-border)' }}>
+            <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--soc-muted-fg)' }}>Indexer</p>
+            <p className="mt-1 text-[12.5px] font-medium" style={{ color: testResult?.indexer.ok ? 'var(--soc-success)' : 'var(--soc-muted-fg)' }}>{testResult?.indexer.ok ? 'Reachable' : 'Not tested / failed'}</p>
+            <p className="mt-1 text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>{testResult?.indexer.detail || 'No connectivity test executed yet.'}</p>
           </div>
-          <div className="rounded-2xl bg-shell/70 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate">Ollama</p>
-            <p className="mt-2 font-medium text-ink">{testResult?.ollama.ok ? 'Reachable' : 'Not tested / failed'}</p>
-            <p className="mt-2 text-sm text-slate">{testResult?.ollama.detail || 'No connectivity test executed yet.'}</p>
+          <div className="rounded p-3" style={{ background: 'var(--soc-card)', border: '1px solid var(--soc-border)' }}>
+            <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--soc-muted-fg)' }}>Ollama</p>
+            <p className="mt-1 text-[12.5px] font-medium" style={{ color: testResult?.ollama.ok ? 'var(--soc-success)' : 'var(--soc-muted-fg)' }}>{testResult?.ollama.ok ? 'Reachable' : 'Not tested / failed'}</p>
+            <p className="mt-1 text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>{testResult?.ollama.detail || 'No connectivity test executed yet.'}</p>
           </div>
-          <div className="rounded-2xl bg-shell/70 p-4">
-            <p className="text-xs uppercase tracking-[0.2em] text-slate">VM script</p>
-            <p className="mt-2 font-medium text-ink">{testResult?.vm_script.ok ? 'Reachable' : 'Not tested / failed'}</p>
-            <p className="mt-2 text-sm text-slate">{testResult?.vm_script.detail || 'No VM script connectivity test executed yet.'}</p>
+          <div className="rounded p-3" style={{ background: 'var(--soc-card)', border: '1px solid var(--soc-border)' }}>
+            <p className="text-[10px] uppercase tracking-[0.2em]" style={{ color: 'var(--soc-muted-fg)' }}>VM script</p>
+            <p className="mt-1 text-[12.5px] font-medium" style={{ color: testResult?.vm_script.ok ? 'var(--soc-success)' : 'var(--soc-muted-fg)' }}>{testResult?.vm_script.ok ? 'Reachable' : 'Not tested / failed'}</p>
+            <p className="mt-1 text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>{testResult?.vm_script.detail || 'No VM script connectivity test executed yet.'}</p>
           </div>
         </div>
       </section>

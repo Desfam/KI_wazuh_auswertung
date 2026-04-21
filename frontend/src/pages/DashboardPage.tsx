@@ -1,553 +1,711 @@
-import { useEffect, useMemo, useState } from 'react';
-import { getHostOverview, getHostTrend } from '../services/api';
-import type { HostOverview, HostTrendPoint } from '../types';
-
-interface Finding {
-  host: string;
-  platform: string;
-  event_id: string | number;
-  rule_description: string;
-  count: number;
-  local_severity: string;
-  ai_severity: string;
-  suspicious: boolean;
-  reason: string;
-  first_seen: string;
-  last_seen: string;
-  local_score: number;
-  confidence: string;
-  recommended_checks: string[];
-}
-
-interface ReportData {
-  total_alerts: number;
-  relevant_alerts: number;
-  top_hosts: Record<string, number>;
-  findings: Finding[];
-}
+import React, { useEffect, useMemo, useState } from 'react';
+import { getSnipenHostEvents, getSnipenHosts } from '../services/api';
+import type { HostProfileAssignment, SnipenEvent, SnipenHostInfo } from '../types';
+import { ProfileBadge } from '../components/ProfileBadge';
+import { ContextPanel } from '../components/soc/ContextPanel';
+import type { SocEvent } from '../components/soc/ContextPanel';
+import { SeverityBadge, incidentBorderClass } from '../components/soc/Badges';
+import { ShieldAlert, Activity, Server, Search, CheckCircle2, ShieldOff } from 'lucide-react';
 
 interface Props {
   active: boolean;
   theme: 'light' | 'dark';
-  reportJson: string | null;
-  scriptSummary: { lookback_hours: number; total_alerts: number; relevant_alerts: number } | null;
+  onSwitchTab: (tab: 'chat' | 'tasks' | 'dashboard' | 'hosts' | 'snipen' | 'fullscan', context?: { host?: string }) => void;
+  profileAssignments: Record<string, HostProfileAssignment>;
 }
 
-type SortKey = 'count' | 'local_score' | 'local_severity' | 'host';
-type SortDir = 'asc' | 'desc';
+type CategoryKey = 'Sysmon' | 'Authentication' | 'FIM' | 'Vuln. Detection' | 'MITRE ATT&CK';
 
-const SEVERITY_ORDER: Record<string, number> = { critical: 4, high: 3, medium: 2, low: 1, info: 0 };
-
-const SEVERITY_STYLES: Record<string, { bar: string; text: string; pill: string }> = {
-  critical: { bar: 'bg-rose-500',    text: 'text-rose-600',    pill: 'bg-rose-100 text-rose-700' },
-  high:     { bar: 'bg-orange-500',  text: 'text-orange-600',  pill: 'bg-orange-100 text-orange-700' },
-  medium:   { bar: 'bg-yellow-400',  text: 'text-yellow-600',  pill: 'bg-yellow-100 text-yellow-700' },
-  low:      { bar: 'bg-emerald-500', text: 'text-emerald-600', pill: 'bg-emerald-100 text-emerald-700' },
-  info:     { bar: 'bg-sky-400',     text: 'text-sky-600',     pill: 'bg-sky-100 text-sky-700' },
-};
-
-const SEVERITY_STYLES_DARK: Record<string, { bar: string; text: string; pill: string }> = {
-  critical: { bar: 'bg-rose-500',    text: 'text-rose-400',    pill: 'bg-rose-900/40 text-rose-300' },
-  high:     { bar: 'bg-orange-500',  text: 'text-orange-400',  pill: 'bg-orange-900/40 text-orange-300' },
-  medium:   { bar: 'bg-yellow-400',  text: 'text-yellow-400',  pill: 'bg-yellow-900/40 text-yellow-300' },
-  low:      { bar: 'bg-emerald-500', text: 'text-emerald-400', pill: 'bg-emerald-900/40 text-emerald-300' },
-  info:     { bar: 'bg-sky-400',     text: 'text-sky-400',     pill: 'bg-sky-900/40 text-sky-300' },
-};
-
-function sevStyle(sev: string, dark: boolean) {
-  const map = dark ? SEVERITY_STYLES_DARK : SEVERITY_STYLES;
-  return map[(sev ?? 'info').toLowerCase()] ?? map.info;
+function toTs(value?: string | null): number | null {
+  if (!value) return null;
+  const ts = new Date(value).getTime();
+  return Number.isNaN(ts) ? null : ts;
 }
 
-function KpiCard({
-  label, value, sub, accentClass, theme,
-}: {
-  label: string; value: string | number; sub?: string; accentClass: string; theme: 'light' | 'dark';
-}) {
-  const dk = theme === 'dark';
-  return (
-    <div className={`flex flex-col gap-1 rounded-2xl p-5 shadow-sm ring-1 ${dk ? 'bg-white/5 ring-white/10' : 'bg-white ring-black/5'}`}>
-      <span className={`text-3xl font-bold tabular-nums ${accentClass}`}>{value}</span>
-      <span className={`text-xs font-semibold uppercase tracking-widest ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{label}</span>
-      {sub && <span className={`text-xs ${dk ? 'text-slate-500' : 'text-slate-400'}`}>{sub}</span>}
-    </div>
-  );
+function severityFromLevel(level?: number | null): 'critical' | 'high' | 'medium' | 'low' {
+  if ((level ?? 0) >= 14) return 'critical';
+  if ((level ?? 0) >= 10) return 'high';
+  if ((level ?? 0) >= 7) return 'medium';
+  return 'low';
 }
 
-export function DashboardPage({ active, theme, reportJson, scriptSummary }: Props) {
-  const [sortKey, setSortKey] = useState<SortKey>('count');
-  const [sortDir, setSortDir] = useState<SortDir>('desc');
-  const [expandedRow, setExpandedRow] = useState<number | null>(null);
-  const [selectedHost, setSelectedHost] = useState<string>('all');
-  const [hostOverview, setHostOverview] = useState<HostOverview | null>(null);
-  const [hostTrend, setHostTrend] = useState<HostTrendPoint[]>([]);
-  const dk = theme === 'dark';
+function hostRiskLabel(level?: number | null): 'critical' | 'high' | 'medium' | 'low' {
+  if ((level ?? 0) >= 14) return 'critical';
+  if ((level ?? 0) >= 10) return 'high';
+  if ((level ?? 0) >= 7) return 'medium';
+  return 'low';
+}
 
-  const data = useMemo<ReportData | null>(() => {
-    if (!reportJson) return null;
-    try { return JSON.parse(reportJson) as ReportData; }
-    catch { return null; }
-  }, [reportJson]);
+function timeAgo(ts?: string | null): string {
+  const ms = toTs(ts);
+  if (!ms) return '-';
+  const diff = Math.max(0, Date.now() - ms);
+  const mins = Math.floor(diff / 60000);
+  if (mins < 1) return 'jetzt';
+  if (mins < 60) return `vor ${mins} Min.`;
+  const hours = Math.floor(mins / 60);
+  if (hours < 24) return `vor ${hours} Std.`;
+  return `vor ${Math.floor(hours / 24)} T.`;
+}
 
-  const stats = useMemo(() => {
-    if (!data) return null;
-    const findings = data.findings ?? [];
-    const severityCounts: Record<string, number> = {};
-    const platformCounts: Record<string, number> = {};
-    let suspiciousCount = 0;
+function hashIncidentId(key: string): string {
+  let h = 0x811c9dc5;
+  for (let i = 0; i < key.length; i++) {
+    h ^= key.charCodeAt(i);
+    h = Math.imul(h, 0x01000193);
+  }
+  return `INC-${(h >>> 0).toString(16).toUpperCase().padStart(4, '0').slice(-4)}`;
+}
 
-    for (const f of findings) {
-      const sev = (f.local_severity ?? 'info').toLowerCase();
-      severityCounts[sev] = (severityCounts[sev] ?? 0) + 1;
-      const plat = (f.platform ?? '').toLowerCase().includes('win') ? 'Windows' : 'Linux/Other';
-      platformCounts[plat] = (platformCounts[plat] ?? 0) + 1;
-      if (f.suspicious) suspiciousCount++;
-    }
+function fmtSeconds(s: number): string {
+  if (s < 60) return `${s.toFixed(0)}s`;
+  if (s < 3600) return `${(s / 60).toFixed(1)}m`;
+  return `${(s / 3600).toFixed(1)}h`;
+}
 
-    const hostEntries = Object.entries(data.top_hosts ?? {}).sort((a, b) => b[1] - a[1]).slice(0, 10);
-    const maxHostCount = hostEntries[0]?.[1] ?? 1;
-    return { severityCounts, platformCounts, suspiciousCount, hostEntries, maxHostCount, findings };
-  }, [data]);
+function classifyEvent(event: SnipenEvent): CategoryKey {
+  const groups = (event.smart.groups || []).map((g) => g.toLowerCase()).join(' ');
+  const desc = (event.smart.rule_description || '').toLowerCase();
+  const eventId = (event.smart.event_id || '').toLowerCase();
 
-  const sortedFindings = useMemo(() => {
-    if (!stats) return [];
-    return [...stats.findings].sort((a, b) => {
-      let cmp = 0;
-      if (sortKey === 'count') cmp = a.count - b.count;
-      else if (sortKey === 'local_score') cmp = (a.local_score ?? 0) - (b.local_score ?? 0);
-      else if (sortKey === 'local_severity') {
-        cmp = (SEVERITY_ORDER[(a.local_severity ?? '').toLowerCase()] ?? 0)
-            - (SEVERITY_ORDER[(b.local_severity ?? '').toLowerCase()] ?? 0);
-      } else if (sortKey === 'host') cmp = a.host.localeCompare(b.host);
-      return sortDir === 'desc' ? -cmp : cmp;
-    });
-  }, [stats, sortKey, sortDir]);
+  if (groups.includes('sysmon') || eventId === '1') return 'Sysmon';
+  if (groups.includes('authentication') || groups.includes('auth') || ['4624', '4625', '4768', '4769', '4771', '4776'].includes(eventId)) return 'Authentication';
+  if (groups.includes('syscheck') || groups.includes('fim') || desc.includes('file integrity')) return 'FIM';
+  if (groups.includes('vulnerability') || desc.includes('cve') || desc.includes('vulnerability')) return 'Vuln. Detection';
+  return 'MITRE ATT&CK';
+}
 
-  const hostOptions = useMemo(() => {
-    if (!stats) return [] as string[];
-    const fromTopHosts = stats.hostEntries.map(([host]) => host);
-    const fromFindings = [...new Set(stats.findings.map((item) => item.host).filter(Boolean))];
-    const merged = [...fromTopHosts, ...fromFindings.filter((host) => !fromTopHosts.includes(host))];
-    return merged;
-  }, [stats]);
+function buildTrendPoints(events: SnipenEvent[]): Array<{ label: string; value: number }> {
+  const buckets = 8;
+  const now = Date.now();
+  const windowMs = 24 * 60 * 60 * 1000;
+  const bucketMs = windowMs / buckets;
+  const counts = new Array<number>(buckets).fill(0);
+
+  for (const ev of events) {
+    const ts = toTs(ev.smart.timestamp);
+    if (!ts) continue;
+    const offset = ts - (now - windowMs);
+    if (offset < 0 || offset > windowMs) continue;
+    const idx = Math.min(buckets - 1, Math.max(0, Math.floor(offset / bucketMs)));
+    counts[idx] += 1;
+  }
+
+  return counts.map((value, idx) => {
+    const pointTs = new Date(now - windowMs + idx * bucketMs);
+    const label = idx === buckets - 1
+      ? 'Jetzt'
+      : `${String(pointTs.getHours()).padStart(2, '0')}:00`;
+    return { label, value };
+  });
+}
+
+function buildLinePath(points: Array<{ value: number }>, width: number, height: number): string {
+  if (!points.length) return '';
+  const max = Math.max(1, ...points.map((p) => p.value));
+  const stepX = points.length === 1 ? 0 : width / (points.length - 1);
+  return points
+    .map((p, i) => {
+      const x = i * stepX;
+      const y = height - (p.value / max) * (height - 12) - 6;
+      return `${i === 0 ? 'M' : 'L'} ${x.toFixed(2)} ${y.toFixed(2)}`;
+    })
+    .join(' ');
+}
+
+export function DashboardPage({ active, theme, onSwitchTab, profileAssignments }: Props) {
+  const dark = theme === 'dark';
+  const [hosts, setHosts] = useState<SnipenHostInfo[]>([]);
+  const [eventsByHost, setEventsByHost] = useState<Record<string, SnipenEvent[]>>({});
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedEventKey, setSelectedEventKey] = useState<string | null>(null);
+  const [showCritHighOnly, setShowCritHighOnly] = useState(false);
+  const [lastHourOnly, setLastHourOnly] = useState(false);
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (selectedHost !== 'all' && !hostOptions.includes(selectedHost)) {
-      setSelectedHost('all');
-    }
-  }, [hostOptions, selectedHost]);
+    if (!active) return;
+    let canceled = false;
 
-  useEffect(() => {
-    setExpandedRow(null);
-  }, [selectedHost]);
-
-  useEffect(() => {
-    let activeRequest = true;
-    async function loadHostDrilldown() {
-      if (selectedHost === 'all') {
-        setHostOverview(null);
-        setHostTrend([]);
-        return;
-      }
+    async function load() {
+      setLoading(true);
+      setError(null);
       try {
-        const [overview, trend] = await Promise.all([
-          getHostOverview(selectedHost),
-          getHostTrend(selectedHost, 14),
-        ]);
-        if (!activeRequest) return;
-        setHostOverview(overview);
-        setHostTrend(trend);
-      } catch {
-        if (!activeRequest) return;
-        setHostOverview(null);
-        setHostTrend([]);
+        const hostList = await getSnipenHosts(24);
+        if (canceled) return;
+        setHosts(hostList);
+
+        const topForAggregation = [...hostList].sort((a, b) => b.alert_count - a.alert_count).slice(0, 10);
+        const results = await Promise.allSettled(
+          topForAggregation.map((h) => getSnipenHostEvents(h.host, { hours: 24, limit: 300 }))
+        );
+
+        if (canceled) return;
+
+        const map: Record<string, SnipenEvent[]> = {};
+        topForAggregation.forEach((h, idx) => {
+          const res = results[idx];
+          map[h.host] = res.status === 'fulfilled' ? res.value : [];
+        });
+        setEventsByHost(map);
+      } catch (e) {
+        if (canceled) return;
+        setError(e instanceof Error ? e.message : String(e));
+      } finally {
+        if (!canceled) setLoading(false);
       }
     }
-    void loadHostDrilldown();
+
+    void load();
+    const timer = window.setInterval(() => {
+      void load();
+    }, 90000);
+
     return () => {
-      activeRequest = false;
+      canceled = true;
+      clearInterval(timer);
     };
-  }, [selectedHost]);
+  }, [active]);
 
-  const filteredFindings = useMemo(() => {
-    if (selectedHost === 'all') return sortedFindings;
-    return sortedFindings.filter((item) => item.host === selectedHost);
-  }, [sortedFindings, selectedHost]);
+  const allEvents = useMemo(() => Object.values(eventsByHost).flat(), [eventsByHost]);
 
-  const perHostCritical = useMemo(() => {
-    if (!stats) return [] as Array<{ host: string; total: number; top: Finding | null }>;
-    const grouped = new Map<string, Finding[]>();
-    for (const finding of stats.findings) {
-      const host = finding.host || 'unknown-host';
-      const list = grouped.get(host) ?? [];
-      list.push(finding);
-      grouped.set(host, list);
+  const metrics = useMemo(() => {
+    const totalAlerts = hosts.reduce((sum, h) => sum + h.alert_count, 0);
+    const criticalFindings = allEvents.filter((ev) => severityFromLevel(ev.smart.rule_level) === 'critical').length;
+
+    const activeHosts = hosts.filter((h) => {
+      const ts = toTs(h.last_seen);
+      return ts != null && Date.now() - ts <= 6 * 60 * 60 * 1000;
+    }).length;
+
+    const deltas: number[] = [];
+    for (const evs of Object.values(eventsByHost)) {
+      const sorted = [...evs]
+        .map((ev) => toTs(ev.smart.timestamp))
+        .filter((v): v is number => v != null)
+        .sort((a, b) => a - b);
+      for (let i = 1; i < sorted.length; i += 1) {
+        deltas.push((sorted[i] - sorted[i - 1]) / 1000);
+      }
     }
+    const avgResponse = deltas.length > 0
+      ? `${(deltas.reduce((sum, v) => sum + v, 0) / deltas.length).toFixed(1)}s`
+      : '-';
 
-    const list = Array.from(grouped.entries()).map(([host, findings]) => {
-      const sorted = [...findings].sort((a, b) => {
-        const sevA = SEVERITY_ORDER[(a.ai_severity || a.local_severity || '').toLowerCase()] ?? 0;
-        const sevB = SEVERITY_ORDER[(b.ai_severity || b.local_severity || '').toLowerCase()] ?? 0;
-        if (sevB !== sevA) return sevB - sevA;
-        if ((b.local_score ?? 0) !== (a.local_score ?? 0)) return (b.local_score ?? 0) - (a.local_score ?? 0);
-        return (b.count ?? 0) - (a.count ?? 0);
+    // MTTD: average time from first to second event per host (proxy for detection delay)
+    const critDeltas: number[] = [];
+    for (const evs of Object.values(eventsByHost)) {
+      const critTs = evs
+        .filter((ev) => severityFromLevel(ev.smart.rule_level) === 'critical' || severityFromLevel(ev.smart.rule_level) === 'high')
+        .map((ev) => toTs(ev.smart.timestamp))
+        .filter((v): v is number => v != null)
+        .sort((a, b) => a - b);
+      if (critTs.length >= 2) {
+        critDeltas.push((critTs[critTs.length - 1] - critTs[0]) / 1000);
+      }
+    }
+    const mttd = critDeltas.length > 0
+      ? fmtSeconds(critDeltas.reduce((sum, v) => sum + v, 0) / critDeltas.length)
+      : '-';
+
+    return { totalAlerts, criticalFindings, activeHosts, avgResponse, mttd };
+  }, [hosts, allEvents, eventsByHost]);
+
+  const trendPoints = useMemo(() => buildTrendPoints(allEvents), [allEvents]);
+  const trendPath = useMemo(() => buildLinePath(trendPoints, 700, 170), [trendPoints]);
+
+  const severity = useMemo(() => {
+    const counts = { critical: 0, high: 0, medium: 0, low: 0 };
+    for (const ev of allEvents) {
+      counts[severityFromLevel(ev.smart.rule_level)] += 1;
+    }
+    return counts;
+  }, [allEvents]);
+
+  const severityTotal = severity.critical + severity.high + severity.medium + severity.low || 1;
+
+  const categoryCounts = useMemo(() => {
+    const base: Record<CategoryKey, number> = {
+      Sysmon: 0,
+      Authentication: 0,
+      FIM: 0,
+      'Vuln. Detection': 0,
+      'MITRE ATT&CK': 0,
+    };
+    for (const ev of allEvents) {
+      base[classifyEvent(ev)] += 1;
+    }
+    return Object.entries(base).map(([label, value]) => ({ label: label as CategoryKey, value }));
+  }, [allEvents]);
+
+  const topHosts = useMemo(() => {
+    return [...hosts]
+      .sort((a, b) => b.alert_count - a.alert_count)
+      .slice(0, 5)
+      .map((h) => ({ ...h, risk: hostRiskLabel(h.top_rule_level) }));
+  }, [hosts]);
+
+  const lageBild = useMemo(() => {
+    const critHosts = topHosts.filter((h) => h.risk === 'critical' || h.risk === 'high');
+    const status: 'critical' | 'warning' | 'normal' =
+      metrics.criticalFindings > 5 ? 'critical' : metrics.criticalFindings > 0 ? 'warning' : 'normal';
+    const lines: string[] = [];
+    if (status === 'critical') lines.push(`⚠️ ${metrics.criticalFindings} kritische Findings in 24h erkannt.`);
+    else if (status === 'warning') lines.push(`Erhöhte Aktivität: ${metrics.criticalFindings} kritische Findings in 24h.`);
+    else lines.push('Keine kritischen Findings in 24h. Normalbetrieb.');
+    if (critHosts.length > 0) {
+      lines.push(`${critHosts.length} Host${critHosts.length > 1 ? 's' : ''} mit erhöhtem Risiko: ${critHosts.slice(0, 3).map((h) => h.host).join(', ')}.`);
+    }
+    if (topHosts[0]) {
+      lines.push(`Höchste Alert-Last: ${topHosts[0].host} mit ${topHosts[0].alert_count.toLocaleString('de-DE')} Alerts.`);
+    }
+    const profiledHosts = topHosts.filter((h) => profileAssignments[h.host]);
+    if (profiledHosts.length > 0) {
+      lines.push(`${profiledHosts.length} betroffene Host${profiledHosts.length > 1 ? 's' : ''} ${profiledHosts.length > 1 ? 'haben' : 'hat'} ein zugewiesenes Profil.`);
+    }
+    return { status, lines };
+  }, [metrics, topHosts]);
+
+  const recentActivities = useMemo(() => {
+    return [...allEvents]
+      .filter((ev) => toTs(ev.smart.timestamp) != null)
+      .sort((a, b) => (toTs(b.smart.timestamp) || 0) - (toTs(a.smart.timestamp) || 0))
+      .slice(0, 8)
+      .map((ev) => {
+        const hostInfo = hosts.find((h) => h.host === ev.smart.host);
+        return {
+          host: ev.smart.host || '?',
+          label: ev.smart.rule_description || ev.smart.event_id || 'Event',
+          family: ev.smart.event_family || null,
+          at: timeAgo(ev.smart.timestamp),
+          sev: severityFromLevel(ev.smart.rule_level),
+          host2: hostInfo?.host ?? null, // hostInfo kept for future use
+        };
       });
-      const total = findings.reduce((sum, item) => sum + (item.count ?? 0), 0);
-      return { host, total, top: sorted[0] ?? null };
-    });
-
-    return list.sort((a, b) => {
-      const aSev = SEVERITY_ORDER[(a.top?.ai_severity || a.top?.local_severity || '').toLowerCase()] ?? 0;
-      const bSev = SEVERITY_ORDER[(b.top?.ai_severity || b.top?.local_severity || '').toLowerCase()] ?? 0;
-      if (bSev !== aSev) return bSev - aSev;
-      return b.total - a.total;
-    });
-  }, [stats]);
-
-  function toggleSort(key: SortKey) {
-    if (sortKey === key) setSortDir(d => d === 'desc' ? 'asc' : 'desc');
-    else { setSortKey(key); setSortDir('desc'); }
-  }
-
-  function SortIcon({ k }: { k: SortKey }) {
-    if (sortKey !== k) return <span className="ml-1 opacity-30">↕</span>;
-    return <span className="ml-1 opacity-80">{sortDir === 'desc' ? '↓' : '↑'}</span>;
-  }
+  }, [allEvents, hosts]);
 
   if (!active) return null;
 
+  const socEvents = [...allEvents]
+    .filter((ev) => Boolean(ev.smart.host && ev.smart.timestamp))
+    .sort((a, b) => {
+      const la = a.smart.rule_level ?? 0;
+      const lb = b.smart.rule_level ?? 0;
+      if (lb !== la) return lb - la;
+      return (toTs(b.smart.timestamp) ?? 0) - (toTs(a.smart.timestamp) ?? 0);
+    })
+    .slice(0, 300)
+    .map((ev, idx): SocEvent => ({
+      _key: ev.doc_id ?? `${ev.smart.host}-${ev.smart.timestamp}-${idx}`,
+      host: ev.smart.host ?? '?',
+      severity: severityFromLevel(ev.smart.rule_level),
+      rule_description: ev.smart.rule_description ?? ev.smart.event_id ?? 'Event',
+      event_id: ev.smart.event_id,
+      timestamp: ev.smart.timestamp ?? '',
+      user: ev.smart.user,
+      process: ev.smart.process,
+      ip_address: ev.smart.ip_address,
+      mitre_id: ev.smart.mitre_id,
+      mitre_tactic: ev.smart.mitre_tactic,
+      groups: ev.smart.groups,
+      rule_level: ev.smart.rule_level,
+      command_line: ev.smart.command_line,
+      service_name: ev.smart.service_name,
+      location: ev.smart.location,
+    }));
+
+  const oneHourAgo = Date.now() - 60 * 60 * 1000;
+  const filteredEvents = socEvents.filter((ev) => {
+    if (dismissedKeys.has(ev._key)) return false;
+    if (showCritHighOnly && ev.severity !== 'critical' && ev.severity !== 'high') return false;
+    if (lastHourOnly) {
+      const ts = toTs(ev.timestamp);
+      if (!ts || ts < oneHourAgo) return false;
+    }
+    return true;
+  });
+
+  const selectedEvent = selectedEventKey
+    ? socEvents.find((ev) => ev._key === selectedEventKey) ?? null
+    : null;
+
+  function handleInvestigate(host: string) {
+    onSwitchTab('snipen', { host });
+  }
+
+  const threatColor =
+    lageBild.status === 'critical'
+      ? 'var(--soc-critical)'
+      : lageBild.status === 'warning'
+      ? 'var(--soc-warning)'
+      : 'var(--soc-success)';
+
   return (
-    <div className={`h-full overflow-y-auto p-5 ${dk ? 'text-slate-200' : 'text-slate-800'}`}>
-
-      {/* ── Empty state ── */}
-      {!data && (
-        <div className="flex h-full flex-col items-center justify-center gap-4">
-          <span className="text-6xl">📊</span>
-          <p className={`text-lg font-semibold ${dk ? 'text-slate-300' : 'text-slate-600'}`}>Noch keine Daten vorhanden</p>
-          <p className={`text-sm ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
-            Starte einen Wazuh-Scan im Chat, um das Dashboard zu befüllen.
-          </p>
-        </div>
-      )}
-
-      {data && stats && (
-        <div className="space-y-6">
-
-          {/* ── Header ── */}
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <div>
-              <h1 className="text-2xl font-bold">Wazuh Dashboard</h1>
-              {scriptSummary && (
-                <p className={`text-xs ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
-                  Zeitraum: letzte {scriptSummary.lookback_hours}h &nbsp;·&nbsp; {new Date().toLocaleString('de-DE')}
-                </p>
-              )}
-            </div>
-            <span className={`rounded-full px-3 py-1 text-xs font-medium ${dk ? 'bg-emerald-900/30 text-emerald-300' : 'bg-emerald-50 text-emerald-700'}`}>
-              ● Aktuell
+    <div
+      className="h-full flex flex-col overflow-hidden"
+      style={{ background: 'var(--soc-background)', color: 'var(--soc-foreground)' }}
+    >
+      {/* KPI strip */}
+      <div
+        className="soc-kpi-strip flex-shrink-0"
+        style={{ gridTemplateColumns: 'repeat(5, 1fr)' }}
+      >
+        <KpiCell
+          label="Threat Level"
+          value={lageBild.status.toUpperCase()}
+          tone={lageBild.status === 'critical' ? 'critical' : lageBild.status === 'warning' ? 'warning' : 'success'}
+          sub={`${metrics.criticalFindings > 0 ? `↑ from NORMAL · ${metrics.criticalFindings} crit` : '✓ NORMAL'}`}
+        />
+        <KpiCell
+          label="Active Incidents"
+          value={metrics.totalAlerts.toLocaleString('de-DE')}
+          sub={`${metrics.criticalFindings} crit · ${hosts.filter(h => hostRiskLabel(h.top_rule_level) === 'high').length} high`}
+        />
+        <KpiCell
+          label="MTTD"
+          value={metrics.mttd}
+          tone={metrics.mttd === '-' ? 'default' : 'success'}
+          sub="mean time to detect"
+        />
+        <KpiCell
+          label="MTTR"
+          value="N/A"
+          sub="no resolution tracking"
+        />
+        <KpiCell
+          label="Agents"
+          value={`${metrics.activeHosts} / ${hosts.length}`}
+          tone="info"
+          sub={`${hosts.length - metrics.activeHosts} stale`}3.5 w-3.5 text-soc-critical flex-shrink-0" />
+            <span className="text-[var(--soc-foreground)]">INCIDENT QUEUE</span>
+            <span
+              className="rounded px-1.5 font-mono text-[10px] font-semibold leading-5"
+              style={{ background: 'var(--soc-muted)', color: 'var(--soc-muted-fg)' }}
+            >
+              {filteredEvents.length}
             </span>
-          </div>
-
-          {/* ── KPI cards ── */}
-          <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-            <KpiCard label="Gesamt Alerts"    value={data.total_alerts.toLocaleString('de-DE')} accentClass={dk ? 'text-sky-300' : 'text-sky-600'} theme={theme} />
-            <KpiCard label="Relevante Alerts" value={data.relevant_alerts.toLocaleString('de-DE')}
-              sub={`${Math.round((data.relevant_alerts / Math.max(data.total_alerts, 1)) * 100)}% aller Alerts`}
-              accentClass={dk ? 'text-amber-300' : 'text-amber-600'} theme={theme} />
-            <KpiCard label="Verdächtig"       value={stats.suspiciousCount} sub="als suspicious markiert"
-              accentClass={dk ? 'text-rose-300' : 'text-rose-600'} theme={theme} />
-            <KpiCard label="Aktive Hosts"     value={stats.hostEntries.length}
-              sub={`${stats.findings.length} Findings gesamt`}
-              accentClass={dk ? 'text-emerald-300' : 'text-emerald-600'} theme={theme} />
-          </div>
-
-          {/* ── Host ranking + Severity + Platform ── */}
-          <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
-
-            {/* Host ranking bars */}
-            <div className={`col-span-1 rounded-2xl p-5 shadow-sm ring-1 lg:col-span-2 ${dk ? 'bg-white/5 ring-white/10' : 'bg-white ring-black/5'}`}>
-              <h2 className={`mb-4 text-sm font-semibold uppercase tracking-wide ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                Top Hosts nach Alert-Anzahl
-              </h2>
-              <div className="space-y-2.5">
-                {stats.hostEntries.map(([host, count]) => {
-                  const pct = Math.round((count / stats.maxHostCount) * 100);
-                  return (
-                    <div key={host} className="flex items-center gap-3">
-                      <span className={`w-36 truncate text-right text-xs font-mono ${dk ? 'text-slate-300' : 'text-slate-600'}`} title={host}>{host}</span>
-                      <div className={`flex-1 overflow-hidden rounded-full ${dk ? 'bg-white/10' : 'bg-slate-100'}`} style={{ height: 12 }}>
-                        <div className="h-full rounded-full bg-sky-500 transition-all duration-500" style={{ width: `${pct}%` }} />
-                      </div>
-                      <span className={`w-10 text-right text-xs tabular-nums font-semibold ${dk ? 'text-sky-300' : 'text-sky-600'}`}>{count}</span>
-                    </div>
-                  );
-                })}
-              </div>
-            </div>
-
-            {/* Severity + Platform stacked */}
-            <div className="flex flex-col gap-4">
-
-              {/* Severity breakdown */}
-              <div className={`rounded-2xl p-5 shadow-sm ring-1 ${dk ? 'bg-white/5 ring-white/10' : 'bg-white ring-black/5'}`}>
-                <h2 className={`mb-4 text-sm font-semibold uppercase tracking-wide ${dk ? 'text-slate-400' : 'text-slate-500'}`}>Schweregrad</h2>
-                <div className="space-y-2">
-                  {(['critical', 'high', 'medium', 'low', 'info'] as const).map((sev) => {
-                    const cnt = stats.severityCounts[sev] ?? 0;
-                    if (!cnt) return null;
-                    const col = sevStyle(sev, dk);
-                    const maxSev = Math.max(...Object.values(stats.severityCounts));
-                    const pct = Math.round((cnt / maxSev) * 100);
-                    return (
-                      <div key={sev} className="flex items-center gap-2">
-                        <span className={`w-16 text-right text-[0.7rem] font-semibold uppercase ${col.text}`}>{sev}</span>
-                        <div className={`flex-1 overflow-hidden rounded-full ${dk ? 'bg-white/10' : 'bg-slate-100'}`} style={{ height: 8 }}>
-                          <div className={`h-full rounded-full ${col.bar} transition-all duration-500`} style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className={`w-6 text-right text-xs tabular-nums font-bold ${col.text}`}>{cnt}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              {/* Platform split */}
-              <div className={`rounded-2xl p-5 shadow-sm ring-1 ${dk ? 'bg-white/5 ring-white/10' : 'bg-white ring-black/5'}`}>
-                <h2 className={`mb-4 text-sm font-semibold uppercase tracking-wide ${dk ? 'text-slate-400' : 'text-slate-500'}`}>Plattform</h2>
-                <div className="space-y-2">
-                  {Object.entries(stats.platformCounts).sort((a, b) => b[1] - a[1]).map(([plat, cnt]) => {
-                    const total = Object.values(stats.platformCounts).reduce((s, n) => s + n, 0);
-                    const pct = Math.round((cnt / total) * 100);
-                    const isWin = plat.toLowerCase().includes('win');
-                    return (
-                      <div key={plat} className="flex items-center gap-2">
-                        <span className="text-base">{isWin ? '🪟' : '🐧'}</span>
-                        <div className={`flex-1 overflow-hidden rounded-full ${dk ? 'bg-white/10' : 'bg-slate-100'}`} style={{ height: 8 }}>
-                          <div className={`h-full rounded-full transition-all duration-500 ${isWin ? 'bg-cyan-500' : 'bg-violet-500'}`} style={{ width: `${pct}%` }} />
-                        </div>
-                        <span className={`w-8 text-right text-xs tabular-nums font-semibold ${dk ? 'text-slate-300' : 'text-slate-600'}`}>{cnt}</span>
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* ── Findings table ── */}
-          <div className={`rounded-2xl shadow-sm ring-1 ${dk ? 'bg-white/5 ring-white/10' : 'bg-white ring-black/5'}`}>
-            <div className={`flex items-center justify-between px-5 py-4 ${dk ? 'border-b border-white/10' : 'border-b border-slate-100'}`}>
-              <h2 className={`text-sm font-semibold uppercase tracking-wide ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                Findings
-                <span className={`ml-2 rounded-full px-2 py-0.5 text-[0.65rem] font-bold ${dk ? 'bg-white/10 text-slate-300' : 'bg-slate-100 text-slate-600'}`}>
-                  {filteredFindings.length}
-                </span>
-              </h2>
-              <span className={`text-xs ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Klick auf Zeile für Details</span>
-            </div>
-
-            <div className={`border-b px-5 py-3 ${dk ? 'border-white/10' : 'border-slate-100'}`}>
-              <div className="flex flex-wrap items-center gap-2">
+            <div className="flex-1" />
+            {([
+              { label: 'All Open', critOnly: false, lastHr: false },
+              { label: 'Crit+High', critOnly: true, lastHr: false },
+              { label: 'Last 1h', critOnly: false, lastHr: true },
+            ] as const).map(({ label, critOnly, lastHr }) => {
+              const isActive =
+                (lastHr && lastHourOnly) ||
+                (!lastHr && !lastHourOnly && showCritHighOnly === critOnly);
+              return (
                 <button
+                  key={label}
                   type="button"
-                  onClick={() => setSelectedHost('all')}
-                  className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${selectedHost === 'all' ? (dk ? 'bg-amber-700/40 text-amber-200' : 'bg-amber-100 text-amber-700') : (dk ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}`}
+                  onClick={() => {
+                    if (lastHr) {
+                      setLastHourOnly(true);
+                      setShowCritHighOnly(false);
+                    } else {
+                      setLastHourOnly(false);
+                      setShowCritHighOnly(critOnly);
+                    }
+                  }}
+                  className={
+                    'h-6 px-2 rounded-sm text-[11px] font-mono border transition-colors ' +
+                    (isActive
+                      ? 'bg-[var(--soc-accent)] border-[var(--soc-border)] text-[var(--soc-foreground)]'
+                      : 'border-[var(--soc-border)] text-[var(--soc-muted-fg)] hover:text-[var(--soc-foreground)] hover:bg-[var(--soc-accent)]')
+                  }
                 >
-                  Alle PCs
+                  {label}
                 </button>
-                {hostOptions.map((host) => (
-                  <button
-                    key={host}
-                    type="button"
-                    onClick={() => setSelectedHost(host)}
-                    className={`rounded-xl px-3 py-1.5 text-xs font-semibold transition ${selectedHost === host ? (dk ? 'bg-sky-700/40 text-sky-200' : 'bg-sky-100 text-sky-700') : (dk ? 'bg-white/5 text-slate-300 hover:bg-white/10' : 'bg-slate-100 text-slate-600 hover:bg-slate-200')}`}
-                  >
-                    {host}
-                  </button>
-                ))}
-              </div>
-            </div>
+              );
+            })}
+            {loading && (
+              <span className="font-mono text-[11px] text-soc-muted animate-spin">↻</span>
+            )}
+          </div>
 
-            <div className={`border-b px-5 py-4 ${dk ? 'border-white/10' : 'border-slate-100'}`}>
-              <h3 className={`mb-3 text-xs font-semibold uppercase tracking-widest ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                Kritischste Findings pro PC
-              </h3>
-              <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-3">
-                {perHostCritical.slice(0, 9).map((entry) => {
-                  const topFinding = entry.top;
-                  const sev = topFinding?.ai_severity || topFinding?.local_severity || 'info';
-                  const col = sevStyle(sev, dk);
+          {/* Event list */}
+          <div className="flex-1 overflow-y-auto soc-scroll">
+            {loading && filteredEvents.length === 0 && (
+              <div className="px-3 py-6 text-center font-mono text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>
+                Loading events…
+              </div>
+            )}
+            {error && (
+              <div className="px-3 py-4 font-mono text-[11px]" style={{ color: 'var(--soc-critical)' }}>
+                Error: {error}
+              </div>
+            )}
+            {filteredEvents.map((ev) => (
+              <DashEventRow
+                key={ev._key}
+                event={ev}
+                selected={selectedEventKey === ev._key}
+                onClick={() => setSelectedEventKey((k) => (k === ev._key ? null : ev._key))}
+                onInvestigate={handleInvestigate}
+                onMarkSafe={(key) => setDismissedKeys((prev) => new Set([...prev, key]))}
+              />
+            ))}
+            {!loading && filteredEvents.length === 0 && !error && (
+              <div className="px-3 py-6 text-center font-mono text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>
+                No incidents in the last 24h.
+              </div>
+            )}
+          </div>
+
+          {/* Bottom strip: Top Hosts + Recent Activity */}
+          <div
+            className="flex-shrink-0 flex overflow-hidden"
+            style={{ height: 180, borderTop: '1px solid var(--soc-border)' }}
+          >
+            {/* Top Hosts by Risk */}
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid var(--soc-border)' }}>
+              <div className="soc-section-header">
+                <Server className="h-3.5 w-3.5 text-soc-info flex-shrink-0" />
+                <span className="text-[var(--soc-foreground)]">TOP HOSTS BY RISK</span>
+              </div>
+              <div className="flex-1 overflow-y-auto soc-scroll">
+                {topHosts.map((h) => {
+                  const asgn = profileAssignments[h.host];
+                  const riskCls =
+                    h.risk === 'critical' ? 'text-soc-critical' :
+                    h.risk === 'high'     ? 'text-soc-high' :
+                    h.risk === 'medium'   ? 'text-soc-warning' : 'text-soc-success';
                   return (
                     <button
-                      key={entry.host}
+                      key={h.host}
                       type="button"
-                      onClick={() => setSelectedHost(entry.host)}
-                      className={`rounded-xl border p-3 text-left transition hover:-translate-y-0.5 ${selectedHost === entry.host ? (dk ? 'border-sky-500/50 bg-sky-500/10' : 'border-sky-200 bg-sky-50') : (dk ? 'border-white/10 bg-white/5 hover:bg-white/10' : 'border-slate-100 bg-slate-50 hover:bg-slate-100')}`}
+                      onClick={() => onSwitchTab('snipen', { host: h.host })}
+                      className="grid w-full text-left hover:bg-[var(--soc-row-hover)] border-b border-[var(--soc-border)]/60 last:border-0 px-3 py-1.5 gap-2 text-[11.5px] font-mono transition-colors"
+                      style={{ gridTemplateColumns: '1fr 48px 60px' }}
                     >
-                      <p className={`truncate text-xs font-bold ${dk ? 'text-slate-100' : 'text-slate-800'}`}>{entry.host}</p>
-                      <p className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase ${col.pill}`}>
-                        {sev}
-                      </p>
-                      <p className={`mt-2 line-clamp-2 text-[0.72rem] ${dk ? 'text-slate-300' : 'text-slate-600'}`}>
-                        {topFinding?.rule_description || '(keine Regelbeschreibung)'}
-                      </p>
-                      <p className={`mt-1 text-[0.68rem] ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                        Top Count: {topFinding?.count ?? 0} · Gesamt auf PC: {entry.total}
-                      </p>
+                      <span className="truncate text-[var(--soc-foreground)]">{h.host}</span>
+                      <span className="text-right text-[var(--soc-muted-fg)]">{h.alert_count.toLocaleString('de-DE')} alr</span>
+                      <span className={`text-right font-semibold ${riskCls}`}>{h.risk}</span>
                     </button>
                   );
                 })}
               </div>
             </div>
 
-            {selectedHost !== 'all' && (
-              <div className={`border-b px-5 py-4 ${dk ? 'border-white/10' : 'border-slate-100'}`}>
-                <h3 className={`mb-3 text-xs font-semibold uppercase tracking-widest ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                  Host Full Scan: {selectedHost}
-                </h3>
-                {!hostOverview ? (
-                  <p className={`text-xs ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Keine Host-Detaildaten verfügbar.</p>
-                ) : (
-                  <div className="grid grid-cols-1 gap-3 md:grid-cols-2 xl:grid-cols-4">
-                    <div className={`rounded-xl p-3 ${dk ? 'bg-white/5' : 'bg-slate-50'}`}>
-                      <p className={`text-[0.65rem] uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Gruppierte Events</p>
-                      <p className="mt-1 text-lg font-bold">{hostOverview.total_grouped_events}</p>
-                    </div>
-                    <div className={`rounded-xl p-3 ${dk ? 'bg-white/5' : 'bg-slate-50'}`}>
-                      <p className={`text-[0.65rem] uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Finding-Gruppen</p>
-                      <p className="mt-1 text-lg font-bold">{hostOverview.finding_groups}</p>
-                    </div>
-                    <div className={`rounded-xl p-3 ${dk ? 'bg-white/5' : 'bg-slate-50'}`}>
-                      <p className={`text-[0.65rem] uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Top Score</p>
-                      <p className="mt-1 text-lg font-bold">{hostOverview.top_local_score}</p>
-                    </div>
-                    <div className={`rounded-xl p-3 ${dk ? 'bg-white/5' : 'bg-slate-50'}`}>
-                      <p className={`text-[0.65rem] uppercase ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Suspicious Gruppen</p>
-                      <p className="mt-1 text-lg font-bold">{hostOverview.suspicious_groups}</p>
-                    </div>
+            {/* Recent Activity */}
+            <div className="flex flex-col flex-1 min-w-0 overflow-hidden" style={{ borderRight: '1px solid var(--soc-border)' }}>
+              <div className="soc-section-header">
+                <Activity className="h-3.5 w-3.5 text-soc-success flex-shrink-0" />
+                <span className="text-[var(--soc-foreground)]">RECENT ACTIVITY</span>
+              </div>
+              <div className="flex-1 overflow-y-auto soc-scroll">
+                {recentActivities.map((a, i) => (
+                  <div
+                    key={i}
+                    className="grid border-b border-[var(--soc-border)]/60 last:border-0 px-3 py-1.5 gap-2 text-[11.5px] font-mono hover:bg-[var(--soc-row-hover)] transition-colors"
+                    style={{ gridTemplateColumns: '44px 1fr 64px' }}
+                  >
+                    <span className="text-[var(--soc-muted-fg)] tabular-nums">{a.at}</span>
+                    <span className="truncate text-[var(--soc-foreground)]">{a.label}</span>
+                    <span className="text-right">
+                      <SeverityBadge level={a.sev} />
+                    </span>
                   </div>
-                )}
-                {hostTrend.length > 0 && (
-                  <div className="mt-4">
-                    <p className={`mb-2 text-[0.65rem] uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>
-                      Historischer Verlauf (letzte {hostTrend.length} Runs)
-                    </p>
-                    <div className="space-y-2">
-                      {hostTrend.map((point) => {
-                        const maxTotal = Math.max(...hostTrend.map((x) => x.total_grouped_events), 1);
-                        const pct = Math.round((point.total_grouped_events / maxTotal) * 100);
-                        return (
-                          <div key={point.job_id} className="flex items-center gap-2">
-                            <span className={`w-24 text-[0.68rem] ${dk ? 'text-slate-400' : 'text-slate-500'}`}>Job #{point.job_id}</span>
-                            <div className={`h-2 flex-1 overflow-hidden rounded-full ${dk ? 'bg-white/10' : 'bg-slate-100'}`}>
-                              <div className="h-full rounded-full bg-indigo-500" style={{ width: `${pct}%` }} />
-                            </div>
-                            <span className={`w-20 text-right text-[0.68rem] ${dk ? 'text-slate-300' : 'text-slate-600'}`}>{point.total_grouped_events}</span>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
+                ))}
+                {recentActivities.length === 0 && (
+                  <div className="px-3 py-4 font-mono text-[11px] text-soc-muted">No activity.</div>
                 )}
               </div>
-            )}
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-xs">
-                <thead>
-                  <tr className={dk ? 'bg-white/5 text-slate-400' : 'bg-slate-50 text-slate-500'}>
-                    {([
-                      { key: 'host' as SortKey, label: 'Host' },
-                      { key: null,               label: 'Plattform' },
-                      { key: null,               label: 'Event-ID' },
-                      { key: null,               label: 'Regel' },
-                      { key: 'count' as SortKey, label: 'Anz.' },
-                      { key: 'local_severity' as SortKey, label: 'Schwere' },
-                      { key: 'local_score' as SortKey,    label: 'Score' },
-                      { key: null,               label: 'Verd.' },
-                    ] as const).map(({ key, label }) => (
-                      <th
-                        key={label}
-                        className={`px-4 py-2.5 text-left font-semibold uppercase tracking-wide ${key ? 'cursor-pointer select-none hover:opacity-70' : ''}`}
-                        onClick={key ? () => toggleSort(key) : undefined}
-                      >
-                        {label}{key && <SortIcon k={key} />}
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredFindings.map((f, i) => {
-                    const col = sevStyle(f.local_severity, dk);
-                    const isExpanded = expandedRow === i;
-                    return (
-                      <>
-                        <tr
-                          key={`r${i}`}
-                          onClick={() => setExpandedRow(isExpanded ? null : i)}
-                          className={`cursor-pointer border-t transition-colors ${dk ? 'border-white/5 hover:bg-white/5' : 'border-slate-50 hover:bg-slate-50'} ${isExpanded ? (dk ? 'bg-white/5' : 'bg-slate-50') : ''}`}
-                        >
-                          <td className={`px-4 py-2 font-mono ${dk ? 'text-sky-300' : 'text-sky-700'}`}>{f.host}</td>
-                          <td className="px-4 py-2">{(f.platform ?? '').toLowerCase().includes('win') ? '🪟 Win' : '🐧 Linux'}</td>
-                          <td className={`px-4 py-2 font-mono ${dk ? 'text-slate-400' : 'text-slate-500'}`}>{f.event_id}</td>
-                          <td className={`max-w-[220px] truncate px-4 py-2 ${dk ? 'text-slate-200' : 'text-slate-700'}`} title={f.rule_description}>{f.rule_description}</td>
-                          <td className={`px-4 py-2 font-bold tabular-nums ${dk ? 'text-amber-300' : 'text-amber-600'}`}>{f.count}</td>
-                          <td className="px-4 py-2">
-                            <span className={`inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase ${col.pill}`}>
-                              {f.local_severity}
-                            </span>
-                          </td>
-                          <td className={`px-4 py-2 tabular-nums ${dk ? 'text-slate-300' : 'text-slate-600'}`}>{f.local_score?.toFixed(1) ?? '—'}</td>
-                          <td className="px-4 py-2 text-center">
-                            {f.suspicious ? <span title="Suspicious">⚠️</span> : <span className={dk ? 'text-slate-600' : 'text-slate-300'}>–</span>}
-                          </td>
-                        </tr>
-
-                        {isExpanded && (
-                          <tr key={`d${i}`} className={dk ? 'bg-white/5' : 'bg-slate-50'}>
-                            <td colSpan={8} className="px-6 pb-4 pt-2">
-                              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                                <div>
-                                  <p className={`mb-1 text-[0.6rem] font-semibold uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>KI-Schwere</p>
-                                  <span className={`inline-block rounded-full px-2 py-0.5 text-[0.65rem] font-bold uppercase ${sevStyle(f.ai_severity, dk).pill}`}>{f.ai_severity ?? '—'}</span>
-                                </div>
-                                <div>
-                                  <p className={`mb-1 text-[0.6rem] font-semibold uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Konfidenz</p>
-                                  <span className={dk ? 'text-slate-300' : 'text-slate-700'}>{f.confidence ?? '—'}</span>
-                                </div>
-                                <div>
-                                  <p className={`mb-1 text-[0.6rem] font-semibold uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Zeitraum</p>
-                                  <span className={`font-mono text-[0.7rem] ${dk ? 'text-slate-400' : 'text-slate-500'}`}>
-                                    {f.first_seen ? new Date(f.first_seen).toLocaleString('de-DE') : '—'}
-                                    {' → '}
-                                    {f.last_seen ? new Date(f.last_seen).toLocaleString('de-DE') : '—'}
-                                  </span>
-                                </div>
-                                <div className="sm:col-span-2 lg:col-span-3">
-                                  <p className={`mb-1 text-[0.6rem] font-semibold uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Grund</p>
-                                  <p className={dk ? 'text-slate-300' : 'text-slate-700'}>{f.reason ?? '—'}</p>
-                                </div>
-                                {f.recommended_checks?.length > 0 && (
-                                  <div className="sm:col-span-2 lg:col-span-3">
-                                    <p className={`mb-1 text-[0.6rem] font-semibold uppercase tracking-widest ${dk ? 'text-slate-500' : 'text-slate-400'}`}>Empfohlene Prüfungen</p>
-                                    <ul className={`list-disc space-y-0.5 pl-4 ${dk ? 'text-slate-400' : 'text-slate-600'}`}>
-                                      {f.recommended_checks.map((c, ci) => <li key={ci}>{c}</li>)}
-                                    </ul>
-                                  </div>
-                                )}
-                              </div>
-                            </td>
-                          </tr>
-                        )}
-                      </>
-                    );
-                  })}
-                </tbody>
-              </table>
             </div>
+
+
           </div>
         </div>
-      )}
+
+        {/* Right: ContextPanel */}
+        <div
+          className="flex-shrink-0 flex flex-col overflow-hidden"
+          style={{ width: 360, background: 'var(--soc-panel)', borderLeft: '1px solid var(--soc-border)' }}
+        >
+          <div className="h-9 px-3 flex items-center gap-2 flex-shrink-0 border-b border-[var(--soc-border)]" style={{ background: 'var(--soc-panel)' }}>
+            <span className="text-[12px] font-semibold tracking-wide text-[var(--soc-foreground)]">CONTEXT</span>
+
+  onMarkSafe,
+}: {
+  event: SocEvent;
+  selected: boolean;
+  onClick: () => void;
+  onInvestigate: (host: string) => void;
+  onMarkSafe: (key: string) => void;
+}) {
+  const borderCls = incidentBorderClass(event.severity, selected);
+  const incId = hashIncidentId(event._key);
+  return (
+    <div
+      onClick={onClick}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => e.key === 'Enter' && onClick()}
+      className={`${borderCls} cursor-pointer px-3 py-2 hover:bg-[var(--soc-row-hover)] transition-colors${selected ? ' bg-[var(--soc-row-hover)]' : ''}`}
+    >
+      {/* Row 1: badges + id + time */}
+      <div className="flex items-center gap-2">
+        <SeverityBadge level={event.severity} />
+        <span className="text-[10.5px] font-mono text-soc-muted">{incId}</span>
+        {event.mitre_id && (
+          <span className="soc-badge bg-[var(--soc-muted)] text-[var(--soc-primary)] border border-[var(--soc-border)]">
+            ⚔ {event.mitre_id}
+          </span>
+        )}
+        <span className="ml-auto text-[10.5px] font-mono text-soc-muted">{timeAgo(event.timestamp)}</span>
+      </div>
+      {/* Row 2: description */}
+      <div className="mt-1 text-[12.5px] font-medium leading-snug text-[var(--soc-foreground)] truncate">
+        {event.rule_description}
+      </div>
+      {/* Row 3: host + user + tactic */}
+      <div className="mt-1 flex items-center gap-3 text-[11px] font-mono text-soc-muted">
+        <span><span className="text-[var(--soc-foreground)]/70">host</span> {event.host}</span>
+        {event.user && <span><span className="text-[var(--soc-foreground)]/70">user</span> {event.user}</span>}
+        {event.mitre_tactic && (
+          <span className="soc-badge bg-[var(--soc-muted)] text-soc-muted border border-[var(--soc-border)]">
+            {event.mitre_tactic}
+          </span>
+        )}
+      </div>
+      {/* Row 4: actions */}
+      <div
+        className="mt-1.5 flex items-center gap-1.5"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <RowActionBtn
+          label="Investigate"
+          onClick={() => onInvestigate(event.host)}
+          icon={Search}
+        />
+        <RowActionBtn
+          label="Mark Safe"
+          tone="success"
+          onClick={() => onMarkSafe(event._key)}
+          icon={CheckCircle2}
+        />
+      </div>
+    </div>
+  );
+}
+
+type KpiTone = 'default' | 'critical' | 'warning' | 'success' | 'info';
+
+function KpiCell({ label, value, sub, tone = 'default' }: {
+  label: string;
+  value: string;
+  sub?: string;
+  tone?: KpiTone;
+}) {
+  const toneCls: Record<KpiTone, string> = {
+    default:  'text-[var(--soc-foreground)]',
+    critical: 'text-soc-critical',
+    warning:  'text-soc-warning',
+    success:  'text-soc-success',
+    info:     'text-soc-info',
+  };
+  return (
+    <div className="soc-kpi-cell">
+      <div className="font-mono text-[10px] uppercase tracking-wider text-soc-muted">{label}</div>
+      <div className={`mt-0.5 text-[16px] font-mono font-semibold leading-tight ${toneCls[tone]}`}>{value}</div>
+      {sub && <div className="text-[10.5px] font-mono text-soc-muted mt-0.5">{sub}</div>}
+    </div>
+  );
+}
+
+function RowActionBtn({
+  icon: Icon,
+  label,
+  tone = 'default',
+  onClick,
+}: {
+  icon?: React.ComponentType<{ className?: string }>;
+  label: string;
+  tone?: 'default' | 'critical' | 'success';
+  onClick?: () => void;
+}) {
+  const tones: Record<string, string> = {
+    default:  'border-[var(--soc-border)] hover:bg-[var(--soc-accent)] text-[var(--soc-foreground)]',
+    critical: 'border-soc-critical/50 hover:bg-soc-critical/10 text-soc-critical',
+    success:  'border-soc-success/40 hover:bg-soc-success/10 text-soc-success',
+  };
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`h-6 px-2 rounded-sm border text-[11px] font-mono inline-flex items-center gap-1 transition-colors ${tones[tone]}`}
+    >
+      {Icon && <Icon className="h-3 w-3" />}
+      {label}
+    </button>
+  );
+}
+
+function MetricCard({ dark, accent = 'ember', icon, label, value, hint, trend, trendVar = 'neutral' }: {
+  dark: boolean;
+  accent?: 'ember' | 'signal' | 'pine' | 'brass';
+  icon?: string;
+  label: string;
+  value: string;
+  hint: string;
+  trend?: string;
+  trendVar?: 'up' | 'down' | 'neutral';
+}) {
+  const accentMap = {
+    ember:  { iconBg: 'bg-[#727cf5]/15', iconText: 'text-[#727cf5]' },
+    signal: { iconBg: 'bg-[#fa5c7c]/15', iconText: 'text-[#fa5c7c]' },
+    pine:   { iconBg: 'bg-[#0acf97]/15', iconText: 'text-[#0acf97]' },
+    brass:  { iconBg: 'bg-[#ffbc00]/15', iconText: 'text-[#e6a800]' },
+  };
+  const { iconBg, iconText } = accentMap[accent];
+  const trendCls =
+    trendVar === 'up'   ? 'bg-[#0acf97]/15 text-[#0acf97]'
+    : trendVar === 'down' ? 'bg-[#fa5c7c]/15 text-[#fa5c7c]'
+    : dark ? 'bg-white/5 text-[#7d8590]' : 'bg-gray-100 text-[#6c757d]';
+  return (
+    <div className={`rounded p-5 ${
+      dark ? 'bg-[#161b22] shadow-[0_0_35px_0_rgba(0,0,0,0.5)]' : 'bg-white shadow-[0_0_35px_0_rgba(154,161,171,0.15)]'
+    }`}>
+      <div className="mb-3 flex items-start justify-between">
+        <div className={`flex h-9 w-9 items-center justify-center rounded-full ${iconBg}`}>
+          <span className={`text-base ${iconText}`}>{icon ?? '◈'}</span>
+        </div>
+        {trend && (
+          <span className={`rounded px-2 py-0.5 text-[0.65rem] font-semibold ${trendCls}`}>{trend}</span>
+        )}
+      </div>
+      <p className={`text-[1.75rem] font-bold leading-none tabular-nums ${
+        dark ? 'text-[#e6edf3]' : 'text-[#313a46]'
+      }`}>{value}</p>
+      <p className={`mt-1.5 text-[0.7rem] font-semibold uppercase tracking-widest ${dark ? 'text-[#7d8590]' : 'text-[#6c757d]'}`}>{label}</p>
+      <p className={`mt-0.5 text-xs ${dark ? 'text-[#7d8590]' : 'text-[#6c757d]'}`}>{hint}</p>
+    </div>
+  );
+}
+
+function LegendItem({ color, label }: { color: string; label: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="h-2.5 w-2.5 rounded-full" style={{ background: color }} />
+      <span className="text-[#7d8590] text-xs">{label}</span>
+    </div>
+  );
+}
+
+function DonutChart({ dark, critical, high, medium, low, total }: { dark: boolean; critical: number; high: number; medium: number; low: number; total: number }) {
+  const c1 = (critical / total) * 100;
+  const c2 = (high / total) * 100;
+  const c3 = (medium / total) * 100;
+
+  return (
+    <div className="relative h-40 w-40">
+      <div
+        className="h-40 w-40 rounded-full"
+        style={{
+          background: `conic-gradient(#fa5c7c 0 ${c1}%, #ffbc00 ${c1}% ${c1 + c2}%, #727cf5 ${c1 + c2}% ${c1 + c2 + c3}%, #0acf97 ${c1 + c2 + c3}% 100%)`,
+        }}
+      />
+      <div className={`absolute inset-[24px] rounded-full ${dark ? 'bg-[#161b22]' : 'bg-white'}`} />
     </div>
   );
 }

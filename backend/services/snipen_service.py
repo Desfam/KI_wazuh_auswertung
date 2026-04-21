@@ -20,6 +20,19 @@ from schemas.types import (
     SnipenSmartEvent,
     SnipenEvent,
 )
+from services.snipen_overview import build_host_overview
+from services.snipen_profiles import build_profile_context_block, get_profile_for_host
+from services.event_decision_engine import (
+    EventDecision,
+    build_decision_context_block,
+    build_static_explain_result,
+    decide_event,
+)
+from services.artifact_action_builder import (
+    build_guardrail_block,
+    validate_action_list,
+    build_action_plan,
+)
 from services.wazuh_indexer import (
     _pick,
     build_auth,
@@ -730,6 +743,110 @@ def _time_range_filter(hours: int) -> dict[str, Any]:
     }
 
 
+def _fetch_agent_inventory(connection: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Return known agent hosts from Wazuh agent state indices."""
+    payload: dict[str, Any] = {
+        "size": 0,
+        "aggs": {
+            "hosts": {
+                "terms": {
+                    "field": "agent.name",
+                    "size": 2000,
+                },
+                "aggs": {
+                    "last_seen": {"max": {"field": "@timestamp"}},
+                    "platforms": {
+                        "terms": {
+                            "field": "agent.os.platform",
+                            "size": 3,
+                        }
+                    },
+                },
+            }
+        },
+    }
+
+    try:
+        with httpx.Client(
+            verify=build_verify(connection),
+            timeout=30.0,
+            auth=build_auth(connection),
+        ) as client:
+            resp = client.post(
+                f"{build_base_url(connection)}/wazuh-states-agents-*/_search", json=payload
+            )
+            resp.raise_for_status()
+            buckets = resp.json().get("aggregations", {}).get("hosts", {}).get("buckets", [])
+    except Exception:
+        return {}
+
+    inventory: dict[str, dict[str, Any]] = {}
+    for bucket in buckets:
+        host = bucket.get("key")
+        if not host:
+            continue
+        platform_buckets = bucket.get("platforms", {}).get("buckets", [])
+        raw_platforms = [str(item.get("key") or "").lower() for item in platform_buckets]
+        platforms: list[str] = []
+        if any("win" in item for item in raw_platforms):
+            platforms.append("windows")
+        if any(item in ("linux", "unix", "darwin", "macos") or "linux" in item for item in raw_platforms):
+            platforms.append("linux")
+        inventory[str(host)] = {
+            "last_seen": bucket.get("last_seen", {}).get("value_as_string"),
+            "platforms": platforms,
+        }
+    return inventory
+
+
+def _fetch_manager_agent_inventory(connection: dict[str, Any]) -> dict[str, dict[str, Any]]:
+    """Fallback inventory from Wazuh manager API (/agents)."""
+    manager_url = str(connection.get("manager_url") or "").strip().rstrip("/")
+    manager_user = str(connection.get("manager_username") or "").strip()
+    manager_pass = str(connection.get("manager_password") or "")
+    if not manager_url or not manager_user or not manager_pass:
+        return {}
+
+    try:
+        with httpx.Client(verify=build_verify(connection), timeout=30.0, auth=(manager_user, manager_pass)) as client:
+            auth_resp = client.get(f"{manager_url}/security/user/authenticate", params={"raw": "true"})
+            auth_resp.raise_for_status()
+            token = str(auth_resp.text or "").strip().strip('"')
+            if not token:
+                return {}
+            resp = client.get(
+                f"{manager_url}/agents",
+                params={"limit": 5000},
+                headers={"Authorization": f"Bearer {token}"},
+            )
+            resp.raise_for_status()
+            items = resp.json().get("data", {}).get("affected_items", [])
+    except Exception:
+        return {}
+
+    inventory: dict[str, dict[str, Any]] = {}
+    for item in items:
+        if not isinstance(item, dict):
+            continue
+        host = str(item.get("name") or "").strip()
+        if not host:
+            continue
+        raw_os = item.get("os")
+        platform_raw = ""
+        if isinstance(raw_os, dict):
+            platform_raw = str(raw_os.get("platform") or raw_os.get("name") or "").lower()
+        platforms: list[str] = []
+        if "win" in platform_raw:
+            platforms.append("windows")
+        if any(token in platform_raw for token in ("linux", "unix", "darwin", "mac")):
+            platforms.append("linux")
+        inventory[host] = {
+            "last_seen": item.get("lastKeepAlive"),
+            "platforms": platforms,
+        }
+    return inventory
+
+
 # ── Host listing ─────────────────────────────────────────────────────────────
 
 def get_snipen_hosts(connection: dict[str, Any], hours: int = 24) -> list[SnipenHostInfo]:
@@ -803,11 +920,538 @@ def get_snipen_hosts(connection: dict[str, Any], hours: int = 24) -> list[Snipen
                 platforms=platforms,
             )
         )
-    results.sort(key=lambda h: h.alert_count, reverse=True)
-    return results
+
+    by_host: dict[str, SnipenHostInfo] = {item.host: item for item in results}
+    for source in (_fetch_agent_inventory(connection), _fetch_manager_agent_inventory(connection)):
+        for host, meta in source.items():
+            existing = by_host.get(host)
+            if existing is None:
+                by_host[host] = SnipenHostInfo(
+                    host=host,
+                    alert_count=0,
+                    top_rule_level=None,
+                    last_seen=meta.get("last_seen"),
+                    platforms=meta.get("platforms") or [],
+                )
+                continue
+            if not existing.last_seen and meta.get("last_seen"):
+                existing.last_seen = meta.get("last_seen")
+            if not existing.platforms and meta.get("platforms"):
+                existing.platforms = list(meta.get("platforms") or [])
+
+    merged = list(by_host.values())
+    merged.sort(key=lambda h: (h.alert_count, h.host.lower()), reverse=True)
+
+    # Enrich each host with its profile assignment (best-effort, never fails the request)
+    try:
+        from services.snipen_profiles import list_all_assignments
+        from schemas.types import SnipenHostProfileRef
+        assignments = list_all_assignments()
+        assignment_map = {a.host: a for a in assignments}
+        for host_info in merged:
+            asgn = assignment_map.get(host_info.host)
+            if asgn and asgn.profile_name:
+                host_info.profile = SnipenHostProfileRef(
+                    name=asgn.profile_name,
+                    display_name=asgn.profile_display_name or asgn.profile_name,
+                    risk_tolerance=asgn.risk_tolerance or "medium",
+                )
+    except Exception:
+        pass
+
+    return merged
 
 
 # ── Event fetching ────────────────────────────────────────────────────────────
+
+_EVENT_FAMILY_MAP: dict[int, str] = {
+    # Logon / Logoff
+    4624: "logon_success", 528: "logon_success", 540: "logon_success",
+    4625: "logon_failure", 529: "logon_failure", 539: "logon_failure",
+    4771: "logon_failure", 4776: "logon_failure",
+    4634: "logoff", 4647: "logoff", 683: "logoff",
+    4648: "logon_explicit",
+    # Privilege
+    4672: "privilege_use", 4673: "privilege_use", 4674: "privilege_use",
+    576: "privilege_use",
+    # Process
+    4688: "process_create", 592: "process_create",
+    4689: "process_terminate", 593: "process_terminate",
+    # Service / Scheduled Task
+    4697: "service_install", 7045: "service_install", 601: "service_install",
+    4698: "scheduled_task", 4699: "scheduled_task",
+    4700: "scheduled_task", 4701: "scheduled_task", 4702: "scheduled_task",
+    602: "scheduled_task",
+    # Service config change
+    7040: "service_config_change",
+    # Account management
+    4720: "account_mgmt", 4722: "account_mgmt", 4723: "account_mgmt",
+    4724: "account_mgmt", 4725: "account_mgmt", 4726: "account_mgmt",
+    4738: "account_mgmt", 4740: "account_mgmt", 4767: "account_mgmt",
+    624: "account_mgmt", 625: "account_mgmt",
+    629: "account_mgmt", 630: "account_mgmt", 642: "account_mgmt",
+    644: "account_mgmt", 671: "account_mgmt",
+    # Group management
+    4728: "group_mgmt", 4729: "group_mgmt", 4732: "group_mgmt",
+    4733: "group_mgmt", 4756: "group_mgmt", 4757: "group_mgmt",
+    # Audit / Log
+    1102: "log_cleared", 517: "log_cleared",
+    4719: "policy_change", 4713: "policy_change", 4715: "policy_change",
+    # Object / Registry
+    4656: "object_access", 4657: "registry_event", 4663: "object_access",
+    4670: "object_access",
+    # Kerberos
+    4768: "kerberos", 4769: "kerberos", 4770: "kerberos", 4772: "kerberos",
+    672: "kerberos", 673: "kerberos", 675: "kerberos",
+    # Network (WFP)
+    5156: "network", 5157: "network",
+    # Firewall policy
+    4944: "firewall", 4946: "firewall", 4947: "firewall", 4948: "firewall",
+    4950: "firewall",
+    # ── Infrastructure / DNS / Network diagnostics ───────────────────────────
+    # DNS Client (Microsoft-Windows-DNS-Client/Operational)
+    1014: "dns_infra",   # DNS name resolution timeout
+    1015: "dns_infra",   # DNS client query error
+    1016: "dns_infra",   # DNS client query response
+    1017: "dns_infra",   # DNS client event
+    # WinRM / Remote management
+    91:   "winrm_infra", 161: "winrm_infra",
+    # PowerShell / Execution Policy (often event 4103/4104, but provider-level)
+    403: "powershell_infra", 400: "powershell_infra",
+    # Windows Installer / Update
+    11707: "software_install", 11708: "software_install",
+    11724: "software_install",
+    # System/driver events
+    7001: "service_state", 7002: "service_state", 7009: "service_state",
+    7011: "service_state", 7022: "service_state", 7023: "service_state",
+    7024: "service_state", 7026: "service_state", 7031: "service_state",
+    7034: "service_state", 7035: "service_state", 7036: "service_state",
+    7038: "service_state",
+    # Event Log service
+    1100: "log_service", 1101: "log_service", 1108: "log_service",
+    # WMI
+    5857: "wmi_infra", 5858: "wmi_infra", 5859: "wmi_infra",
+    5860: "wmi_infra", 5861: "wmi_infra",
+    # AppLocker / SRP
+    8003: "applocker", 8004: "applocker", 8006: "applocker", 8007: "applocker",
+    # BITS
+    59: "bits_infra", 60: "bits_infra",
+    # Hyper-V / Virtualization
+    18500: "hyperv_infra", 18502: "hyperv_infra",
+    # Wireless / WLAN
+    8001: "network_infra", 8002: "network_infra", 8003: "network_infra",
+    # DHCP / IP
+    50: "network_infra", 51: "network_infra",
+}
+
+# ── Event class metadata ──────────────────────────────────────────────────────
+# Defines how each family should be treated BEFORE the AI call.
+# max_severity: ceiling the AI cannot exceed without explicit override
+# isolation_allowed: whether "isolate host" is a valid remediation
+# action_template: category-specific action hints injected into the prompt
+_EVENT_CLASS_METADATA: dict[str, dict[str, Any]] = {
+    "dns_infra": {
+        "max_severity": "low",
+        "isolation_allowed": False,
+        "description": "DNS resolution timeout / infrastructure event – almost never a direct attack indicator.",
+        "action_template": [
+            "DNS-Server auf Erreichbarkeit und Antwortzeiten prüfen",
+            "Tailscale/VPN-DNS-Konfiguration validieren (besonders bei *.ts.net Domains)",
+            "Domain-Controller-Erreichbarkeit prüfen (LDAP SRV Lookup fehlgeschlagen?)",
+            "Event-Häufigkeit mit Baseline vergleichen – neu oder regelmäßig?",
+        ],
+        "context_note": "Event-ID 1014 = DNS-Client-Timeout. Typisch bei: AD/DC-Lookup-Problemen, Tailscale-DNS-Fehlkonfiguration, VPN-Unterbrechungen. Kein Angriffsmuster.",
+        "suspicious_only_if": "Nur auffällig bei gleichzeitigem Auftreten von 4625/4768/4769 (Auth Failures/Kerberos) oder unbekannten Zieldomains.",
+    },
+    "network_infra": {
+        "max_severity": "low",
+        "isolation_allowed": False,
+        "description": "Network infrastructure / connectivity event.",
+        "action_template": [
+            "Netzwerkverbindung und -konfiguration prüfen",
+            "IP-Konfiguration und DHCP validieren",
+        ],
+        "context_note": "Netzwerk-Infrastrukturereignis. Typisch für Konfigurationsänderungen oder Verbindungsprobleme.",
+        "suspicious_only_if": "Nur kritisch bei unerwarteten Änderungen oder in Kombination mit Angriffsmustern.",
+    },
+    "winrm_infra": {
+        "max_severity": "medium",
+        "isolation_allowed": False,
+        "description": "WinRM / remote management infrastructure event.",
+        "action_template": [
+            "WinRM-Konfiguration auf dem Host prüfen",
+            "Wer hat WinRM-Zugriff? Autorisiert?",
+            "Prüfen ob PowerShell Remoting verwendet wird",
+        ],
+        "context_note": "WinRM-Infrastrukturereignis. Kann bei PowerShell Remoting oder Verwaltungsaufgaben normal sein.",
+        "suspicious_only_if": "Kritisch wenn von externen/unbekannten IPs oder ohne erwartbare Admin-Aktivität.",
+    },
+    "service_state": {
+        "max_severity": "low",
+        "isolation_allowed": False,
+        "description": "Windows service state change (start/stop) – routine system operation.",
+        "action_template": [
+            "Service-Name und Änderungsursache prüfen",
+            "War die Änderung geplant/autorisiert?",
+        ],
+        "context_note": "Service-Statusänderung. Routine-Betriebsereignis bei Updates, Neustarts.",
+        "suspicious_only_if": "Nur relevant bei unbekannten Services oder direkt nach Anmeldeereignissen mit unbekannten Accounts.",
+    },
+    "software_install": {
+        "max_severity": "medium",
+        "isolation_allowed": False,
+        "description": "Software installation / Windows Installer event.",
+        "action_template": [
+            "Installiertes Paket identifizieren – autorisiert?",
+            "Wer hat die Installation initiiert?",
+        ],
+        "context_note": "Software-Installationsereignis. Auf DEV-Hosts oft erwartet.",
+        "suspicious_only_if": "Verdächtig bei unbekannter Software, ausgelöst durch serviceaccounts oder nachts.",
+    },
+    "powershell_infra": {
+        "max_severity": "medium",
+        "isolation_allowed": False,
+        "description": "PowerShell engine / execution policy infrastructure event.",
+        "action_template": [
+            "PowerShell-Skript und Ausführungskontext prüfen",
+            "Execution Policy änderung autorisiert?",
+        ],
+        "context_note": "PowerShell-Infrastrukturereignis (Execution Policy, Engine-Start). Auf DEV-Hosts normal.",
+        "suspicious_only_if": "Verdächtig bei Bypass-Flags, unbekannten Skripten oder nächtlicher Ausführung.",
+    },
+    "wmi_infra": {
+        "max_severity": "medium",
+        "isolation_allowed": False,
+        "description": "WMI activity / subscription event.",
+        "action_template": [
+            "WMI-Subscription und Provider prüfen",
+            "WMI-Persistenz ausschließen (Event 5861 = neue Subscription)",
+        ],
+        "context_note": "WMI-Ereignis. 5861 (neue WMI-Subscription) ist interessanter als Query-Ereignisse.",
+        "suspicious_only_if": "Kritisch bei neuen WMI-Subscriptions (5861) in Kombination mit unbekannten Prozessen.",
+    },
+    "hyperv_infra": {
+        "max_severity": "low",
+        "isolation_allowed": False,
+        "description": "Hyper-V / virtualization infrastructure event.",
+        "action_template": [
+            "VM-Konfigurationsänderung prüfen – autorisiert?",
+        ],
+        "context_note": "Hyper-V-Infrastrukturereignis. Auf Virtualisierungs-Hosts normal.",
+        "suspicious_only_if": "Nur relevant bei unautorisierten VM-Erstellungen oder -Löschungen.",
+    },
+    "log_service": {
+        "max_severity": "low",
+        "isolation_allowed": False,
+        "description": "Event Log service infrastructure event.",
+        "action_template": ["Event Log Service-Status prüfen"],
+        "context_note": "Event-Log-Dienst-Ereignis, kein direkter Sicherheitsindikator.",
+        "suspicious_only_if": "Nur relevant in Kombination mit 1102 (Log Cleared).",
+    },
+    # ── Security families – keep as-is but provide action templates ──────────
+    "log_cleared": {
+        "max_severity": "critical",
+        "isolation_allowed": True,
+        "description": "Audit log cleared – strong sign of anti-forensics.",
+        "action_template": [
+            "Wer hat das Log gelöscht? (User, Session-ID)",
+            "Zeitpunkt: direkt nach verdächtigem Event?",
+            "Weitere Logs (Security, System, Application) auf Vollständigkeit prüfen",
+            "SIEM/Forwarding-Puffer auf verlorene Events prüfen",
+        ],
+        "context_note": "1102/517 = Log clearing. Fast immer Täterverhalten bei laufenden Angriffen.",
+        "suspicious_only_if": "Immer kritisch.",
+    },
+    "service_install": {
+        "max_severity": "high",
+        "isolation_allowed": True,
+        "description": "New service installed – common persistence mechanism.",
+        "action_template": [
+            "Service-Binärpfad und Hash prüfen (VirusTotal)",
+            "Wer hat den Service installiert? (Account, Zeitpunkt)",
+            "War die Installation geplant/autorisiert?",
+            "Service auf anderen Hosts suchen (laterale Ausbreitung?)",
+        ],
+        "context_note": "7045/4697 = neuer Service. Häufig für Persistenz genutzt.",
+        "suspicious_only_if": "Nahezu immer prüfungswürdig, besonders bei unbekanntem ServiceName/Pfad.",
+    },
+    "service_config_change": {
+        "max_severity": "medium",
+        "isolation_allowed": False,
+        "description": "Service configuration changed (start type, binary path).",
+        "action_template": [
+            "Welche Service-Eigenschaft wurde geändert?",
+            "Autorisierte Änderung (Admin, Update)?",
+            "Korreliere mit 4688 (Process Creation) um auslösenden Prozess zu finden",
+        ],
+        "context_note": "7040 = Service-Konfigurationsänderung. Häufig durch Windows Updates oder Konfigurationstools.",
+        "suspicious_only_if": "Interessant bei unbekannten Services oder wenn in Kombination mit 7045/4697.",
+    },
+    "logon_failure": {
+        "max_severity": "high",
+        "isolation_allowed": False,
+        "description": "Authentication failure – potential brute force or credential stuffing.",
+        "action_template": [
+            "Wie viele Failures? Ziel-Account gesperrt?",
+            "Herkunfts-IP – intern oder extern?",
+            "Zeitraum: burst (Brute-Force) oder verteilt (Spray)?",
+            "4624 (Success) nach den Failures? → mögl. erfolgreicher Zugriff",
+        ],
+        "context_note": "4625/4771 = Auth-Fehler. Einzelne Fehler normal; ≥10 im Cluster prüfungswürdig.",
+        "suspicious_only_if": "Ab ≥5 im Cluster oder von externer IP.",
+    },
+    "process_create": {
+        "max_severity": "high",
+        "isolation_allowed": False,
+        "description": "Process creation – check parent/child chain and command line.",
+        "action_template": [
+            "Elternprozess identifizieren – erwartet?",
+            "Command-Line auf Obfuscation oder suspicious Flags prüfen",
+            "Hash der Executable auf VirusTotal",
+            "Netzwerkverbindungen des Prozesses prüfen",
+        ],
+        "context_note": "4688/Sysmon 1 = Prozesserstellung. Auf DEV-Hosts powershell.exe/cmd.exe normal.",
+        "suspicious_only_if": "Verdächtig bei: LOLBin-Prozessen, encoded Commands, unbekannten Pfaden, nächtlicher Ausführung.",
+    },
+    "scheduled_task": {
+        "max_severity": "high",
+        "isolation_allowed": False,
+        "description": "Scheduled task creation/modification – common persistence mechanism.",
+        "action_template": [
+            "Task-Name und Aktion (ausgeführtes Binary) prüfen",
+            "Wer hat den Task erstellt?",
+            "Ausführungszeitplan: regelmäßig oder bei Anmeldung?",
+        ],
+        "context_note": "4698/4702 = Task-Erstellung/-Änderung. Gängiger Persistenzmechanismus.",
+        "suspicious_only_if": "Immer prüfen; besonders bei unbekannten Task-Namen oder Script-Ausführung.",
+    },
+    "logon_success": {
+        "max_severity": "low",
+        "isolation_allowed": False,
+        "description": "Successful logon – baseline-conform on active workstations.",
+        "action_template": [
+            "Logon-Type prüfen: 2=Interaktiv, 3=Netzwerk, 10=Remote",
+            "Auffällig: Logon außerhalb Arbeitszeiten oder von unbekannter IP",
+        ],
+        "context_note": "4624 = Erfolgreiche Anmeldung. Auf aktiven Hosts normal.",
+        "suspicious_only_if": "Nur bei ungewöhnlichem Logon-Type, -Zeit, oder nach 4625-Cluster.",
+    },
+    "logoff": {
+        "max_severity": "info",
+        "isolation_allowed": False,
+        "description": "Session logoff – routine event.",
+        "action_template": [],
+        "context_note": "4634/4647 = Abmeldung. Kein Sicherheitsindikator per se.",
+        "suspicious_only_if": "Nicht isoliert verdächtig.",
+    },
+    "privilege_use": {
+        "max_severity": "medium",
+        "isolation_allowed": False,
+        "description": "Special privilege use – expected for admins, flag for non-admins.",
+        "action_template": [
+            "Welches Privilege? SeDebugPrivilege/SeBackupPrivilege besonders prüfen",
+            "Account: Admin oder normaler Nutzer?",
+        ],
+        "context_note": "4672 = Sonderrechte. Für Admin-Accounts normal.",
+        "suspicious_only_if": "Verdächtig für nicht-Admin-Accounts oder mit SeDebugPrivilege.",
+    },
+    "kerberos": {
+        "max_severity": "high",
+        "isolation_allowed": False,
+        "description": "Kerberos ticket request – check for AS-REP Roasting or Pass-the-Ticket.",
+        "action_template": [
+            "Ticket-Typ: TGT (4768) oder Service Ticket (4769)?",
+            "Encryption-Type: RC4 (0x17) = Kerberoasting-Indikator",
+            "Viele 4769 für ungewöhnliche Services?",
+        ],
+        "context_note": "Kerberos-Events. Einzelne Requests normal; Bulk-Requests verdächtig.",
+        "suspicious_only_if": "RC4-Encryption bei 4769, Bulk-Requests, ungewöhnliche Targets.",
+    },
+}
+
+# Families that are purely infrastructure/noise – AI gets hard severity ceiling
+_INFRA_FAMILIES: frozenset[str] = frozenset({
+    "dns_infra", "network_infra", "winrm_infra", "service_state",
+    "log_service", "hyperv_infra", "powershell_infra",
+})
+
+
+def _get_event_class_context(family: str) -> str:
+    """Build a structured context block for AI prompts based on event-family metadata.
+
+    Returns an empty string when the family has no metadata entry.
+    """
+    meta = _EVENT_CLASS_METADATA.get(family)
+    if not meta:
+        return ""
+
+    isolation_str = (
+        "JA (nur bei eindeutiger Evidenz)" if meta["isolation_allowed"]
+        else "NEIN – für diesen Event-Typ NICHT angemessen"
+    )
+    severity_ceiling = meta["max_severity"].upper()
+
+    lines = [
+        "── Event-Klassen-Kontext (VERBINDLICH für deine Bewertung) ──────────────",
+        f"Familie      : {family}",
+        f"Beschreibung : {meta['description']}",
+        f"Max. Severity: {severity_ceiling}  ← erhöhe NUR mit expliziter Korrelations-Evidenz",
+        f"Host-Isolation empfehlen: {isolation_str}",
+        f"Kontext-Hinweis: {meta['context_note']}",
+    ]
+    if meta.get("suspicious_only_if"):
+        lines.append(f"Wann wirklich verdächtig: {meta['suspicious_only_if']}")
+    if meta.get("typical_triggers"):
+        lines.append(f"Typische Auslöser: {meta['typical_triggers']}")
+    if meta.get("action_template"):
+        lines.append("Empfohlene Aktionen (kategorie-spezifisch):")
+        for act in meta["action_template"]:
+            lines.append(f"  • {act}")
+    lines.append("────────────────────────────────────────────────────────────────────")
+
+    return "\n".join(lines)
+
+
+# Sysmon event-ID → family
+_SYSMON_FAMILY_MAP: dict[int, str] = {
+    1: "process_create",
+    2: "file_create_time",
+    3: "network",
+    5: "process_terminate",
+    6: "driver_load",
+    7: "image_load",
+    8: "create_remote_thread",
+    9: "raw_access_read",
+    10: "process_access",
+    11: "file_create",
+    12: "registry_event",
+    13: "registry_event",
+    14: "registry_event",
+    15: "file_stream",
+    16: "sysmon_config",
+    17: "pipe_created",
+    18: "pipe_connected",
+    19: "wmi_filter",
+    20: "wmi_consumer",
+    21: "wmi_subscription",
+    22: "dns_query",
+    23: "file_delete",
+    25: "process_tamper",
+    26: "file_delete_detected",
+}
+
+
+def _determine_event_family(
+    event_id: str | None,
+    groups: list[str],
+    decoder: str | None,
+) -> str:
+    """Return a short family label for the event (e.g. 'logon_failure', 'process_create')."""
+    decoder_str = (decoder or "").lower()
+    groups_lower = [g.lower() for g in groups]
+    is_sysmon = (
+        "sysmon" in decoder_str
+        or any("sysmon" in g for g in groups_lower)
+    )
+
+    try:
+        eid = int(event_id) if event_id else None
+    except (ValueError, TypeError):
+        eid = None
+
+    if eid is not None:
+        if is_sysmon:
+            return _SYSMON_FAMILY_MAP.get(eid, "sysmon")
+        mapped = _EVENT_FAMILY_MAP.get(eid)
+        if mapped:
+            return mapped
+        # Windows Security range fallback
+        if 4720 <= eid <= 4767:
+            return "account_mgmt"
+        if 4727 <= eid <= 4764:
+            return "group_mgmt"
+
+    if is_sysmon:
+        return "sysmon"
+    return "other"
+
+
+def _build_event_summary(
+    event_family: str | None,
+    user: str | None,
+    target_user: str | None,
+    subject_user: str | None,
+    ip_address: str | None,
+    process: str | None,
+    service_name: str | None,
+    rule_description: str | None,
+    event_explanation: str | None,
+) -> str | None:
+    """Return a short human-readable one-liner for the event."""
+    family = event_family or "other"
+    effective_user = target_user or user or subject_user
+    effective_ip = (
+        ip_address
+        if ip_address and ip_address not in ("-", "::1", "127.0.0.1", "")
+        else None
+    )
+    proc_name = (
+        process.replace("\\", "/").split("/")[-1] if process else None
+    )
+
+    def _join(*parts: str | None) -> str:
+        return " | ".join(p for p in parts if p)
+
+    if family == "logon_success":
+        return _join("Logon erfolgreich", effective_user, effective_ip)
+    if family == "logon_failure":
+        return _join("Anmelde-Fehler", effective_user, effective_ip)
+    if family == "logon_explicit":
+        return _join("Explicit-Credential-Logon", effective_user, effective_ip)
+    if family == "logoff":
+        return _join("Abmeldung", effective_user)
+    if family == "privilege_use":
+        return _join("Privilege-Nutzung", effective_user)
+    if family == "process_create":
+        return _join("Prozess erstellt", proc_name, effective_user)
+    if family == "process_terminate":
+        return _join("Prozess beendet", proc_name)
+    if family == "service_install":
+        return _join("Service installiert", service_name)
+    if family == "scheduled_task":
+        return _join("Scheduled Task", effective_user)
+    if family == "account_mgmt":
+        return _join("Account-Änderung", effective_user or target_user)
+    if family == "group_mgmt":
+        return _join("Gruppen-Änderung", effective_user)
+    if family == "log_cleared":
+        return "Audit-Log gelöscht"
+    if family == "policy_change":
+        return "Policy-Änderung"
+    if family == "registry_event":
+        return "Registry-Zugriff"
+    if family == "object_access":
+        return "Objekt-Zugriff"
+    if family == "network":
+        return _join("Netzwerkverbindung", effective_ip)
+    if family == "kerberos":
+        return _join("Kerberos", effective_user)
+    if family == "firewall":
+        return "Firewall-Event"
+    if family in ("image_load", "driver_load"):
+        return _join("Image geladen", proc_name)
+    if family == "file_create":
+        return "Datei erstellt"
+    if family == "dns_query":
+        return "DNS-Abfrage"
+    if family == "sysmon":
+        return _join("Sysmon-Event", proc_name)
+    # Generic fallback: shorten explanation/description
+    fallback = event_explanation or rule_description
+    if fallback:
+        return fallback[:100]
+    return None
+
 
 def _normalize_smart(raw: dict[str, Any]) -> SnipenSmartEvent:
     """Extract structured smart-view fields from a raw Wazuh alert."""
@@ -870,6 +1514,12 @@ def _normalize_smart(raw: dict[str, Any]) -> SnipenSmartEvent:
     if isinstance(mitre_tactic, list):
         mitre_tactic = ", ".join(str(x) for x in mitre_tactic)
     timestamp = _pick(raw, "@timestamp", "timestamp")
+    system_message = _pick(
+        raw,
+        "data.win.system.message",
+        "win.system.message",
+        "full_log",
+    )
     platform = detect_platform(raw, list(groups), decoder, event_id)
     event_id_str = str(event_id) if event_id is not None else None
     event_explanation = _resolve_event_explanation(
@@ -878,6 +1528,80 @@ def _normalize_smart(raw: dict[str, Any]) -> SnipenSmartEvent:
         decoder=str(decoder) if decoder else None,
         groups=[str(g) for g in groups],
     )
+
+    # ── Extended fields ──────────────────────────────────────────────────────
+    parent_process = _pick(
+        raw,
+        "data.win.eventdata.parentProcessName",
+        "data.win.eventdata.ParentProcessName",
+        "data.win.eventdata.parentImage",
+        "data.win.eventdata.ParentImage",
+    )
+    target_user = _pick(
+        raw,
+        "data.win.eventdata.targetUserName",
+        "data.win.eventdata.TargetUserName",
+    )
+    subject_user = _pick(
+        raw,
+        "data.win.eventdata.subjectUserName",
+        "data.win.eventdata.SubjectUserName",
+    )
+    workstation = _pick(
+        raw,
+        "data.win.eventdata.workstationName",
+        "data.win.eventdata.WorkstationName",
+    )
+    substatus = _pick(
+        raw,
+        "data.win.eventdata.subStatus",
+        "data.win.eventdata.SubStatus",
+    )
+    service_type = _pick(
+        raw,
+        "data.win.eventdata.serviceType",
+        "data.win.eventdata.ServiceType",
+    )
+    start_type = _pick(
+        raw,
+        "data.win.eventdata.startType",
+        "data.win.eventdata.StartType",
+    )
+    image_path = _pick(
+        raw,
+        "data.win.eventdata.imagePath",
+        "data.win.eventdata.image",
+        "data.win.eventdata.Image",
+        "data.win.eventdata.ImagePath",
+    )
+    process_id = _pick(
+        raw,
+        "data.win.eventdata.processId",
+        "data.win.eventdata.ProcessId",
+        "data.win.system.processID",
+    )
+    new_process_id = _pick(
+        raw,
+        "data.win.eventdata.newProcessId",
+        "data.win.eventdata.NewProcessId",
+    )
+    event_family = _determine_event_family(
+        event_id=event_id_str,
+        groups=[str(g) for g in groups],
+        decoder=str(decoder) if decoder else None,
+    )
+    summary = _build_event_summary(
+        event_family=event_family,
+        user=str(user) if user else None,
+        target_user=str(target_user) if target_user else None,
+        subject_user=str(subject_user) if subject_user else None,
+        ip_address=str(ip_address) if ip_address else None,
+        process=str(process) if process else None,
+        service_name=str(service_name) if service_name else None,
+        rule_description=str(rule_description) if rule_description else None,
+        event_explanation=event_explanation,
+    )
+
     return SnipenSmartEvent(
         timestamp=str(timestamp) if timestamp else None,
         host=str(host) if host else None,
@@ -900,6 +1624,20 @@ def _normalize_smart(raw: dict[str, Any]) -> SnipenSmartEvent:
         mitre_tactic=str(mitre_tactic) if mitre_tactic else None,
         decoder=str(decoder) if decoder else None,
         location=str(location) if location else None,
+        system_message=str(system_message) if system_message else None,
+        # Extended fields
+        parent_process=str(parent_process) if parent_process else None,
+        target_user=str(target_user) if target_user else None,
+        subject_user=str(subject_user) if subject_user else None,
+        workstation=str(workstation) if workstation else None,
+        substatus=str(substatus) if substatus else None,
+        service_type=str(service_type) if service_type else None,
+        start_type=str(start_type) if start_type else None,
+        image_path=str(image_path) if image_path else None,
+        process_id=str(process_id) if process_id else None,
+        new_process_id=str(new_process_id) if new_process_id else None,
+        event_family=event_family,
+        summary=summary,
     )
 
 
@@ -964,8 +1702,11 @@ def get_host_events(
             }
         )
 
+    # ---
+    # Limit-Logik anpassen: Wenn limit > 10000, dann kein Limit (alle Events)
+    size_value = limit if limit <= 10000 else 1000000  # 1 Mio als Hardcap für Elasticsearch
     payload: dict[str, Any] = {
-        "size": limit,
+        "size": size_value,
         "sort": [{"@timestamp": {"order": "desc"}}],
         "query": {
             "bool": {
@@ -1112,7 +1853,7 @@ def _split_sentences(text: str) -> list[str]:
     return parts
 
 
-def _pick_suspicious_fields(smart: SnipenEventSmart) -> list[str]:
+def _pick_suspicious_fields(smart: SnipenSmartEvent) -> list[str]:
     candidates: list[tuple[str, Any]] = [
         ("event_id", smart.event_id),
         ("rule_id", smart.rule_id),
@@ -1127,12 +1868,21 @@ def _pick_suspicious_fields(smart: SnipenEventSmart) -> list[str]:
     return [name for name, value in candidates if value not in (None, "", "-")]
 
 
-def _ensure_explain_quality(parsed: dict[str, Any], smart: SnipenEventSmart, *, remediation_mode: bool) -> dict[str, Any]:
+def _ensure_explain_quality(
+    parsed: dict[str, Any],
+    smart: SnipenSmartEvent,
+    *,
+    remediation_mode: bool,
+    family: str = "other",
+) -> dict[str, Any]:
+    family_meta = _EVENT_CLASS_METADATA.get(family, {})
+    is_infra = family in _INFRA_FAMILIES
+
     summary = str(parsed.get("summary", "") or "").strip()
     summary_sentences = _split_sentences(summary)
     if len(summary_sentences) < 4:
         fallback_lines = [
-            f"Das Event zeigt eine sicherheitsrelevante Aktivität auf Host {smart.host or 'unbekanntem Host'}.",
+            f"Das Event zeigt eine {'infrastrukturrelevante' if is_infra else 'sicherheitsrelevante'} Aktivität auf Host {smart.host or 'unbekanntem Host'}.",
             f"Regel: {smart.rule_description or smart.rule_id or 'unbekannt'} (Level {smart.rule_level if smart.rule_level is not None else 'n/a'}).",
             f"Event-ID: {smart.event_id or 'n/a'}, Prozess: {smart.process or 'n/a'}, Benutzer: {smart.user or 'n/a'}.",
         ]
@@ -1141,18 +1891,28 @@ def _ensure_explain_quality(parsed: dict[str, Any], smart: SnipenEventSmart, *, 
         if smart.ip_address and smart.ip_address != "-":
             fallback_lines.append(f"Die Aktivität ist mit der IP-Adresse {smart.ip_address} verknüpft.")
         if remediation_mode:
-            fallback_lines.append("Aus Incident-Response-Sicht sollte zunächst Containment erfolgen, bevor weitere Änderungen am System vorgenommen werden.")
+            if is_infra:
+                fallback_lines.append("Als ersten Schritt die Infrastruktur-Konfiguration prüfen; kein sofortiges Containment erforderlich.")
+            else:
+                fallback_lines.append("Aus Incident-Response-Sicht sollte zunächst Containment erfolgen, bevor weitere Änderungen am System vorgenommen werden.")
         else:
             fallback_lines.append("Für die Bewertung sind Kontext, Baseline-Abweichungen und mögliche Angriffsschritte im zeitlichen Umfeld entscheidend.")
         summary = " ".join(fallback_lines)
 
     why_suspicious = str(parsed.get("why_suspicious", "") or "").strip()
     if len(_split_sentences(why_suspicious)) < 2:
-        why_suspicious = (
-            f"Auffällig sind die Kombination aus Regel-Level {smart.rule_level if smart.rule_level is not None else 'n/a'}, "
-            f"Event-ID {smart.event_id or 'n/a'} und Prozess {smart.process or 'n/a'}. "
-            f"Zusätzlich erhöhen Benutzerkontext ({smart.user or 'n/a'}) und CommandLine-Muster ({smart.command_line or 'n/a'}) das Risiko."
-        )
+        if is_infra:
+            why_suspicious = (
+                f"Event-ID {smart.event_id or 'n/a'} gehört zur Infrastruktur-Kategorie '{family}'. "
+                f"Regel-Level {smart.rule_level if smart.rule_level is not None else 'n/a'} mit Beschreibung '{smart.rule_description or smart.rule_id or 'n/a'}'. "
+                "Isoliert ist dieses Event kein Angriffsindikator; relevant nur in Kombination mit Auth-Fehlern oder Prozesserstellung."
+            )
+        else:
+            why_suspicious = (
+                f"Auffällig sind die Kombination aus Regel-Level {smart.rule_level if smart.rule_level is not None else 'n/a'}, "
+                f"Event-ID {smart.event_id or 'n/a'} und Prozess {smart.process or 'n/a'}. "
+                f"Zusätzlich erhöhen Benutzerkontext ({smart.user or 'n/a'}) und CommandLine-Muster ({smart.command_line or 'n/a'}) das Risiko."
+            )
 
     against_it = parsed.get("against_it")
     if against_it is not None:
@@ -1164,48 +1924,85 @@ def _ensure_explain_quality(parsed: dict[str, Any], smart: SnipenEventSmart, *, 
 
     unusual_behavior = [str(x) for x in parsed.get("unusual_behavior", []) if str(x).strip()]
     if len(unusual_behavior) < 3:
-        fallback_unusual = [
-            f"Prozesskontext: {smart.process or 'n/a'} in sicherheitsrelevantem Event.",
-            f"Benutzerkontext: {smart.user or 'n/a'}.",
-            f"Regel-Level {smart.rule_level if smart.rule_level is not None else 'n/a'} mit Beschreibung '{smart.rule_description or smart.rule_id or 'n/a'}'.",
-        ]
+        if is_infra:
+            fallback_unusual = [
+                f"Infrastruktur-Event: {smart.rule_description or smart.rule_id or 'n/a'}.",
+                f"Event-ID {smart.event_id or 'n/a'} auf Host {smart.host or 'n/a'}.",
+                "Keine direkten Angriffsindikatoren ohne Korrelation.",
+            ]
+        else:
+            fallback_unusual = [
+                f"Prozesskontext: {smart.process or 'n/a'} in sicherheitsrelevantem Event.",
+                f"Benutzerkontext: {smart.user or 'n/a'}.",
+                f"Regel-Level {smart.rule_level if smart.rule_level is not None else 'n/a'} mit Beschreibung '{smart.rule_description or smart.rule_id or 'n/a'}'.",
+            ]
         if smart.command_line:
             fallback_unusual.append(f"Auffällige Befehlszeile: {smart.command_line}")
         unusual_behavior = list(dict.fromkeys(unusual_behavior + fallback_unusual))[:6]
 
     deviations = [str(x) for x in parsed.get("deviations", []) if str(x).strip()]
     if len(deviations) < 3:
-        fallback_deviations = [
-            "Abweichung vom erwarteten Prozess-/User-Verhalten.",
-            "Sicherheitsregel wurde mit erhöhtem Risiko-Level ausgelöst.",
-            "Event benötigt Korrelation mit zeitnahen Folgeereignissen und Baseline.",
-        ]
+        if is_infra:
+            fallback_deviations = [
+                f"Infrastruktur-Ereignis: {family} – kein direktes Abweichungsmuster.",
+                "Häufigkeit prüfen: tritt das Event öfter als im Baseline-Zeitraum auf?",
+                "Zieldomains/IPs validieren: bekannte interne Infrastruktur oder extern?",
+            ]
+        else:
+            fallback_deviations = [
+                "Abweichung vom erwarteten Prozess-/User-Verhalten.",
+                "Sicherheitsregel wurde mit erhöhtem Risiko-Level ausgelöst.",
+                "Event benötigt Korrelation mit zeitnahen Folgeereignissen und Baseline.",
+            ]
         deviations = list(dict.fromkeys(deviations + fallback_deviations))[:6]
 
     remediation = [str(x) for x in parsed.get("remediation", []) if str(x).strip()]
     min_remediation = 6 if remediation_mode else 5
     if len(remediation) < min_remediation:
-        fallback_remediation = [
-            "Betroffenen Host logisch isolieren oder streng segmentieren.",
-            "Prozessbaum und Parent/Child-Kette für den Event vollständig prüfen.",
-            "Hash und Signatur der betroffenen Binärdatei gegen Threat-Intel prüfen.",
-            "Persistenzmechanismen (Services, Tasks, Registry/Autostart) kontrollieren.",
-            "Betroffene Credentials und privilegierte Sessions auf Missbrauch prüfen.",
-            "Findings dokumentieren und Detection-Regeln/Alerting nachschärfen.",
-        ]
+        # Use category-specific action template if available
+        template = family_meta.get("action_template", [])
+        if template:
+            fallback_remediation = list(template)
+        elif is_infra:
+            fallback_remediation = [
+                "Infrastruktur-Konfiguration (DNS, Netzwerk, VPN) überprüfen.",
+                "Event-Häufigkeit mit Baseline vergleichen.",
+                "Systemlogs auf weitere Fehler im selben Zeitraum prüfen.",
+                "Konfigurationsänderungen rückgängig machen falls bekannt.",
+            ]
+        else:
+            fallback_remediation = [
+                "Prozessbaum und Parent/Child-Kette für den Event vollständig prüfen.",
+                "Hash und Signatur der betroffenen Binärdatei gegen Threat-Intel prüfen.",
+                "Persistenzmechanismen (Services, Tasks, Registry/Autostart) kontrollieren.",
+                "Betroffene Credentials und privilegierte Sessions auf Missbrauch prüfen.",
+                "Findings dokumentieren und Detection-Regeln/Alerting nachschärfen.",
+            ]
+            # Only add host isolation for families that allow it
+            if family_meta.get("isolation_allowed", True):
+                fallback_remediation.insert(0, "Betroffenen Host logisch isolieren oder streng segmentieren.")
         remediation = list(dict.fromkeys(remediation + fallback_remediation))[:8]
 
     next_checks = [str(x) for x in parsed.get("next_checks", []) if str(x).strip()]
     min_checks = 6 if remediation_mode else 5
     if len(next_checks) < min_checks:
-        fallback_checks = [
-            "Zeitlich benachbarte Events desselben Hosts korrelieren (vor/nach Event).",
-            "Gleiche Event-ID und Rule-ID auf weiteren Hosts suchen.",
-            "Anmeldeereignisse und Privilege-Escalation-Indikatoren im Zeitraum prüfen.",
-            "Netzwerkverbindungen des Prozesses (Ziel-IP, Ports, Häufigkeit) auswerten.",
-            "Datei-/Registry-/Service-Änderungen rund um den Zeitpunkt untersuchen.",
-            "EDR/AV/Defender-Telemetrie auf Treffer oder Ausnahmen prüfen.",
-        ]
+        if is_infra:
+            fallback_checks = [
+                "Event-Häufigkeit in den letzten 7 Tagen analysieren – neu oder chronisch?",
+                "Betroffene Dienste/Verbindungen auf anderen Hosts suchen.",
+                "Netzwerk-/DNS-Konfiguration auf Fehler prüfen.",
+                "Systemlogs (System, Application) im selben Zeitfenster korrelieren.",
+                "Monitoring für dieses Event einrichten falls es wiederholt auftritt.",
+            ]
+        else:
+            fallback_checks = [
+                "Zeitlich benachbarte Events desselben Hosts korrelieren (vor/nach Event).",
+                "Gleiche Event-ID und Rule-ID auf weiteren Hosts suchen.",
+                "Anmeldeereignisse und Privilege-Escalation-Indikatoren im Zeitraum prüfen.",
+                "Netzwerkverbindungen des Prozesses (Ziel-IP, Ports, Häufigkeit) auswerten.",
+                "Datei-/Registry-/Service-Änderungen rund um den Zeitpunkt untersuchen.",
+                "EDR/AV/Defender-Telemetrie auf Treffer oder Ausnahmen prüfen.",
+            ]
         next_checks = list(dict.fromkeys(next_checks + fallback_checks))[:8]
 
     enriched = dict(parsed)
@@ -1215,8 +2012,10 @@ def _ensure_explain_quality(parsed: dict[str, Any], smart: SnipenEventSmart, *, 
     enriched["suspicious_fields"] = suspicious_fields
     enriched["unusual_behavior"] = unusual_behavior
     enriched["deviations"] = deviations
-    enriched["remediation"] = remediation
-    enriched["next_checks"] = next_checks
+    # Post-AI validation: strip forbidden phrases not supported by evidence
+    event_dict = smart.model_dump(exclude_none=True)
+    enriched["remediation"] = validate_action_list(remediation, event_dict)
+    enriched["next_checks"] = validate_action_list(next_checks, event_dict)
     return enriched
 
 
@@ -1255,27 +2054,19 @@ def analyze_host(
             ran_ai=False,
         )
 
-    # Local aggregation
-    rule_id_counter: Counter[str] = Counter()
-    event_id_counter: Counter[str] = Counter()
-    rule_desc_counter: Counter[str] = Counter()
-    high_level_events: list[str] = []
+    # Use HostOverviewBuilder for all aggregation
+    overview = build_host_overview(host=host, hours=hours, events=events)
 
-    for ev in events:
-        s = ev.smart
-        if s.rule_id:
-            rule_id_counter[s.rule_id] += 1
-        if s.event_id:
-            event_id_counter[s.event_id] += 1
-        if s.rule_description:
-            rule_desc_counter[s.rule_description] += 1
-        if s.rule_level and s.rule_level >= 10:
-            desc = s.rule_description or s.rule_id or "unknown rule"
-            high_level_events.append(f"[Level {s.rule_level}] {desc} @ {s.timestamp or '?'}")
+    # Fetch host profile for context-aware AI prompting
+    host_profile = get_profile_for_host(host)
+    profile_context = build_profile_context_block(host_profile)
 
-    top_rule_ids = [rule for rule, _ in rule_id_counter.most_common(10)]
-    top_event_ids = [eid for eid, _ in event_id_counter.most_common(10)]
-    top_descriptions = [d for d, _ in rule_desc_counter.most_common(15)]
+    # Collect high-level event descriptions for the AI prompt
+    high_level_events: list[str] = [
+        f"[Level {ev.smart.rule_level}] {ev.smart.rule_description or ev.smart.rule_id or 'unknown rule'} @ {ev.smart.timestamp or '?'}"
+        for ev in events
+        if (ev.smart.rule_level or 0) >= 10
+    ]
 
     suspicious_patterns: list[str] = list(dict.fromkeys(high_level_events[:20]))
     likely_benign: list[str] = []
@@ -1283,21 +2074,21 @@ def analyze_host(
     host_risk = "low"
     ai_summary: str | None = None
 
-    if high_level_events:
-        if len([e for e in events if (e.smart.rule_level or 0) >= 12]) >= 3:
-            host_risk = "high"
-        elif len([e for e in events if (e.smart.rule_level or 0) >= 10]) >= 3:
-            host_risk = "medium"
+    if overview.critical_alerts >= 3 or len([e for e in events if (e.smart.rule_level or 0) >= 15]) >= 1:
+        host_risk = "high"
+    elif overview.high_alerts >= 3 or len([e for e in events if (e.smart.rule_level or 0) >= 12]) >= 3:
+        host_risk = "medium"
 
     if run_ai:
         # Build a compact summary for the LLM
         summary_data = {
             "host": host,
-            "total_events": len(events),
+            "total_events": overview.total_events,
             "hours": hours,
-            "top_rule_ids": top_rule_ids[:8],
-            "top_event_ids": top_event_ids[:8],
-            "top_descriptions": top_descriptions[:10],
+            "top_rule_ids": overview.top_rule_ids[:8],
+            "top_event_ids": overview.top_event_ids[:8],
+            "top_descriptions": overview.top_rule_descriptions[:10],
+            "severity_distribution": overview.severity_distribution,
             "high_level_alerts": high_level_events[:15],
             "sample_events": [
                 {
@@ -1319,6 +2110,8 @@ def analyze_host(
             f"with keys: suspicious_patterns (list[str]), likely_benign (list[str]), "
             f"recommended_checks (list[str]), host_risk (one of: low/medium/high/critical), "
             f"ai_summary (str, 2-4 sentences in German).\n\n"
+            f"IMPORTANT – Host Profile Context (apply this to your risk assessment):\n"
+            f"{profile_context}\n\n"
             f"Data:\n{json.dumps(summary_data, ensure_ascii=False)}"
         )
 
@@ -1335,15 +2128,42 @@ def analyze_host(
     return SnipenAnalysisResult(
         host=host,
         hours=hours,
-        total_events=len(events),
+        total_events=overview.total_events,
         suspicious_patterns=suspicious_patterns,
         likely_benign=likely_benign,
         recommended_checks=recommended_checks,
         host_risk=host_risk,
-        top_rule_ids=top_rule_ids,
-        top_event_ids=top_event_ids,
+        top_rule_ids=overview.top_rule_ids,
+        top_event_ids=overview.top_event_ids,
         ai_summary=ai_summary,
         ran_ai=run_ai,
+    )
+
+
+# ── Host Snipen Overview (no AI) ─────────────────────────────────────────────
+
+def get_host_snipen_overview(
+    connection: dict[str, Any],
+    host: str,
+    hours: int = 24,
+    limit: int = 500,
+    num_timeline_buckets: int = 24,
+) -> SnipenHostOverview:
+    """
+    Fetch events for `host` and return a pre-computed overview with severity
+    distribution, top counters and a bucketed timeline.  No AI involved.
+    """
+    events = get_host_events(
+        connection,
+        host=host,
+        hours=hours,
+        limit=limit,
+    )
+    return build_host_overview(
+        host=host,
+        hours=hours,
+        events=events,
+        num_timeline_buckets=num_timeline_buckets,
     )
 
 
@@ -1351,24 +2171,77 @@ def analyze_host(
 
 def explain_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> SnipenExplainResult:
     smart = _normalize_smart(event_raw)
+    host_profile = get_profile_for_host(smart.host or "")
+    profile_context = build_profile_context_block(host_profile)
+
+    # Determine event family
+    event_family = _determine_event_family(
+        smart.event_id,
+        list(getattr(smart, "groups", None) or []),
+        getattr(smart, "decoder", None),
+    )
+
+    # ── Decision Engine: pre-AI risk gate ──────────────────────────────────
+    decision = decide_event(
+        event_id=smart.event_id,
+        rule_level=smart.rule_level,
+        rule_description=smart.rule_description,
+        event_explanation=getattr(smart, "event_explanation", None),
+        groups=list(getattr(smart, "groups", None) or []),
+        event_family=event_family,
+        profile_name=host_profile.name if host_profile else None,
+        has_baseline_deviation=False,
+        has_ti_match=bool(getattr(smart, "ti_matches", None)),
+    )
+
+    # No-AI path for system/noise events
+    if not decision.should_run_ai:
+        static = build_static_explain_result(smart, decision)
+        return SnipenExplainResult(
+            summary=static["summary"],
+            why_suspicious=static["why_suspicious"],
+            against_it=static["against_it"],
+            severity=static["severity"],
+            risk_score=static["risk_score"],
+            confidence=static["confidence"],
+            mitre_techniques=[],
+            remediation=static["remediation"],
+            next_checks=static["next_checks"],
+            unusual_behavior=static["unusual_behavior"],
+            deviations=static["deviations"],
+            suspicious_fields=static["suspicious_fields"],
+            ran_ai=False,
+        )
+
+    # Build context blocks for the AI prompt
+    decision_ctx = build_decision_context_block(decision)
+    event_class_ctx = _get_event_class_context(event_family)
+    guardrail_block = build_guardrail_block(smart.model_dump(exclude_none=True))
+
     prompt = (
         "You are a senior SOC analyst. Explain this Wazuh security event in DETAIL and return valid JSON only. "
         "Language: German. Be concrete and technical, avoid generic phrases. "
-        "with keys: summary (str, 5-8 full German sentences), "
-        "why_suspicious (str, 3-6 sentences with concrete indicators), against_it (str – reasons it could be benign, 2-4 sentences, or null), "
+        "Keys: summary (str, 5-8 full German sentences), "
+        "why_suspicious (str, 3-6 sentences with concrete indicators), "
+        "against_it (str – reasons it could be benign, 2-4 sentences, or null), "
         "severity (one of: critical/high/medium/low/info), "
-        "suspicious_fields (list[str] – concrete important fields like event_id, user, ip_address, process, command_line, rule_level), "
+        "suspicious_fields (list[str] – concrete event fields: event_id, user, ip_address, process, command_line, rule_level), "
         "unusual_behavior (list[str] – concrete observed unusual behaviors, min 3 items), "
         "deviations (list[str] – deviations from expected baseline or normal behavior, min 3 items), "
-        "remediation (list[str], min 5 concrete actions), next_checks (list[str], min 5 concrete checks).\n\n"
         "risk_score (float 0-10, 10=most dangerous), "
         "confidence (one of: low/medium/high/very_high), "
-        "mitre_techniques (list[str] – ATT&CK IDs with names, e.g. [\"T1059 - Command and Scripting Interpreter\"]), "
-        "remediation (list[str]), next_checks (list[str]).\n\n"
+        "mitre_techniques (list[str] – ATT&CK IDs with names, or empty list if not allowed), "
+        "remediation (list[str], min 5 concrete actions), "
+        "next_checks (list[str], min 5 concrete checks).\n\n"
         "Reasoning requirements: "
-        "1) explicitly reference at least 3 concrete event fields in your text (e.g., event_id, process, user, ip_address, command_line, rule_level); "
-        "2) explain attacker intent and likely impact; "
-        "3) if confidence is low, explain exactly why.\n\n"
+        "1) reference at least 3 concrete event fields explicitly; "
+        "2) for infrastructure/network events describe the operational root cause FIRST before any security angle; "
+        "3) fehlende Felder (user=n/a, process=n/a) sind KEIN Verdachtsindikator bei System-/Infrastruktur-Events; "
+        "4) if confidence is low, explain exactly why.\n\n"
+        f"MANDATORY – Decision Engine Guardrails (you MUST follow these):\n{decision_ctx}\n\n"
+        f"MANDATORY – Artifact-Type Guardrails (VERBOTEN-Liste beachten):\n{guardrail_block}\n\n"
+        f"Additional Event Class Context:\n{event_class_ctx}\n\n"
+        f"Host Profile Context:\n{profile_context}\n\n"
         "Smart fields:\n"
         f"{json.dumps(smart.model_dump(exclude_none=True), ensure_ascii=False)}\n\n"
         "Raw event excerpt:\n"
@@ -1376,21 +2249,28 @@ def explain_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> Snip
     )
     try:
         parsed = _call_ollama_json(connection, prompt, timeout=120.0)
-        parsed = _ensure_explain_quality(parsed, smart, remediation_mode=False)
+        parsed = _ensure_explain_quality(parsed, smart, remediation_mode=False, family=event_family)
+        # Enforce severity ceiling from decision engine
+        parsed_sev = str(parsed.get("severity", decision.severity)).lower()
+        _sev_order = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+        if _sev_order.get(parsed_sev, 2) > _sev_order.get(decision.severity, 4):
+            parsed_sev = decision.severity
+        # Enforce MITRE guard
+        mitre = [str(x) for x in parsed.get("mitre_techniques", [])] if decision.allow_mitre else []
         return SnipenExplainResult(
             summary=str(parsed.get("summary", "No explanation returned.")),
             why_suspicious=parsed.get("why_suspicious") or None,
             against_it=parsed.get("against_it") or None,
-            severity=str(parsed.get("severity", "medium")).lower(),
+            severity=parsed_sev,
             suspicious_fields=[str(x) for x in parsed.get("suspicious_fields", [])],
             unusual_behavior=[str(x) for x in parsed.get("unusual_behavior", [])],
             deviations=[str(x) for x in parsed.get("deviations", [])],
             remediation=[str(x) for x in parsed.get("remediation", [])],
             next_checks=[str(x) for x in parsed.get("next_checks", [])],
             ran_ai=True,
-            risk_score=float(parsed["risk_score"]) if parsed.get("risk_score") is not None else None,
-            confidence=str(parsed["confidence"]).lower() if parsed.get("confidence") else None,
-            mitre_techniques=[str(x) for x in parsed.get("mitre_techniques", [])],
+            risk_score=float(parsed["risk_score"]) if parsed.get("risk_score") is not None else decision.risk_score,
+            confidence=str(parsed["confidence"]).lower() if parsed.get("confidence") else decision.confidence,
+            mitre_techniques=mitre,
         )
     except Exception as exc:
         return SnipenExplainResult(
@@ -1402,22 +2282,75 @@ def explain_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> Snip
 
 def remediate_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> SnipenExplainResult:
     smart = _normalize_smart(event_raw)
+    host_profile = get_profile_for_host(smart.host or "")
+    profile_context = build_profile_context_block(host_profile)
+
+    # Determine event family
+    event_family = _determine_event_family(
+        smart.event_id,
+        list(getattr(smart, "groups", None) or []),
+        getattr(smart, "decoder", None),
+    )
+
+    # ── Decision Engine: pre-AI risk gate ──────────────────────────────────
+    decision = decide_event(
+        event_id=smart.event_id,
+        rule_level=smart.rule_level,
+        rule_description=smart.rule_description,
+        event_explanation=getattr(smart, "event_explanation", None),
+        groups=list(getattr(smart, "groups", None) or []),
+        event_family=event_family,
+        profile_name=host_profile.name if host_profile else None,
+        has_baseline_deviation=False,
+        has_ti_match=bool(getattr(smart, "ti_matches", None)),
+    )
+
+    # No-AI path for system/noise events
+    if not decision.should_run_ai:
+        static = build_static_explain_result(smart, decision)
+        return SnipenExplainResult(
+            summary=static["summary"],
+            why_suspicious=static["why_suspicious"],
+            against_it=static["against_it"],
+            severity=static["severity"],
+            risk_score=static["risk_score"],
+            confidence=static["confidence"],
+            mitre_techniques=[],
+            remediation=static["remediation"],
+            next_checks=static["next_checks"],
+            unusual_behavior=static["unusual_behavior"],
+            deviations=static["deviations"],
+            suspicious_fields=static["suspicious_fields"],
+            ran_ai=False,
+        )
+
+    # Build context blocks for the AI prompt
+    decision_ctx = build_decision_context_block(decision)
+    event_class_ctx = _get_event_class_context(event_family)
+    guardrail_block = build_guardrail_block(smart.model_dump(exclude_none=True))
+
     prompt = (
         "You are a senior incident responder. For the following Wazuh security event, provide specific "
         "remediation steps and return valid JSON only with keys: "
         "summary (str – what happened, 4-7 sentences in German), "
-        "why_suspicious (str, 3-6 sentences with technical detail), against_it (str or null, 2-4 sentences), "
+        "why_suspicious (str, 3-6 sentences with technical detail), "
+        "against_it (str or null, 2-4 sentences), "
         "severity (one of: critical/high/medium/low/info), "
         "suspicious_fields (list[str] – the concrete fields that matter most), "
         "unusual_behavior (list[str] – specific suspicious behavior observed, min 3 items), "
         "deviations (list[str] – deviations from normal/expected behavior, min 3 items), "
         "risk_score (float 0-10, 10=most dangerous), "
         "confidence (one of: low/medium/high/very_high), "
-        "mitre_techniques (list[str] – ATT&CK IDs with names), "
-        "remediation (list[str] – concrete prioritized remediation steps, min 6 items), "
+        "mitre_techniques (list[str] – ATT&CK IDs with names, or empty list if not allowed), "
+        "remediation (list[str] – concrete prioritized steps for the EVENT CLASS, min 6 items), "
         "next_checks (list[str] – what to investigate next, min 6 items).\n\n"
-        "Reasoning requirements: include containment, eradication and recovery steps; "
-        "reference concrete evidence fields from the event; avoid generic one-liners.\n\n"
+        "Reasoning requirements: tailor containment/eradication/recovery to the event class; "
+        "reference concrete evidence fields; avoid generic one-liners; "
+        "fehlende Felder (user=n/a, process=n/a) sind KEIN Verdachtsindikator bei System-/Infrastruktur-Events.\n\n"
+        f"MANDATORY – Decision Engine Guardrails (you MUST follow these):\n{decision_ctx}\n\n"
+        f"MANDATORY – Artifact-Type Guardrails (VERBOTEN-Liste beachten):\n{guardrail_block}\n\n"
+        f"Additional Event Class Context:\n{event_class_ctx}\n\n"
+        f"Host Profile Context:\n{profile_context}\n\n"
         "Smart fields:\n"
         f"{json.dumps(smart.model_dump(exclude_none=True), ensure_ascii=False)}\n\n"
         "Raw event excerpt:\n"
@@ -1425,21 +2358,27 @@ def remediate_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> Sn
     )
     try:
         parsed = _call_ollama_json(connection, prompt, timeout=120.0)
-        parsed = _ensure_explain_quality(parsed, smart, remediation_mode=True)
+        parsed = _ensure_explain_quality(parsed, smart, remediation_mode=True, family=event_family)
+        # Enforce severity ceiling from decision engine
+        parsed_sev = str(parsed.get("severity", decision.severity)).lower()
+        _sev_order = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+        if _sev_order.get(parsed_sev, 2) > _sev_order.get(decision.severity, 4):
+            parsed_sev = decision.severity
+        mitre = [str(x) for x in parsed.get("mitre_techniques", [])] if decision.allow_mitre else []
         return SnipenExplainResult(
             summary=str(parsed.get("summary", "No remediation returned.")),
             why_suspicious=parsed.get("why_suspicious") or None,
             against_it=parsed.get("against_it") or None,
-            severity=str(parsed.get("severity", "medium")).lower(),
+            severity=parsed_sev,
             suspicious_fields=[str(x) for x in parsed.get("suspicious_fields", [])],
             unusual_behavior=[str(x) for x in parsed.get("unusual_behavior", [])],
             deviations=[str(x) for x in parsed.get("deviations", [])],
             remediation=[str(x) for x in parsed.get("remediation", [])],
             next_checks=[str(x) for x in parsed.get("next_checks", [])],
             ran_ai=True,
-            risk_score=float(parsed["risk_score"]) if parsed.get("risk_score") is not None else None,
-            confidence=str(parsed["confidence"]).lower() if parsed.get("confidence") else None,
-            mitre_techniques=[str(x) for x in parsed.get("mitre_techniques", [])],
+            risk_score=float(parsed["risk_score"]) if parsed.get("risk_score") is not None else decision.risk_score,
+            confidence=str(parsed["confidence"]).lower() if parsed.get("confidence") else decision.confidence,
+            mitre_techniques=mitre,
         )
     except Exception as exc:
         return SnipenExplainResult(
@@ -1465,6 +2404,9 @@ def ai_query_host(
             ran_ai=False,
         )
 
+    host_profile = get_profile_for_host(host)
+    profile_context = build_profile_context_block(host_profile)
+
     event_summaries = [
         {
             "idx": i,
@@ -1484,6 +2426,7 @@ def ai_query_host(
 
     prompt = (
         f"You are a senior SOC analyst. The threat hunter asks: \"{query}\"\n\n"
+        f"IMPORTANT – Host Profile Context:\n{profile_context}\n\n"
         f"These are recent Wazuh events from host '{host}' (last {hours}h, {len(events)} total):\n"
         f"{json.dumps(event_summaries, ensure_ascii=False)}\n\n"
         "Return valid JSON only with keys:\n"
