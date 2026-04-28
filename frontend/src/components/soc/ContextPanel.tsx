@@ -6,6 +6,12 @@
  */
 
 import React from 'react';
+
+/** Format a UTC ISO timestamp string as HH:MM:SS in the browser's local timezone. */
+function fmtTime(ts: string | null | undefined): string {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
 import { ExternalLink, Search, ShieldOff, CheckCircle2, Terminal } from 'lucide-react';
 import { SeverityBadge, StatusBadge, SocTag } from './Badges';
 import type { GeneratedTask } from './IncidentCard';
@@ -41,6 +47,7 @@ interface TaskPanelProps {
 interface EventPanelProps {
   kind: 'event';
   event: SocEvent;
+  relatedEvents?: SocEvent[];
   onInvestigate: (host: string) => void;
 }
 
@@ -159,7 +166,14 @@ function TaskContextPanel({ task, onInvestigate, onStatusChange }: TaskPanelProp
   );
 }
 
-function EventContextPanel({ event, onInvestigate }: EventPanelProps) {
+function EventContextPanel({ event, relatedEvents = [], onInvestigate }: EventPanelProps) {
+  // Build a pseudo-timeline from related events + this event sorted by time
+  const timelineItems = React.useMemo(() => {
+    const all = [...relatedEvents, event]
+      .filter((e) => Boolean(e.timestamp))
+      .sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
+    return all.slice(-5); // last 5 chronologically
+  }, [relatedEvents, event]);
   return (
     <div className="flex flex-col h-full overflow-hidden">
       {/* Header */}
@@ -247,6 +261,44 @@ function EventContextPanel({ event, onInvestigate }: EventPanelProps) {
               ))}
           </div>
         </Section>
+
+        {relatedEvents.length > 0 && (
+          <Section title={`Related Events · ${relatedEvents.length}`}>
+            {relatedEvents.slice(0, 4).map((re) => (
+              <div
+                key={re._key}
+                className="grid gap-1 py-1 border-b border-[var(--soc-border)]/60 last:border-0 font-mono text-[11px]"
+                style={{ gridTemplateColumns: '44px 36px 1fr' }}
+              >
+                <span className="text-[var(--soc-muted-fg)] tabular-nums">{fmtTime(re.timestamp)}</span>
+                <span className="text-[var(--soc-muted-fg)]">[{re.event_id ?? '—'}]</span>
+                <span className="truncate text-[var(--soc-foreground)]">{re.rule_description}</span>
+              </div>
+            ))}
+          </Section>
+        )}
+
+        {timelineItems.length > 1 && (
+          <Section title="Timeline">
+            {timelineItems.map((item, idx) => {
+              const isThis = item._key === event._key;
+              const dot = isThis ? '●' : '○';
+              const cls = isThis
+                ? 'text-[var(--soc-foreground)] font-semibold'
+                : 'text-[var(--soc-muted-fg)]';
+              return (
+                <div key={item._key} className={`flex items-start gap-2 py-0.5 font-mono text-[11px] ${cls}`}>
+                  <span className="w-3 shrink-0">{dot}</span>
+                  <span className="tabular-nums shrink-0 text-[var(--soc-muted-fg)]">{fmtTime(item.timestamp)}</span>
+                  <span className="truncate">{item.rule_description}</span>
+                  {idx < timelineItems.length - 1 && (
+                    <span className="absolute left-[5px] h-full border-l border-[var(--soc-border)] hidden" />
+                  )}
+                </div>
+              );
+            })}
+          </Section>
+        )}
       </div>
     </div>
   );

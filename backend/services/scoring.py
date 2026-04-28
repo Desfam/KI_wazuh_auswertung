@@ -1,6 +1,24 @@
 from __future__ import annotations
 
+import re
 from typing import Any
+
+
+# ── Patterns that are ALWAYS suspicious regardless of profile ─────────────────
+_ALWAYS_SUSPICIOUS_RE = re.compile(
+    r"-enc\b|-encodedcommand|iex\s*\(|invoke-expression|downloadstring|downloadfile"
+    r"|rundll32\s+javascript|mimikatz|sekurlsa|lsass|vssadmin\s+delete"
+    r"|schtasks\s+/create|net\s+user\s+/add|net\s+localgroup\s+administrators"
+    r"|reg\s+add.+\\run\b|wscript\.shell|powershell\s+-w\s+hidden"
+    r"|powershell\s+-windowstyle\s+hidden|amsi|shellcode|inject",
+    re.IGNORECASE,
+)
+
+# Windows event IDs that are routine on sysadmin hosts at high volume
+_SYSADMIN_NORMAL_EIDS = frozenset({
+    "4624", "4634", "4647", "4648", "4672", "4673", "4674",
+    "4688", "4689", "5156", "5157", "7040",
+})
 
 
 def score_group(group: dict[str, Any]) -> dict[str, Any]:
@@ -99,3 +117,75 @@ def severity_from_score(score: int) -> str:
     if score >= 45:
         return "medium"
     return "low"
+
+
+def apply_profile_modifiers(result: dict[str, Any], profile_name: str | None) -> dict[str, Any]:
+    """Adjust a ``score_group`` result based on the host profile.
+
+    This is the second-pass modifier used by the analysis engine.  The goal
+    is profilbasiertes Denken: a sysadmin host with many process-creation /
+    admin-logon events should NOT produce HIGH risk unless suspicious behaviour
+    is actually present.
+
+    Args:
+        result: Dict returned by ``score_group()``.
+        profile_name: The ``HostProfile.name`` for this host, or ``None``.
+
+    Returns:
+        A copy of *result* with adjusted ``local_score``, ``local_severity``,
+        ``suspicious``, and ``local_reason``.
+    """
+    if not profile_name:
+        return result
+
+    profile_lower = profile_name.lower()
+    if "sysadmin" not in profile_lower:
+        return result
+
+    score: int = result.get("local_score", 0)
+    reason: str = result.get("local_reason", "")
+    event_id: str = str(result.get("event_id") or "")
+    description: str = str(result.get("rule_description") or "").lower()
+    sample: dict[str, Any] = result.get("sample") or {}
+    # Build a combined text blob for hard-suspicious pattern matching
+    cmd = str(sample.get("CommandLine") or sample.get("command_line") or "")
+    searchable = f"{description} {cmd}".lower()
+
+    # Hard-suspicious → amplify, never suppress
+    if _ALWAYS_SUSPICIOUS_RE.search(searchable):
+        new_score = min(score + 15, 100)
+        new_reason = reason + "; [SysAdmin-Profil: Angriffsmuster erkannt – Risiko erhöht]"
+        out = dict(result)
+        out["local_score"] = new_score
+        out["local_severity"] = severity_from_score(new_score)
+        out["suspicious"] = True
+        out["local_reason"] = new_reason
+        return out
+
+    # Normal sysadmin event (login / process / admin) → suppress
+    is_normal_eid = event_id in _SYSADMIN_NORMAL_EIDS
+    if is_normal_eid:
+        # HARD RULE: normal event type, no hard-suspicious content → cap at low
+        new_score = min(score, 30)
+        new_reason = (
+            reason
+            + f"; [SysAdmin-Profil: Event {event_id} ist für Admin-Host normal – Score auf LOW gedeckelt]"
+        )
+        out = dict(result)
+        out["local_score"] = new_score
+        out["local_severity"] = severity_from_score(new_score)
+        out["suspicious"] = new_score >= 60
+        out["local_reason"] = new_reason
+        return out
+
+    # Unknown event on sysadmin host — apply a moderate cap
+    new_score = min(score, 55)
+    if new_score < score:
+        out = dict(result)
+        out["local_score"] = new_score
+        out["local_severity"] = severity_from_score(new_score)
+        out["suspicious"] = new_score >= 60
+        out["local_reason"] = reason + "; [SysAdmin-Profil: Score auf MEDIUM gedeckelt]"
+        return out
+
+    return result

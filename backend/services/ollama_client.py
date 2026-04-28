@@ -32,7 +32,7 @@ def assess_group(connection: dict[str, Any], group: dict[str, Any]) -> OllamaAss
     }
 
     try:
-        with httpx.Client(timeout=60.0) as client:
+        with httpx.Client(timeout=180.0) as client:
             response = client.post(f"{connection['ollama_url'].rstrip('/')}/api/generate", json=payload)
             response.raise_for_status()
             raw_response = response.json().get("response", "{}")
@@ -128,13 +128,13 @@ def chat_with_context(
         direct_question=direct_question,
     )
     last_error: Exception | None = None
-    with httpx.Client(timeout=150.0) as client:
+    with httpx.Client(timeout=300.0) as client:
         for attempt in range(3):
             payload = {
                 "model": connection["ollama_model"],
                 "stream": False,
                 "prompt": prompt,
-                "options": {"num_ctx": 16384},
+                "options": {"num_ctx": 8192},
             }
             try:
                 response = client.post(f"{connection['ollama_url'].rstrip('/')}/api/generate", json=payload)

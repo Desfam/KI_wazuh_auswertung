@@ -368,3 +368,193 @@ def adjust_severity_for_profile(
         idx = min(len(severity_order) - 1, idx + 1)
 
     return severity_order[idx]
+
+
+# ── Built-in profile seeding ──────────────────────────────────────────────────
+
+_BUILTIN_PROFILES: list[dict] = [
+    {
+        "name": "sysadmin_workstation",
+        "display_name": "SysAdmin Workstation",
+        "description": (
+            "System-Administrator-Host mit erwartetem hohem Aktivitätsniveau. "
+            "PowerShell, Admin-Logins, Dienst-Änderungen, RDP und Remote-Management "
+            "sind normal. Nur echte Angriffsmuster und Baseline-Abweichungen zählen."
+        ),
+        "risk_tolerance": "high",
+        "expected_behaviors": {
+            "many_process_creations": True,
+            "many_logins": True,
+            "admin_actions": True,
+            "remote_management": True,
+            "powershell_usage": True,
+            "cmd_usage": True,
+            "ssh_usage": True,
+            "rdp_usage": True,
+            "service_changes": True,
+            "script_execution": True,
+            "software_changes": True,
+            "network_activity": True,
+        },
+        "allowed_process_patterns": [
+            "powershell.exe",
+            "pwsh.exe",
+            "cmd.exe",
+            "mmc.exe",
+            "mstsc.exe",
+            "ssh.exe",
+            "code.exe",
+            "services.exe",
+            "taskmgr.exe",
+            "regedit.exe",
+            "eventvwr.exe",
+            "compmgmt.exe",
+            "sc.exe",
+            "net.exe",
+        ],
+        "suspicious_patterns": [
+            "powershell -enc",
+            "powershell -encodedcommand",
+            "IEX(",
+            "Invoke-Expression",
+            "DownloadString",
+            "DownloadFile",
+            "New-Object Net.WebClient",
+            "rundll32 javascript",
+            "mimikatz",
+            "sekurlsa",
+            "lsass dump",
+            "vssadmin delete shadows",
+            "schtasks /create",
+            "reg add.*\\Run",
+            "net user /add",
+            "net localgroup administrators",
+        ],
+        "always_critical_event_ids": ["1102", "517", "4728", "4732", "4756", "4720", "4726"],
+        "notes": [
+            "Hohes Aktivitätsniveau ist für SysAdmins normal — nicht als Angriff werten.",
+            "Score-Deckelung auf LOW für erwartete Events (4624, 4688, 4672, …).",
+            "Baseline-Abweichungen bei bekannten Events → max MEDIUM.",
+            "Encoding, LSASS-Zugriff, Mimikatz → immer CRITICAL unabhängig vom Profil.",
+        ],
+    },
+    {
+        "name": "developer",
+        "display_name": "Developer Workstation",
+        "description": (
+            "Entwickler-Workstation mit erhöhter Prozess- und Build-Aktivität. "
+            "Compiler, IDEs, npm/pip, Git und PowerShell sind normal. "
+            "Netzwerkverbindungen zu bekannten Dev-Repos sind erwartet."
+        ),
+        "risk_tolerance": "medium",
+        "expected_behaviors": {
+            "many_process_creations": True,
+            "powershell_usage": True,
+            "cmd_usage": True,
+            "ssh_usage": True,
+            "software_changes": True,
+            "network_activity": True,
+            "script_execution": True,
+        },
+        "allowed_process_patterns": [
+            "powershell.exe",
+            "pwsh.exe",
+            "cmd.exe",
+            "code.exe",
+            "node.exe",
+            "python.exe",
+            "git.exe",
+            "npm.cmd",
+            "msbuild.exe",
+            "devenv.exe",
+            "dotnet.exe",
+        ],
+        "suspicious_patterns": [
+            "powershell -enc",
+            "IEX(",
+            "mimikatz",
+            "lsass",
+            "vssadmin delete",
+        ],
+        "always_critical_event_ids": ["1102", "4728", "4732", "4756", "4720"],
+        "notes": [
+            "Build-Prozesse und IDEs erzeugen viele Process-Create-Events — normal.",
+            "SSH/Git zu bekannten Repositories ist erwartet.",
+        ],
+    },
+    {
+        "name": "server",
+        "display_name": "Application Server",
+        "description": (
+            "Produktionsserver mit definierten Diensten. "
+            "Wenig interaktive Logins erwartet. "
+            "Neue Prozesse oder Logins von unbekannten Accounts sind auffällig."
+        ),
+        "risk_tolerance": "low",
+        "expected_behaviors": {
+            "network_activity": True,
+            "service_changes": False,
+            "many_logins": False,
+            "admin_actions": False,
+            "powershell_usage": False,
+            "software_changes": False,
+        },
+        "allowed_process_patterns": [
+            "svchost.exe",
+            "services.exe",
+            "lsass.exe",
+            "spoolsv.exe",
+        ],
+        "suspicious_patterns": [
+            "powershell",
+            "cmd.exe",
+            "mstsc",
+            "IEX(",
+            "mimikatz",
+            "lsass",
+        ],
+        "always_critical_event_ids": ["1102", "4720", "4728", "4732", "7045", "4697"],
+        "notes": [
+            "Interaktive Logins und neue Prozesse sind auf diesem Host ungewöhnlich.",
+            "Powershell-Nutzung gilt als verdächtig.",
+        ],
+    },
+]
+
+
+def seed_builtin_profiles() -> None:
+    """Ensure built-in profiles exist in the database.
+
+    Safe to call on every startup — skips profiles that already exist by name.
+    """
+    now = utc_now_iso()
+    with get_connection() as conn:
+        for p in _BUILTIN_PROFILES:
+            existing = conn.execute(
+                "SELECT id FROM host_profiles WHERE name = ?", (p["name"],)
+            ).fetchone()
+            if existing:
+                continue
+            conn.execute(
+                """
+                INSERT INTO host_profiles (
+                    name, display_name, description, risk_tolerance,
+                    expected_behaviors_json, allowed_process_patterns_json,
+                    suspicious_patterns_json, always_critical_event_ids_json,
+                    notes_json, is_builtin, created_at, updated_at
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, 1, ?, ?)
+                """,
+                (
+                    p["name"],
+                    p["display_name"],
+                    p["description"],
+                    p["risk_tolerance"],
+                    json.dumps(p["expected_behaviors"], ensure_ascii=False),
+                    json.dumps(p["allowed_process_patterns"], ensure_ascii=False),
+                    json.dumps(p["suspicious_patterns"], ensure_ascii=False),
+                    json.dumps(p["always_critical_event_ids"], ensure_ascii=False),
+                    json.dumps(p["notes"], ensure_ascii=False),
+                    now,
+                    now,
+                ),
+            )

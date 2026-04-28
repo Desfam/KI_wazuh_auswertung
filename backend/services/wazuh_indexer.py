@@ -272,7 +272,16 @@ def normalize_alert(raw: dict[str, Any]) -> dict[str, Any]:
 def detect_platform(raw: dict[str, Any], groups: list[str], decoder: Any, event_id: Any) -> str:
     groups_joined = " ".join(str(item).lower() for item in groups)
     decoder_text = str(decoder or "").lower()
-    if event_id or "windows" in groups_joined or "win" in decoder_text:
+    # Check agent.os.platform first – most reliable signal
+    agent_os_platform = str(_pick(raw, "agent.os.platform") or "").lower()
+    if agent_os_platform:
+        if "win" in agent_os_platform:
+            return "windows"
+        if any(tok in agent_os_platform for tok in ("linux", "unix", "darwin", "ubuntu", "debian", "centos", "rhel")):
+            return "linux"
+    # Windows: requires data.win.* keys or explicit windows group/decoder – NOT just any event_id
+    has_win_data = bool(_pick(raw, "data.win.system.eventID") or _pick(raw, "data.win.system.eventId"))
+    if has_win_data or "windows" in groups_joined or "win" in decoder_text:
         return "windows"
     if any(keyword in groups_joined for keyword in ("linux", "syslog", "sshd", "pam", "audit")):
         return "linux"

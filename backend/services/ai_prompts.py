@@ -4,6 +4,80 @@ import json
 from typing import Any
 
 
+def build_fullscan_ai_prompt(
+    risk_level: str,
+    risk_score: float,
+    risk_score_reason: str,
+    profile_context: str,
+    baseline_text: str,
+    baseline_diff_block: str,
+) -> str:
+    """Prompt for the AI refinement pass of a Full Scan report.
+
+    The model must output ONLY the sections listed below — no intro, no recap,
+    no generic SOC filler.  Every claim must be traceable to the provided data.
+    """
+    return (
+        "You are a SOC analyst writing a concise decision note. "
+        "Output ONLY the sections below in exactly this order. "
+        "Write in German. Use Markdown. "
+        "Do NOT add any other sections, introductions, or closing remarks.\n\n"
+
+        "══════ OUTPUT STRUCTURE (copy headings verbatim) ══════\n\n"
+
+        "## Evidence\n"
+        "### Bestätigt\n"
+        "List only facts that are directly present in the scan data. "
+        "No hypotheses. No invented processes, IPs, commands, or users. "
+        "If nothing is confirmed, write '- Keine bestätigten Indikatoren'.\n\n"
+
+        "### Prüfungswürdig\n"
+        "List items that need follow-up but are NOT yet confirmed as malicious:\n"
+        "- TI-Treffer ohne IOC-Details: als 'TI-Validierung erforderlich' markieren, nicht als bestätigt\n"
+        "- Service-Änderungen (7040/7045): review-würdig, nicht automatisch kritisch\n"
+        "- Neue Baseline-Abweichungen falls vorhanden\n"
+        "- 4625 gefolgt von 4624 vom selben Nutzer/Host: als möglicher Brute-Force markieren, nicht bestätigt\n"
+        "- Auffällige Command Lines nur wenn tatsächlich vorhanden\n"
+        "If nothing needs review, write '- Nichts prüfungswürdig'.\n\n"
+
+        "### Nicht beobachtet\n"
+        "Only list what was explicitly NOT found:\n"
+        "- Keine verdächtige Command Line\n"
+        "- Keine bestätigte Angriffskette\n"
+        "- Keine bestätigte Persistenz\n"
+        "- Kein bestätigtes C2\n"
+        "- Keine bestätigte Lateral Movement\n"
+        "Add or remove bullets based on actual data, do not invent negations.\n\n"
+
+        "## Bewertungsbegründung\n"
+        "One sentence: why is the risk score what it is? "
+        "Reference the actual evidence. "
+        "Do NOT contradict the pre-computed risk level.\n\n"
+
+        "══════ STRICT RULES ══════\n"
+        f"1. Risk Level is pre-computed: **{risk_level}** (Score {risk_score}/10). "
+        "You MUST use this. You may explain it, but never contradict it.\n"
+        f"   Engine reason: {risk_score_reason or '—'}\n"
+        "2. NEVER invent: PowerShell commands, LSASS access, C2 domains, lateral movement, "
+        "persistence mechanisms, specific IP addresses, process names, or usernames "
+        "that do not appear in the provided data.\n"
+        "3. 4624/4634 are normal logon/logoff events. Only flag them if correlated with 4625, "
+        "unusual source, privileged user, or a confirmed attack chain.\n"
+        "4. lsass.exe is normal. Only flag it if a dump/access/commandline/path anomaly is present.\n"
+        "5. MITRE rule mapping alone is NOT evidence of compromise.\n"
+        "6. TI-Treffer without IOC details = 'TI-Validierung erforderlich', not confirmed threat.\n"
+        "7. For server profiles: service changes are review-worthy, not automatically high risk.\n"
+        "8. For sysadmin profiles: admin activity is expected unless suspicious behavior patterns exist.\n"
+        "9. If baseline deviations = 0 and no suspicious behavior flags exist, explicitly state risk is reduced.\n"
+        "10. Do NOT output 'Keine Auffälligkeiten' alongside specific suspicious findings.\n\n"
+
+        "══════ CONTEXT ══════\n"
+        f"Profile: {profile_context or 'Standard (kein spezifisches Profil)'}\n\n"
+        f"Baseline: {baseline_text or 'Keine Baseline vorhanden.'}\n"
+        f"Baseline Diff: {baseline_diff_block or 'Keine Abweichungen erkannt.'}\n"
+    )
+
+
 def build_structured_group_prompt(group: dict[str, Any]) -> str:
     return (
         "You are a SOC analyst. Review the grouped Wazuh finding and return valid JSON only with the keys "

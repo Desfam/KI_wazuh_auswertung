@@ -304,6 +304,10 @@ export type SnipenSmartEvent = {
   new_process_id?: string | null;
   event_family?: string | null;
   summary?: string | null;
+  fim_path?: string | null;
+  fim_mode?: string | null;
+  fim_owner?: string | null;
+  fim_group?: string | null;
 };
 
 export type SnipenEvent = {
@@ -456,6 +460,7 @@ export type BaselineDeviation = {
   details: Record<string, unknown>;
   resolved: boolean;
   resolved_at: string | null;
+  final_classification: string;
 };
 
 export type BaselineDiff = {

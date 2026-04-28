@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import json
+import re
 import threading
 import time
 import uuid
@@ -12,6 +13,7 @@ from typing import Any
 import httpx
 
 from db.database import get_active_connection, save_fullscan_report
+from services.ai_prompts import build_fullscan_ai_prompt
 from services.baseline_service import get_baseline_diff, get_baseline_summary
 from services.ollama_client import chat_with_context
 from services.artifact_action_builder import (
@@ -58,6 +60,8 @@ class FullScanJob:
         self.ti_matches = 0
         self.suspicious_events = 0
         self.risk_score = 0.0
+        self.profile_name: str | None = None
+        self.risk_breakdown: dict[str, Any] = {}
         self.ai_enabled = False
         self.ai_iterations_target = 0
         self.ai_iterations_completed = 0
@@ -364,6 +368,33 @@ def _build_insights(events: list[Any]) -> dict[str, Any]:
     mitre: Counter[str] = Counter()
     rule_levels: list[int] = []
 
+    # Pattern scanning — unique hits only (deduplicated by match key)
+    _HARD_RE = re.compile(
+        r"\bmimikatz\b|sekurlsa|lsadump|lsass\.exe"
+        r"|vssadmin\s+delete\s+shadows"
+        r"|iex\s*[\(\[]|invoke-expression"
+        r"|-enc\b|-encodedcommand"
+        r"|downloadstring|downloadfile|downloaddata"
+        r"|\bshellcode\b|inject.*process|process.*inject"
+        r"|amsiScanBuffer|amsiInitialize",
+        re.IGNORECASE,
+    )
+    _SOFT_RE = re.compile(
+        r"rundll32\s+javascript|wscript\.shell"
+        r"|powershell\s+-w(?:indowstyle)?\s+hidden"
+        r"|-noprofile\s+-noni"
+        r"|schtasks\s+/create|net\s+user\s+/add"
+        r"|net\s+localgroup\s+administrators.*\/add"
+        r"|reg\s+add\s+.*\\run\b"
+        r"|\\AppData\\.*\.(?:exe|ps1|bat|cmd)\b"
+        r"|\\Temp\\.*\.(?:exe|ps1|bat|cmd)\b",
+        re.IGNORECASE,
+    )
+    seen_hard: set[str] = set()
+    seen_soft: set[str] = set()
+    hard_patterns: list[str] = []
+    soft_patterns: list[str] = []
+
     for event in events:
         smart = getattr(event, "smart", None)
         if not smart:
@@ -388,6 +419,26 @@ def _build_insights(events: list[Any]) -> dict[str, Any]:
         if isinstance(level, int):
             rule_levels.append(level)
 
+        # Scan raw text fields for attack patterns
+        searchable = " ".join(filter(None, [
+            str(getattr(smart, "command_line", "") or ""),
+            str(getattr(smart, "system_message", "") or ""),
+            str(getattr(smart, "rule_description", "") or ""),
+            process,
+        ]))
+        m_hard = _HARD_RE.search(searchable)
+        if m_hard:
+            key = m_hard.group(0)[:40].lower()
+            if key not in seen_hard:
+                seen_hard.add(key)
+                hard_patterns.append(key)
+        m_soft = _SOFT_RE.search(searchable)
+        if m_soft:
+            key = m_soft.group(0)[:40].lower()
+            if key not in seen_soft:
+                seen_soft.add(key)
+                soft_patterns.append(key)
+
     high_events = sum(1 for lvl in rule_levels if lvl >= 10)
     medium_events = sum(1 for lvl in rule_levels if 6 <= lvl < 10)
 
@@ -399,6 +450,8 @@ def _build_insights(events: list[Any]) -> dict[str, Any]:
         "top_mitre": mitre.most_common(8),
         "high_events": high_events,
         "medium_events": medium_events,
+        "hard_suspicious_patterns": hard_patterns,
+        "soft_suspicious_patterns": soft_patterns,
     }
 
 
@@ -492,48 +545,22 @@ def _run_ai_refinement(job: FullScanJob, connection: dict[str, Any], context_jso
             return
         job.add_log(f"KI Iteration {iteration}/{job.ai_iterations_target} gestartet")
         if iteration == 1:
-            risk_level_now = map_score_to_level(job.risk_score)
-            prompt = (
-                "Erstelle einen operativen SOC-Report auf Deutsch.\n"
-                "Der Report ersetzt ALLE anderen Sektionen – gib NUR diesen Text aus, keine Dopplungen.\n\n"
-                "PFLICHT-SEKTIONEN (genau in dieser Reihenfolge, keine weiteren):\n"
-                "## Executive Summary\n"
-                "## Key Findings\n"
-                "## Baseline-Bewertung\n"
-                "## Risiko-Einschätzung\n"
-                "## Maßnahmen\n"
-                "## Confidence\n\n"
-                "══════════ EISERNE REGELN ══════════\n"
-                f"1. RISK LEVEL: Das vorberechnete Risk Level ist **{risk_level_now}** (Score {job.risk_score}/10).\n"
-                "   Du MUSST dieses Level verwenden. Du darfst es begründen, aber NICHT ändern oder widersprechen.\n"
-                f"   Risk Engine Begründung: {job.risk_score_reason or '—'}\n"
-                f"   Verboten: irgendwo anders im Text ein anderes Niveau zu nennen (z.B. nicht 'MEDIUM' schreiben wenn '{risk_level_now}' = HIGH).\n"
-                f"   Verboten: 'keine Bedrohungsindikatoren' oder 'keine Auffälligkeiten' schreiben wenn Risk Level {risk_level_now} ist HIGH oder MEDIUM.\n\n"
-                "2. KEIN DUPLIKAT: Schreibe jeden Inhalt nur EINMAL. Kein Wiederholen von Summary in anderen Sektionen.\n\n"
-                "3. PROFIL-KONTEXT (bekannt – NICHT 'Profil unbekannt' schreiben):\n"
-                f"   {job.profile_context or 'Standardprofil'}\n\n"
-                "4. BASELINE:\n"
-                f"   {job.baseline_text or 'Keine Baseline vorhanden.'}\n"
-                f"   Diff: {job.baseline_diff_block or 'Keine Abweichungen erkannt.'}\n"
-                "   → Wenn KEINE neuen Abweichungen: Risiko relativieren, aber erklären warum Score trotzdem hoch ist falls zutreffend.\n"
-                "   → NICHT schreiben 'keine ungewöhnlichen Entwicklungen' UND gleichzeitig auffällige Events aufführen.\n\n"
-                "5. EVENT-IDs ERKLÄREN: Wenn du Event-IDs nennst, erkläre kurz was sie bedeuten.\n"
-                "   Bekannte IDs: 4624=Logon, 4625=Logon Failure, 4634=Logoff, 4688=Process Creation,\n"
-                "   4697=Service Install, 4720=Account Created, 4732=Group Change, 7040=Service Config Change,\n"
-                "   7045=New Service, 1102=Audit Log Cleared, 4698/4702=Task Create/Update,\n"
-                "   16384=oft WinRM/PowerShell Execution-Policy oder Subscription-Events – Kontext prüfen.\n\n"
-                "6. PROFIL-NORMALISIERUNG: Für einen Entwicklungs-Host (DEV-Profil) sind\n"
-                "   powershell.exe, cmd.exe, 4624/4634 (Logon/Logoff) grundsätzlich erklärbar.\n"
-                "   Trotzdem: Frequenz und Kontext prüfen. Wenn baseline-konform → explizit sagen.\n\n"
-                "7. MASSNAHMEN: mindestens 3, host- und evidenzspezifisch. Format: 'Prüfe X → warum → womit'.\n"
-                "   Keine generischen Ratschläge wie 'prüfe Prozesse'.\n\n"
-                "8. STATUS-FELD: Nicht selbst ausgeben – Status wird vom System gesetzt.\n"
+            prompt = build_fullscan_ai_prompt(
+                risk_level=map_score_to_level(job.risk_score),
+                risk_score=job.risk_score,
+                risk_score_reason=job.risk_score_reason or "",
+                profile_context=job.profile_context or "",
+                baseline_text=job.baseline_text or "",
+                baseline_diff_block=job.baseline_diff_block or "",
             )
         else:
             prompt = (
-                "Verfeinere die letzte Antwort. Entferne generische Aussagen, priorisiere Top-3 Risiken, "
-                "nenne konkrete Checks und markiere moeglich harmlose Muster klar getrennt. "
-                "Bevorzuge technische Details aus Eventdaten gegenueber allgemeinen SOC-Floskeln."
+                "Refine the previous answer. "
+                "Remove any generic SOC filler and unsupported claims. "
+                "Ensure every bullet in '### Bestätigt' is directly traceable to scan data. "
+                "Move anything without direct evidence to '### Prüfungswürdig' or '### Nicht beobachtet'. "
+                "Do NOT add PowerShell, LSASS, C2, lateral movement, or persistence claims "
+                "unless the scan data explicitly contains them."
             )
         try:
             ai_text = chat_with_context(connection, prompt, history=history, report_context=context_json)
@@ -580,107 +607,230 @@ def map_score_to_level(score: float) -> str:
     return "LOW"
 
 
-# ── Risk Scoring Engine v2 ────────────────────────────────────────────────────
+# ── Risk Scoring Engine v3 (enterprise-grade, finding-based) ─────────────────
+#
+# Principle: volume != risk.  Score is derived from CONFIRMED findings
+# (dangerous EIDs, attack chains, behavior patterns, TI hits, baseline
+# deviations).  Hard caps ensure a stable sysadmin host cannot reach HIGH
+# purely because it has many routine admin events.
 
-# Weighted risk contribution per Event ID (per occurrence, capped internally)
-_EVENT_RISK_WEIGHTS: dict[str, float] = {
-    # Persistence / Critical
-    "7045": 2.5,   # New service installed
-    "1102": 3.0,   # Audit log cleared — high suspicion
-    "4697": 2.5,   # Service installed via SCM
-    "4719": 2.0,   # System audit policy changed
-    "4698": 1.8,   # Scheduled task created
-    "4702": 1.5,   # Scheduled task updated
-    "4720": 1.8,   # New user account created
-    "4726": 1.5,   # User account deleted
-    "4732": 1.2,   # Member added to security group
-    "4728": 1.2,   # Member added to global group
-    "4740": 1.5,   # Account locked out
-    # Lateral movement / credential
-    "4625": 0.4,   # Failed logon (many = brute force)
-    "4648": 1.0,   # Explicit credential use
-    "4672": 0.8,   # Special privileges assigned at logon
-    # Low risk operational
-    "4624": 0.05,  # Successful logon — very common
-    "4634": 0.02,  # Logoff
-    "4688": 0.1,   # Process creation
-    "4689": 0.02,  # Process exit
-    "7023": 0.2,   # Service failed — operational, not threat
-    "7040": 0.5,   # Service config change — moderate
-    "7036": 0.0,   # Service state change — noise
-    # Noise / ignore
-    "10016": 0.0,
-    "16384": 0.0,
-    "4608":  0.0,
-    "4609":  0.0,
-    "4800":  0.0,
-    "4801":  0.0,
-    "6005":  0.0,
-    "6006":  0.0,
-    "6013":  0.0,
-    "41":    0.0,
-    "1074":  0.0,
+# Score for ONE confirmed occurrence of a dangerous event ID.
+# Multiple occurrences of the same EID do NOT multiply this.
+_DANGEROUS_EID_SCORES: dict[str, float] = {
+    "1102": 8.5,   # Audit log cleared
+    "7045": 7.5,   # New service installed
+    "4697": 7.5,   # Service installed via SCM
+    "4719": 7.0,   # System audit policy changed
+    "4698": 6.5,   # Scheduled task created
+    "4728": 6.5,   # Member added to global security group
+    "4732": 6.5,   # Member added to local security group
+    "4720": 6.0,   # New user account created
+    "4740": 5.5,   # Account locked out
+    "4726": 5.5,   # User account deleted
+    "4702": 5.5,   # Scheduled task updated
+    "7023": 4.0,   # Service failed to start
+    "4625": 2.5,   # Failed logon (base; brute-force chain adds more)
+    "7040": 2.0,   # Service config change
 }
 
-# Persistence event IDs — any single occurrence sets a risk floor
-_PERSISTENCE_EVENT_IDS: frozenset[str] = frozenset({"7045", "1102", "4697", "4719", "4698", "4702", "4720"})
+_EID_LABELS: dict[str, str] = {
+    "1102": "Audit-Log gelöscht",
+    "7045": "Neuer Dienst installiert",
+    "4697": "Dienst via SCM installiert",
+    "4719": "Audit-Richtlinie geändert",
+    "4698": "Geplante Aufgabe erstellt",
+    "4702": "Geplante Aufgabe aktualisiert",
+    "4720": "Neues Benutzerkonto erstellt",
+    "4726": "Benutzerkonto gelöscht",
+    "4728": "Mitglied zu globaler Gruppe hinzugefügt",
+    "4732": "Mitglied zu lokaler Gruppe hinzugefügt",
+    "4740": "Konto gesperrt",
+    "4625": "Fehlgeschlagener Anmeldeversuch",
+    "7040": "Dienst-Konfigurationsänderung",
+    "7023": "Dienst nicht gestartet",
+    "4624": "Erfolgreiche Anmeldung",
+    "4688": "Prozesserstellung",
+    "4648": "Anmeldung mit expliziten Anmeldedaten",
+    "4672": "Sonderrechte bei Anmeldung",
+}
 
-# Brute force: if 4625 occurs many times then 4624 + 4672 follow → attack chain
-_BRUTE_FORCE_THRESHOLD = 10  # 4625 occurrences needed to flag brute force
+# EIDs that are fully benign on sysadmin hosts — zero contribution to base score
+_SYSADMIN_BENIGN_EIDS: frozenset[str] = frozenset({
+    "4624", "4634", "4647", "4648", "4672", "4673", "4674",
+    "4688", "4689", "5156", "5157", "7036", "7040",
+    "10016", "16384", "4608", "4609", "4800", "4801",
+    "6005", "6006", "6013", "41", "1074",
+})
+
+_BRUTE_FORCE_THRESHOLD = 10
 
 
-def _compute_risk_score_v2(insights: dict[str, Any], ti_matches: int, deviation_count: int) -> tuple[float, str]:
+def _compute_risk_score_v2(
+    insights: dict[str, Any],
+    ti_matches: int,
+    deviation_count: int,
+    profile_name: str | None = None,
+) -> tuple[float, str, dict[str, Any]]:
+    """Enterprise-grade risk scoring.  Returns (final_score, reason_text, breakdown).
+
+    Aggregation:
+        base   = max(dangerous_eid_finding_scores)
+        extra  = diminishing bonus for additional dangerous EIDs  (+max 1.5)
+        chain  = attack chain bonus                                (+max 3.0)
+        behav  = suspicious behavior patterns                      (+max 3.0)
+        ti     = threat-intel hits                                 (+max 2.0)
+        dev    = baseline deviations                               (+max 1.5)
+        raw    = base + extra + chain + behav + ti + dev
+        final  = raw, then hard caps applied
     """
-    Compute a weighted risk score (0.0–10.0) and human-readable reason.
-    Returns (score, reason_text).
-    """
-    top_event_ids: list[tuple[str, int]] = insights.get("top_event_ids", [])
-    event_id_counts: dict[str, int] = {eid: cnt for eid, cnt in top_event_ids}
+    is_sysadmin = bool(profile_name and "sysadmin" in profile_name.lower())
 
-    score = 0.0
+    event_id_counts: dict[str, int] = {
+        str(eid): cnt for eid, cnt in insights.get("top_event_ids", [])
+    }
+    hard_patterns: list[str] = insights.get("hard_suspicious_patterns", [])
+    soft_patterns: list[str] = insights.get("soft_suspicious_patterns", [])
+    suspicious_behavior_count = len(hard_patterns) + len(soft_patterns)
     reasons: list[str] = []
-    persistence_hit = False
+
+    # ── 1. Finding base: max score from any dangerous EID present ────────────
+    finding_scores: list[float] = []
+    dangerous_eids_found: list[str] = []
 
     for eid, cnt in event_id_counts.items():
-        weight = _EVENT_RISK_WEIGHTS.get(str(eid), 0.15)  # unknown event IDs get small weight
-        if weight == 0.0:
+        if is_sysadmin and eid in _SYSADMIN_BENIGN_EIDS:
             continue
-        # Cap contribution per event type to avoid single noisy event dominating
-        contribution = min(weight * cnt, weight * 20)
-        score += contribution
+        eid_score = _DANGEROUS_EID_SCORES.get(eid, 0.0)
+        if eid_score > 0.0:
+            finding_scores.append(eid_score)
+            dangerous_eids_found.append(eid)
+            if eid_score >= 5.0:
+                label = _EID_LABELS.get(eid, "Sicherheitsereignis")
+                reasons.append(f"Event {eid} ({cnt}×): {label}")
 
-        if str(eid) in _PERSISTENCE_EVENT_IDS:
-            persistence_hit = True
-            reasons.append(f"Event {eid} ({cnt}x) — Persistenz-/Konfigurationsänderung")
+    # Fallback: if no dangerous EID but Wazuh rule-level signals exist
+    high_events = int(insights.get("high_events", 0))
+    medium_events = int(insights.get("medium_events", 0))
+    if not finding_scores:
+        if high_events > 0:
+            finding_scores.append(4.5)
+            reasons.append(f"Wazuh-Regeln mit hohem Level: {high_events}×")
+        elif medium_events > 0:
+            finding_scores.append(2.5)
 
-    # Brute force chain: high 4625 count
+    max_finding_score = max(finding_scores) if finding_scores else 0.0
+
+    # ── 2. Additional dangerous EIDs — diminishing increments ────────────────
+    extra_eid_score = min(1.5, max(0, len(dangerous_eids_found) - 1) * 0.4)
+
+    # ── 3. Attack chain ───────────────────────────────────────────────────────
     failed_logons = event_id_counts.get("4625", 0)
+    attack_chain_score = 0.0
+    has_attack_chain = False
     if failed_logons >= _BRUTE_FORCE_THRESHOLD:
-        bonus = min(2.0, failed_logons / 20.0)
-        score += bonus
-        reasons.append(f"Brute-Force-Indikator: {failed_logons}× Login-Failure (4625)")
-        # Check if followed by successful logon + privilege — escalation chain
+        attack_chain_score += 1.5
+        reasons.append(f"Brute-Force: {failed_logons}× fehlgeschlagene Anmeldungen (4625)")
         if event_id_counts.get("4624", 0) > 0 and event_id_counts.get("4672", 0) > 0:
-            score += 1.5
-            reasons.append("Eskalations-Kette: 4625 → 4624 → 4672 (mögliche Kompromittierung)")
+            attack_chain_score += 1.5
+            has_attack_chain = True
+            reasons.append("Angriffskette bestätigt: 4625→4624→4672 (Brute Force→Erfolg→Privilegien)")
 
-    # Threat Intel matches — always high signal
+    # ── 4. Suspicious behavior ────────────────────────────────────────────────
+    behavior_score = 0.0
+    if hard_patterns:
+        behavior_score += min(3.0, len(hard_patterns) * 1.5)
+        reasons.append(f"Kritische Angriffsmuster: {', '.join(hard_patterns[:3])}")
+    if soft_patterns:
+        behavior_score += min(1.5, len(soft_patterns) * 0.5)
+        reasons.append(f"Verdächtige Muster: {', '.join(soft_patterns[:3])}")
+    behavior_score = min(behavior_score, 3.0)
+
+    # ── 5. Threat Intel ───────────────────────────────────────────────────────
+    ti_score = 0.0
     if ti_matches > 0:
-        score += min(3.0, ti_matches * 1.5)
-        reasons.append(f"Threat-Intel-Treffer: {ti_matches}x")
+        ti_score = min(2.0, ti_matches * 1.0)
+        reasons.append(f"Threat-Intel-Treffer: {ti_matches}× (Überprüfung erforderlich)")
 
-    # Baseline deviations
+    # ── 6. Baseline deviations ────────────────────────────────────────────────
+    deviation_score = 0.0
     if deviation_count > 0:
-        score += min(1.5, deviation_count * 0.3)
+        deviation_score = min(1.5, deviation_count * 0.2)
         reasons.append(f"Baseline-Abweichungen: {deviation_count}")
 
-    # Persistence floor: if any persistence event found, minimum score is 5.0
-    if persistence_hit and score < 5.0:
-        score = 5.0
+    # ── 7. Aggregate ──────────────────────────────────────────────────────────
+    raw_score = (
+        max_finding_score
+        + extra_eid_score
+        + attack_chain_score
+        + behavior_score
+        + ti_score
+        + deviation_score
+    )
 
-    score = round(min(10.0, score), 1)
+    # ── 8. Hard caps ──────────────────────────────────────────────────────────
+    caps_applied: list[str] = []
+    final_score = raw_score
+
+    no_real_threat = (
+        deviation_count == 0
+        and suspicious_behavior_count == 0
+        and ti_matches == 0
+        and not has_attack_chain
+    )
+
+    if no_real_threat and final_score > 4.0:
+        final_score = 4.0
+        caps_applied.append("no-threat-gate: max 4.0")
+        reasons.append(
+            "Score auf 4.0 begrenzt: keine Baseline-Abweichungen, "
+            "kein Angriffsverhalten, kein TI-Treffer, keine Angriffskette"
+        )
+
+    if is_sysadmin and not hard_patterns and deviation_count == 0:
+        if final_score > 3.5:
+            final_score = 3.5
+            caps_applied.append("sysadmin-normal-gate: max 3.5")
+            reasons.append(
+                "Sysadmin-Profil: Keine Abweichungen, keine Angriffsmuster — Score auf 3.5 (LOW) begrenzt. "
+                "Die hohe Event-Anzahl ist für dieses Profil erwartbar. "
+                "Es wurden keine neuen Baseline-Abweichungen festgestellt. "
+                "Der Score wurde wegen fehlender konkreter Bedrohungsindikatoren begrenzt."
+            )
+
+    # TI + hard attack pattern = confirmed threat → floor 7.0
+    if ti_matches > 0 and hard_patterns:
+        if final_score < 7.0:
+            final_score = 7.0
+            caps_applied.append("confirmed-threat-floor: min 7.0 (TI + Angriffsmuster)")
+    elif ti_matches > 0 and final_score < 5.5:
+        final_score = 5.5
+        caps_applied.append("ti-floor: min 5.5")
+
+    if is_sysadmin:
+        reasons.append(
+            "[Sysadmin-Profil: Normale Admin-Events (4624/4648/4688/4672/…) "
+            "fließen nicht in Risiko-Basis ein]"
+        )
+
+    final_score = round(min(10.0, max(0.0, final_score)), 1)
+
+    breakdown: dict[str, Any] = {
+        "max_finding_score": round(max_finding_score, 1),
+        "extra_eid_score": round(extra_eid_score, 1),
+        "attack_chain_score": round(attack_chain_score, 1),
+        "behavior_score": round(behavior_score, 1),
+        "ti_score": round(ti_score, 1),
+        "deviation_score": round(deviation_score, 1),
+        "raw_score": round(raw_score, 1),
+        "profile_modifier": f"sysadmin-gates (profile={profile_name})" if is_sysadmin else "none",
+        "caps_applied": caps_applied,
+        "hard_patterns_detected": hard_patterns,
+        "soft_patterns_detected": soft_patterns,
+        "final_score": final_score,
+    }
+
     reason_text = "; ".join(reasons) if reasons else "Keine kritischen Indikatoren gefunden"
-    return score, reason_text
+    return final_score, reason_text, breakdown
 
 
 
@@ -712,6 +862,7 @@ def _build_result(job: FullScanJob, insights: dict[str, Any], event_rows: list[d
         "top_event_ids": _safe_list(insights.get("top_event_ids")),
         "top_rule_ids": _safe_list(insights.get("top_rule_ids")),
         "next_steps": next_steps,
+        "risk_breakdown": job.risk_breakdown,
     }
     findings = job.findings or [
         {
@@ -724,48 +875,171 @@ def _build_result(job: FullScanJob, insights: dict[str, Any], event_rows: list[d
         }
     ]
 
-    # ── Build key findings line ───────────────────────────────────────────────
-    top_eid_str = ", ".join(f"Event-ID {eid} ({cnt}x)" for eid, cnt in _safe_list(insights.get("top_event_ids"))[:4]) or "—"
-    top_rule_str = ", ".join(f"Regel {rid} ({cnt}x)" for rid, cnt in _safe_list(insights.get("top_rule_ids"))[:3]) or "—"
-    top_proc_str = ", ".join(proc for proc, _ in _safe_list(insights.get("top_processes"))[:4]) or "—"
-    top_user_str = ", ".join(u for u, _ in _safe_list(insights.get("top_users"))[:4]) or "—"
+    # ── Structured data for report ────────────────────────────────────────────
+    top_eids = _safe_list(insights.get("top_event_ids"))
+    top_rules = _safe_list(insights.get("top_rule_ids"))
+    top_procs = _safe_list(insights.get("top_processes"))
+    top_users_list = _safe_list(insights.get("top_users"))
 
-    # ── Baseline vs Current block ─────────────────────────────────────────────
-    baseline_vs_lines: list[str] = []
-    if job.baseline_diff_block and "Keine neuen" not in job.baseline_diff_block:
-        baseline_vs_lines = ["", "## Baseline vs. Aktuell", job.baseline_diff_block]
-    elif job.baseline_text and "keine Baseline" not in job.baseline_text.lower():
-        baseline_vs_lines = ["", "## Baseline", job.baseline_text]
+    top_eid_str = ", ".join(f"{eid} ({cnt}x)" for eid, cnt in top_eids[:5]) or "—"
+    top_rule_str = ", ".join(f"{rid} ({cnt}x)" for rid, cnt in top_rules[:4]) or "—"
+    top_proc_str = ", ".join(proc for proc, _ in top_procs[:5]) or "—"
+    top_user_str = ", ".join(u for u, _ in top_users_list[:5]) or "—"
 
-    # ── Structured header (Status + Key Data) ────────────────────────────────
-    header_lines = [
+    # ── Baseline counts ───────────────────────────────────────────────────────
+    bsl_diff = job.baseline_diff_block or ""
+    def _bsl_count(label: str) -> str:
+        import re as _re
+        m = _re.search(rf"{label}[^\d]*(\d+)", bsl_diff)
+        return m.group(1) if m else "0"
+
+    new_procs = _bsl_count("Prozesse")
+    new_services = _bsl_count("Services")
+    new_users_bsl = _bsl_count("Nutzer")
+    new_ips = _bsl_count("IP")
+    new_eids = _bsl_count("Event-IDs")
+    open_devs = _bsl_count("Abweichung")
+    has_deviations = bsl_diff and "Keine neuen" not in bsl_diff
+
+    # ── Score breakdown ───────────────────────────────────────────────────────
+    bd = job.risk_breakdown
+    caps = bd.get("caps_applied", [])
+    caps_str = ", ".join(caps) if caps else "keine"
+
+    # ── Status line ──────────────────────────────────────────────────────────
+    if risk_label == "HIGH":
+        status_str = "ACTION REQUIRED"
+    elif risk_label == "MEDIUM":
+        status_str = "REVIEW"
+    else:
+        status_str = "STABLE"
+
+    # ── Top findings for report ───────────────────────────────────────────────
+    findings_section_lines: list[str] = ["\n## Top Findings"]
+    for f in (job.findings or [])[:6]:
+        sev = (f.get("severity") or "?").upper()
+        title = f.get("title") or "Finding"
+        desc = f.get("description") or f.get("reason") or ""
+        count = f.get("count") or ""
+        count_note = f" ({count}x)" if count else ""
+        findings_section_lines += [
+            f"\n### {sev} – {title}",
+            f"- Evidence: {desc}{count_note}",
+            f"- Action: {next_steps[0] if next_steps else 'Befunde prüfen und einordnen.'}",
+        ]
+    if not job.findings:
+        findings_section_lines.append("- Keine strukturierten Findings verfügbar.")
+
+    # ── Timeline highlights ───────────────────────────────────────────────────
+    TIMELINE_EIDS = {"7045", "7040", "4625", "4624", "4634", "1102", "1074"}
+    timeline_lines: list[str] = []
+    for eid, cnt in top_eids[:10]:
+        if str(eid) in TIMELINE_EIDS:
+            timeline_lines.append(f"- Event {eid}: {cnt}x")
+    if job.ti_matches > 0:
+        timeline_lines.append(f"- TI-Treffer: {job.ti_matches} (Validierung erforderlich)")
+    if job.fim:
+        timeline_lines.append(f"- FIM-Änderungen: {len(job.fim)}")
+
+    # ── Recommended actions (max 5) ───────────────────────────────────────────
+    actions_lines = [f"- {s}" for s in next_steps[:5]] or ["- Keine spezifischen Maßnahmen ermittelt."]
+
+    # ── AI evidence block (or deterministic fallback) ─────────────────────────
+    if job.ai_final_summary:
+        ai_evidence_block = job.ai_final_summary
+    else:
+        # Deterministic fallback — no invented claims
+        confirmed: list[str] = []
+        review: list[str] = []
+        not_observed = [
+            "Keine verdächtige Command Line beobachtet",
+            "Keine bestätigte Angriffskette",
+            "Keine bestätigte Persistenz",
+            "Kein bestätigtes C2",
+            "Keine bestätigte Lateral Movement",
+        ]
+        if job.ti_matches > 0:
+            review.append(f"{job.ti_matches} TI-Treffer – TI-Validierung erforderlich (keine IOC-Details vorhanden)")
+        if has_deviations:
+            review.append("Neue Baseline-Abweichungen vorhanden – Einordnung erforderlich")
+        for eid, cnt in top_eids[:3]:
+            if str(eid) in {"7045", "7040"}:
+                review.append(f"Event {eid} ({cnt}x) – Service-Änderung, prüfungswürdig")
+            elif str(eid) == "4625":
+                review.append(f"Event 4625 ({cnt}x) – Logon-Fehler, auf Brute-Force prüfen")
+        if job.findings_count > 0:
+            confirmed.append(f"{job.findings_count} Findings durch Analyse-Module ermittelt (High: {job.high_findings})")
+        if not confirmed:
+            confirmed.append("Keine bestätigten Indikatoren")
+        if not review:
+            review.append("Nichts prüfungswürdig")
+        bev_reason = (
+            f"Risk Score {job.risk_score}/10 ({risk_label}) basiert auf "
+            f"Max-Finding-Score {bd.get('max_finding_score', 0)}, "
+            f"Behavior {bd.get('behavior_score', 0)}, "
+            f"TI {bd.get('ti_score', 0)}, "
+            f"Deviations {bd.get('deviation_score', 0)}."
+        )
+        ai_evidence_block = (
+            "## Evidence\n"
+            "### Bestätigt\n"
+            + "\n".join(f"- {c}" for c in confirmed)
+            + "\n\n### Prüfungswürdig\n"
+            + "\n".join(f"- {r}" for r in review)
+            + "\n\n### Nicht beobachtet\n"
+            + "\n".join(f"- {n}" for n in not_observed)
+            + f"\n\n## Bewertungsbegründung\n{bev_reason}\n"
+        )
+
+    # ── Assemble final report ─────────────────────────────────────────────────
+    main_reason = job.risk_score_reason or "Keine kritischen Indikatoren."
+    # truncate reason to ~one sentence
+    main_reason_short = main_reason.split(";")[0].strip()
+
+    markdown_report = "\n".join([
         f"# Full Scan Report – {job.host}",
         "",
-        "## Status",
-        f"- **Risk Score:** {job.risk_score}/10",
-        f"- **Risk Level:** {risk_label}",
-        f"- **Scan:** completed",
-        f"- **Findings:** {job.findings_count}  |  High: {job.high_findings}  |  TI-Treffer: {job.ti_matches}",
-        f"- **Profil:** {(job.profile_context.splitlines()[0] if job.profile_context else '—')}",
+        "## Decision Summary",
+        f"- Risk: {job.risk_score}/10 – {risk_label}",
+        f"- Status: {status_str}",
+        f"- Main reason: {main_reason_short}",
+        f"- Confidence: {summary.get('confidence', 'medium')}",
+        "",
+        ai_evidence_block,
         "",
         "## Key Data",
-        f"- Top Event-IDs: {top_eid_str}",
-        f"- Top Regeln: {top_rule_str}",
-        f"- Top Prozesse: {top_proc_str}",
-        f"- Top Nutzer: {top_user_str}",
-    ]
-
-    # ── AI block (single, no duplication) ────────────────────────────────────
-    ai_block = job.ai_final_summary or (
-        "## Executive Summary\n"
-        "Keine KI-Zusammenfassung verfügbar (Quick-Modus oder KI deaktiviert).\n\n"
-        "## Risiko-Einschätzung\n"
-        f"Risk Level: {risk_label} (Score {job.risk_score}/10)\n\n"
-        "## Maßnahmen\n"
-        + "\n".join(f"- {s}" for s in next_steps)
-    )
-
-    markdown_report = "\n".join(header_lines + baseline_vs_lines + ["", "---", ""] + [ai_block])
+        f"- Top Event IDs: {top_eid_str}",
+        f"- Top Rules: {top_rule_str}",
+        f"- Top Processes: {top_proc_str}",
+        f"- Top Users: {top_user_str}",
+        "",
+        "## Baseline vs Current",
+        f"- New Processes: {new_procs}",
+        f"- New Services: {new_services}",
+        f"- New Users: {new_users_bsl}",
+        f"- New IPs: {new_ips}",
+        f"- New Event IDs: {new_eids}",
+        f"- Open Deviations: {open_devs}",
+        "",
+        "> New does not mean malicious. Items marked 'needs validation' require analyst review.",
+    ] + findings_section_lines + [
+        "",
+        "## Timeline Highlights",
+    ] + (timeline_lines if timeline_lines else ["- Keine relevanten Timeline-Ereignisse"]) + [
+        "",
+        "## Recommended Actions",
+    ] + actions_lines + [
+        "",
+        "## Score Explanation",
+        f"- max finding: {bd.get('max_finding_score', 0)}",
+        f"- threat intel: {bd.get('ti_score', 0)}",
+        f"- behavior: {bd.get('behavior_score', 0)}",
+        f"- deviations: {bd.get('deviation_score', 0)}",
+        f"- attack chain: {bd.get('attack_chain_score', 0)}",
+        f"- raw score: {bd.get('raw_score', 0)}",
+        f"- final score: {bd.get('final_score', job.risk_score)}",
+        f"- caps applied: {caps_str}",
+    ])
 
     return {
         "summary": summary,
@@ -797,6 +1071,7 @@ def _build_result(job: FullScanJob, insights: dict[str, Any], event_rows: list[d
                 "ai_iterations_target": job.ai_iterations_target,
                 "ai_iterations_completed": job.ai_iterations_completed,
             },
+            "risk_breakdown": job.risk_breakdown,
             "modules": {
                 "vulnerabilities": job.vulnerabilities,
                 "fim": job.fim,
@@ -930,6 +1205,7 @@ def run_fullscan_job(job: FullScanJob) -> None:
         try:
             profile = get_profile_for_host(job.host)
             job.profile_context = build_profile_context_block(profile)
+            job.profile_name = profile.name if profile else None
             job.add_log(f"Profil geladen: {profile.display_name if profile else 'kein Profil'}")
         except Exception as exc:
             job.add_log(f"Profil konnte nicht geladen werden: {exc}")
@@ -980,13 +1256,14 @@ def run_fullscan_job(job: FullScanJob) -> None:
                 _deviation_count = baseline_summary.open_deviations if baseline_summary else 0
             except Exception:
                 _deviation_count = 0
-            job.risk_score, _risk_reason = _compute_risk_score_v2(
+            job.risk_score, _risk_reason, job.risk_breakdown = _compute_risk_score_v2(
                 insights,
                 ti_matches=len(job.threat_intel),
                 deviation_count=_deviation_count,
+                profile_name=job.profile_name,
             )
             job.risk_score_reason = _risk_reason
-            job.add_log(f"Risk Score v2: {job.risk_score}/10 ({map_score_to_level(job.risk_score)}) — {_risk_reason}")
+            job.add_log(f"Risk Score v3: {job.risk_score}/10 ({map_score_to_level(job.risk_score)}) — {_risk_reason}")
             ai_context = _build_ai_context(job, insights)
             _run_ai_refinement(job, connection, ai_context)
         else:
@@ -997,13 +1274,14 @@ def run_fullscan_job(job: FullScanJob) -> None:
                 _deviation_count = baseline_summary.open_deviations if baseline_summary else 0
             except Exception:
                 _deviation_count = 0
-            job.risk_score, _risk_reason = _compute_risk_score_v2(
+            job.risk_score, _risk_reason, job.risk_breakdown = _compute_risk_score_v2(
                 insights,
                 ti_matches=len(job.threat_intel),
                 deviation_count=_deviation_count,
+                profile_name=job.profile_name,
             )
             job.risk_score_reason = _risk_reason
-            job.add_log(f"Risk Score v2: {job.risk_score}/10 ({map_score_to_level(job.risk_score)})")
+            job.add_log(f"Risk Score v3: {job.risk_score}/10 ({map_score_to_level(job.risk_score)})")
         job.result = _build_result(job, insights, event_rows)
         job.progress = 100.0
         job.status = "finished"

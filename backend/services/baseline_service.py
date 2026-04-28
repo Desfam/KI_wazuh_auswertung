@@ -22,6 +22,8 @@ from schemas.types import (
     BaselineSummary,
 )
 from services.snipen_profiles import get_profile_for_host
+from services.behavior_analyzer import analyze_behavior, BehaviorResult
+from services.classification_engine import classify_from_details, classify_deviation
 
 
 # ── Constants ─────────────────────────────────────────────────────────────────
@@ -145,13 +147,14 @@ _MEDIUM_RISK_EVENT_IDS = {"4625", "4648", "4672", "4720", "4726", "4728", "4732"
 
 # Deviation type base scores
 _DEVIATION_BASE_SCORE: dict[str, int] = {
-    "new_service":      60,
-    "new_process":      35,
-    "new_user":         40,
-    "new_ip":           20,
-    "new_event_id":     15,
-    "new_event_family": 10,
-    "volume_spike":     30,
+    "new_service":          60,
+    "new_process":          35,
+    "new_user":             40,
+    "new_ip":               20,
+    "new_event_id":         15,
+    "new_event_family":     10,
+    "volume_spike":         30,
+    "suspicious_behavior":  50,   # known entity, abnormal execution
 }
 
 _RISK_LEVEL_THRESHOLDS = [
@@ -176,10 +179,11 @@ def _score_deviation(
     feature_key: str,
     profile_risk_tolerance: str | None,
     details: dict[str, Any],
-) -> tuple[int, str, float]:
+    behavior_ctx: dict[str, Any] | None = None,
+) -> tuple[int, str, float, list[str]]:
     """
-    Return (risk_score 0-100, reason, confidence).
-    Combines: deviation base + profile context + key-specific rules.
+    Return (risk_score 0-100, reason, confidence, behavior_flags).
+    Combines: deviation base + profile context + key-specific rules + behavior analysis.
     """
     score = _DEVIATION_BASE_SCORE.get(deviation_type, 10)
     reasons: list[str] = []
@@ -245,9 +249,23 @@ def _score_deviation(
     elif profile_risk_tolerance == "high":
         score -= 8    # permissive profile = slightly less alarming
 
+    # ── Behavior context boost ────────────────────────────────────────────────
+    behavior_flags: list[str] = []
+    if behavior_ctx and feature_type == "process":
+        bres: BehaviorResult = analyze_behavior(
+            process=feature_key,
+            command_line=behavior_ctx.get("cmd"),
+            parent_process=behavior_ctx.get("parent"),
+        )
+        if bres.is_suspicious:
+            score += bres.score_delta
+            behavior_flags = bres.flags
+            reasons.append(f"suspicious execution: {'; '.join(bres.flags[:2])}")
+            confidence = max(confidence, 0.80)
+
     score = max(0, min(100, score))
     reason = "; ".join(reasons) if reasons else f"New {feature_type}: {feature_key}"
-    return score, reason, round(confidence, 2)
+    return score, reason, round(confidence, 2), behavior_flags
 
 
 # ── DB row converters ─────────────────────────────────────────────────────────
@@ -307,6 +325,7 @@ def _row_to_deviation(row: Any) -> BaselineDeviation:
         details=json.loads(row["details_json"] or "{}"),
         resolved=bool(row["resolved"]),
         resolved_at=row["resolved_at"],
+        final_classification=row["final_classification"] if "final_classification" in keys else "unknown",
     )
 
 
@@ -469,13 +488,14 @@ def get_baseline_diff(host: str) -> BaselineDiff:
 # ── Deviation detection ───────────────────────────────────────────────────────
 
 _DEVIATION_SEVERITY: dict[str, str] = {
-    "new_process":       "medium",
-    "new_user":          "medium",
-    "new_service":       "high",
-    "new_event_id":      "info",
-    "new_ip":            "info",
-    "new_event_family":  "info",
-    "volume_spike":      "medium",
+    "new_process":          "medium",
+    "new_user":             "medium",
+    "new_service":          "high",
+    "new_event_id":         "info",
+    "new_ip":               "info",
+    "new_event_family":     "info",
+    "volume_spike":         "medium",
+    "suspicious_behavior":  "high",
 }
 
 
@@ -488,6 +508,7 @@ def _maybe_log_deviation(
     details: dict[str, Any],
     now: str,
     profile_risk_tolerance: str | None = None,
+    behavior_ctx: dict[str, Any] | None = None,
 ) -> None:
     """Insert a deviation (with risk score) only if one doesn't already exist unresolved."""
     existing = conn.execute(
@@ -502,22 +523,97 @@ def _maybe_log_deviation(
         return
 
     severity = _DEVIATION_SEVERITY.get(deviation_type, "info")
-    risk_score, reason, confidence = _score_deviation(
-        deviation_type, feature_type, feature_key, profile_risk_tolerance, details
+    risk_score, reason, confidence, behavior_flags = _score_deviation(
+        deviation_type, feature_type, feature_key, profile_risk_tolerance, details,
+        behavior_ctx=behavior_ctx,
     )
     risk_lv = _risk_level(risk_score)
+
+    stored_details = {
+        **details,
+        "is_known": False,   # this is a NEW entity deviation
+    }
+    if behavior_flags:
+        stored_details["behavior_flags"] = behavior_flags
+
+    final_cls = classify_from_details(
+        deviation_type=deviation_type,
+        risk_score=risk_score,
+        is_resolved=False,
+        details=stored_details,
+        feature_key=feature_key,
+    )
 
     conn.execute(
         """
         INSERT INTO host_baseline_deviations
             (host, detected_at, feature_type, feature_key, deviation_type,
-             severity_hint, risk_score, risk_level, reason, confidence, details_json)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+             severity_hint, risk_score, risk_level, reason, confidence, details_json,
+             final_classification)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """,
         (
             host, now, feature_type, feature_key, deviation_type,
             severity, risk_score, risk_lv, reason, confidence,
-            json.dumps(details, ensure_ascii=False),
+            json.dumps(stored_details, ensure_ascii=False),
+            final_cls,
+        ),
+    )
+
+
+def _maybe_log_behavior_deviation(
+    conn: Any,
+    host: str,
+    feature_type: str,
+    feature_key: str,
+    behavior_flags: list[str],
+    behavior_score_delta: int,
+    now: str,
+    profile_risk_tolerance: str | None = None,
+) -> None:
+    """Log a suspicious_behavior deviation for a KNOWN (baseline) entity with bad execution context.
+
+    This fires even when the entity itself is not new — implementing the core principle:
+        Baseline ≠ whitelist.  Known entity + suspicious execution = alert.
+    """
+    existing = conn.execute(
+        """
+        SELECT id FROM host_baseline_deviations
+        WHERE host = ? AND feature_type = ? AND feature_key = ?
+          AND deviation_type = 'suspicious_behavior' AND resolved = 0
+        """,
+        (host, feature_type, feature_key),
+    ).fetchone()
+    if existing:
+        return
+
+    base = _DEVIATION_BASE_SCORE.get("suspicious_behavior", 50)
+    score = max(0, min(100, base + behavior_score_delta))
+    if profile_risk_tolerance == "low":
+        score = min(100, score + 10)
+    elif profile_risk_tolerance == "high":
+        score = max(0, score - 8)
+
+    risk_lv = _risk_level(score)
+    reason = f"Known {feature_type} with suspicious execution: {'; '.join(behavior_flags[:3])}"
+
+    conn.execute(
+        """
+        INSERT INTO host_baseline_deviations
+            (host, detected_at, feature_type, feature_key, deviation_type,
+             severity_hint, risk_score, risk_level, reason, confidence, details_json,
+             final_classification)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+        (
+            host, now, feature_type, feature_key, "suspicious_behavior",
+            "high", score, risk_lv, reason, 0.75,
+            json.dumps({
+                "is_known": True,
+                "behavior_flags": behavior_flags,
+                "behavior_score_delta": behavior_score_delta,
+            }, ensure_ascii=False),
+            "known_but_suspicious",   # always known_but_suspicious for behavior deviations
         ),
     )
 
@@ -530,8 +626,11 @@ def _upsert_feature_and_detect(
     new_count: int,
     now: str,
     profile_risk_tolerance: str | None = None,
+    behavior_ctx: dict[str, Any] | None = None,
 ) -> None:
-    """Upsert a baseline feature. If it's new, also log a scored deviation."""
+    """Upsert a baseline feature. If it's new, also log a scored deviation.
+    For KNOWN entities: check if execution behavior is suspicious and log separately.
+    """
     existing = conn.execute(
         "SELECT * FROM host_baseline_features WHERE host = ? AND feature_type = ? AND feature_key = ?",
         (host, feature_type, feature_key),
@@ -568,6 +667,7 @@ def _upsert_feature_and_detect(
                 {"count": new_count, "first_seen": now},
                 now,
                 profile_risk_tolerance,
+                behavior_ctx=behavior_ctx if feature_type == "process" else None,
             )
     else:
         prev_count = existing["count_seen"]
@@ -581,6 +681,7 @@ def _upsert_feature_and_detect(
             """,
             (new_total, now, stability, host, feature_type, feature_key),
         )
+        # Volume spike detection
         if feature_type in {"event_id", "process"} and prev_count > _MIN_SEEN:
             if new_count > prev_count * _SPIKE_RATIO:
                 _maybe_log_deviation(
@@ -589,6 +690,19 @@ def _upsert_feature_and_detect(
                     {"previous_count": prev_count, "new_count": new_count, "ratio": round(new_count / max(prev_count, 1), 1)},
                     now,
                     profile_risk_tolerance,
+                )
+        # Behavior anomaly on KNOWN entity (Baseline ≠ whitelist)
+        if feature_type == "process" and behavior_ctx:
+            bres: BehaviorResult = analyze_behavior(
+                process=feature_key,
+                command_line=behavior_ctx.get("cmd"),
+                parent_process=behavior_ctx.get("parent"),
+            )
+            if bres.is_suspicious:
+                _maybe_log_behavior_deviation(
+                    conn, host, feature_type, feature_key,
+                    bres.flags, bres.score_delta,
+                    now, profile_risk_tolerance,
                 )
 
 
@@ -618,6 +732,9 @@ def compute_baseline(
     service_c: Counter = Counter()
     hourly_c: Counter = Counter()
 
+    # Behavior context per process: track first non-empty cmd/parent seen
+    process_behavior_ctx: dict[str, dict[str, str | None]] = {}
+
     total = len(events)
     high_alerts = 0
     critical_alerts = 0
@@ -630,7 +747,15 @@ def compute_baseline(
         if s.rule_id:
             rule_id_c[s.rule_id] += 1
         if s.process and not _is_known_system_process(s.process):
-            process_c[s.process.lower()] += 1
+            proc_key = s.process.lower()
+            process_c[proc_key] += 1
+            # Collect behavior context (keep any non-empty cmd/parent for later analysis)
+            if s.command_line or s.parent_process:
+                ctx = process_behavior_ctx.setdefault(proc_key, {"cmd": None, "parent": None})
+                if s.command_line and not ctx["cmd"]:
+                    ctx["cmd"] = s.command_line
+                if s.parent_process and not ctx["parent"]:
+                    ctx["parent"] = s.parent_process
         if s.user and not _is_known_system_user(s.user):
             user_c[s.user] += 1
         if s.ip_address:
@@ -688,7 +813,10 @@ def compute_baseline(
         for eid, cnt in event_id_c.items():
             _upsert_feature_and_detect(conn, host, "event_id", eid, cnt, now, risk_tolerance)
         for proc, cnt in process_c.items():
-            _upsert_feature_and_detect(conn, host, "process", proc, cnt, now, risk_tolerance)
+            _upsert_feature_and_detect(
+                conn, host, "process", proc, cnt, now, risk_tolerance,
+                behavior_ctx=process_behavior_ctx.get(proc),
+            )
         for usr, cnt in user_c.items():
             _upsert_feature_and_detect(conn, host, "user", usr, cnt, now, risk_tolerance)
         for ip, cnt in ip_c.items():

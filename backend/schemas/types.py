@@ -15,7 +15,7 @@ class ConnectionBase(BaseModel):
     manager_username: str | None = None
     manager_password: str | None = None
     ollama_url: str = "http://172.21.5.111:11434"
-    ollama_model: str = "llama3.1:8b"
+    ollama_model: str = "qwen2.5-coder:7b"
     verify_ssl: bool = False
     lookback_hours: int = Field(default=24, ge=1, le=168)
     vm_enabled: bool = False
@@ -278,6 +278,11 @@ class SnipenSmartEvent(BaseModel):
     new_process_id: str | None = None
     event_family: str | None = None
     summary: str | None = None
+    # FIM / Syscheck fields
+    fim_path: str | None = None
+    fim_mode: str | None = None
+    fim_owner: str | None = None
+    fim_group: str | None = None
 
 
 class SnipenEvent(BaseModel):
@@ -301,6 +306,10 @@ class SnipenExplainRequest(BaseModel):
 
 
 class SnipenRemediateRequest(BaseModel):
+    event_raw: dict[str, Any]
+
+
+class SnipenExplainContextRequest(BaseModel):
     event_raw: dict[str, Any]
 
 
@@ -485,6 +494,8 @@ class BaselineDeviation(BaseModel):
     details: dict[str, Any] = Field(default_factory=dict)
     resolved: bool = False
     resolved_at: str | None = None
+    # Classification (extended model)
+    final_classification: str = "unknown"  # see classification_engine.py
 
 
 class BaselineDiff(BaseModel):

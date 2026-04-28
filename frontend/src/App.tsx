@@ -3,10 +3,12 @@ import { CheckSquare, Cpu, Crosshair, Database, LayoutDashboard, MessageSquare, 
 import { ChatPage } from './pages/ChatPage';
 import { DashboardPage } from './pages/DashboardPage';
 import { HostsPage } from './pages/HostsPage';
+import { HostOverviewPage } from './pages/HostOverviewPage';
 import { SnipenPage } from './pages/SnipenPage';
 import { TasksPage } from './pages/TasksPage';
 import FullScanTab from './pages/FullScanTab';
 import { BaselinePage } from './pages/BaselinePage';
+import { ServerPage } from './pages/ServerPage';
 import { FluidWaves } from './components/FluidWaves';
 import { AppStartOverlay, type PreflightCheck } from './components/AppStartOverlay';
 import { SettingsModal } from './components/SettingsModal';
@@ -61,9 +63,11 @@ const TAB_LABELS: Record<string, string> = {
   chat: 'Chat',
   tasks: 'Incidents',
   hosts: 'Hosts',
+  'host-overview': 'Host Overview',
   snipen: 'Investigation',
   fullscan: 'Full Scan',
   baseline: 'Baseline',
+  server: 'Server',
 };
 
 function fmtClock(): string {
@@ -71,7 +75,8 @@ function fmtClock(): string {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'snipen' | 'fullscan' | 'baseline'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'snipen' | 'fullscan' | 'baseline' | 'server'>('chat');
+  const [overviewHost, setOverviewHost] = useState<string | null>(null);
   const [clockStr, setClockStr] = useState(fmtClock);
 
   useEffect(() => {
@@ -91,6 +96,7 @@ function App() {
   const [lastReportJson, setLastReportJson] = useState<string | null>(null);
   const [generatedTasks, setGeneratedTasks] = useState<Array<{ task_id: string; host: string; severity: string; title: string; details: string; recommended_checks: string[]; event_id?: string | null; rule_id?: string | null; rule_description?: string | null; platform?: string | null; count?: number; reason?: string | null; local_score?: number | null; mitre_ids?: string[]; }>>([]);
   const [snipenPrefillHost, setSnipenPrefillHost] = useState<string | null>(null);
+  const [snipenPrefillEventTs, setSnipenPrefillEventTs] = useState<string | null>(null);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [videoSource, setVideoSource] = useState<string | null>(null);
   const [analysisProfile, setAnalysisProfile] = useState<AnalysisProfileConfig>(DEFAULT_ANALYSIS_PROFILE);
@@ -460,8 +466,9 @@ function App() {
             { id: 'snipen' as const, label: 'Investigation', icon: Crosshair, badge: null },
             { id: 'fullscan' as const, label: 'Full Scan', icon: Cpu, badge: null },
             { id: 'baseline' as const, label: 'Baseline', icon: Database, badge: null },
+            { id: 'server' as const, label: 'Server', icon: Shield, badge: null },
           ]).map(({ id, label, icon: Icon, badge }) => {
-            const active = activeTab === id;
+            const active = activeTab === id || (id === 'hosts' && activeTab === 'host-overview');
             return (
               <button
                 key={id}
@@ -584,6 +591,7 @@ function App() {
                 profileAssignments={profileAssignments}
                 onSwitchTab={(tab, context) => {
                   if (context?.host) setSnipenPrefillHost(context.host);
+                  if (context?.eventTs) setSnipenPrefillEventTs(context.eventTs);
                   setActiveTab(tab);
                 }}
               />
@@ -613,6 +621,26 @@ function App() {
                 profileAssignments={profileAssignments}
                 onProfileAssignmentChanged={handleProfileAssignmentChanged}
                 onSwitchTab={(tab) => setActiveTab(tab)}
+                onOpenOverview={(host) => { setOverviewHost(host); setActiveTab('host-overview'); }}
+              />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'host-overview' && overviewHost && (
+            <ErrorBoundary label="HostOverview">
+              <HostOverviewPage
+                host={overviewHost}
+                onBack={() => setActiveTab('hosts')}
+                onGoBaseline={(host) => {
+                  // BaselinePage will pick up the host via its own host list
+                  // Pass it as prefill context if needed — for now just navigate
+                  void host;
+                  setActiveTab('baseline');
+                }}
+                onGoSnipen={(host) => {
+                  setSnipenPrefillHost(host);
+                  setActiveTab('snipen');
+                }}
+                onGoFullScan={() => setActiveTab('fullscan')}
               />
             </ErrorBoundary>
           )}
@@ -623,7 +651,8 @@ function App() {
                 theme={theme}
                 profileAssignments={profileAssignments}
                 prefillHost={snipenPrefillHost}
-                onPrefillConsumed={() => setSnipenPrefillHost(null)}
+                prefillEventTs={snipenPrefillEventTs}
+                onPrefillConsumed={() => { setSnipenPrefillHost(null); setSnipenPrefillEventTs(null); }}
               />
             </ErrorBoundary>
           )}
@@ -642,6 +671,11 @@ function App() {
                   setActiveTab(tab as typeof activeTab);
                 }}
               />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'server' && (
+            <ErrorBoundary label="Server">
+              <ServerPage active theme={theme} />
             </ErrorBoundary>
           )}
         </div>

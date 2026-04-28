@@ -22,6 +22,7 @@ from services.baseline_service import (
     list_snapshots,
     resolve_deviation,
 )
+from db.database import get_connection
 
 router = APIRouter(prefix="/baseline", tags=["baseline"])
 
@@ -115,4 +116,106 @@ def baseline_diff(host: str) -> BaselineDiff:
     and the top-risk open deviations.  Useful for AI summary prompts.
     """
     return get_baseline_diff(host)
+
+
+# ── Global deviation endpoints ────────────────────────────────────────────────
+
+@router.get("/global/deviations")
+def baseline_global_deviations(
+    unresolved_only: bool = True,
+    limit: int = 200,
+    classification: str | None = None,
+) -> list[BaselineDeviation]:
+    """Return deviations across ALL hosts, optionally filtered by classification.
+
+    Intended for the Server tab and global dashboards.
+    Query params:
+      - unresolved_only: default True
+      - limit: max rows returned, default 200
+      - classification: filter to a specific final_classification value
+    """
+    import json as _json
+    from services.baseline_service import _row_to_deviation
+
+    limit = max(1, min(limit, 1000))
+    with get_connection() as conn:
+        if unresolved_only:
+            if classification:
+                rows = conn.execute(
+                    "SELECT * FROM host_baseline_deviations "
+                    "WHERE resolved = 0 AND final_classification = ? "
+                    "ORDER BY risk_score DESC, detected_at DESC LIMIT ?",
+                    (classification, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM host_baseline_deviations "
+                    "WHERE resolved = 0 "
+                    "ORDER BY risk_score DESC, detected_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+        else:
+            if classification:
+                rows = conn.execute(
+                    "SELECT * FROM host_baseline_deviations "
+                    "WHERE final_classification = ? "
+                    "ORDER BY risk_score DESC, detected_at DESC LIMIT ?",
+                    (classification, limit),
+                ).fetchall()
+            else:
+                rows = conn.execute(
+                    "SELECT * FROM host_baseline_deviations "
+                    "ORDER BY risk_score DESC, detected_at DESC LIMIT ?",
+                    (limit,),
+                ).fetchall()
+    return [_row_to_deviation(r) for r in rows]
+
+
+@router.get("/global/summary")
+def baseline_global_summary() -> dict:
+    """Cross-host baseline summary for Server tab widgets."""
+    with get_connection() as conn:
+        # Totals
+        total_row = conn.execute(
+            "SELECT COUNT(*) AS total, "
+            "SUM(CASE WHEN resolved=0 THEN 1 ELSE 0 END) AS open, "
+            "SUM(CASE WHEN resolved=0 AND risk_score>=75 THEN 1 ELSE 0 END) AS critical, "
+            "SUM(CASE WHEN resolved=0 AND final_classification='known_but_suspicious' THEN 1 ELSE 0 END) AS suspicious, "
+            "SUM(CASE WHEN resolved=0 AND final_classification='needs_investigation' THEN 1 ELSE 0 END) AS investigate, "
+            "SUM(CASE WHEN resolved=0 AND final_classification='escalated' THEN 1 ELSE 0 END) AS escalated "
+            "FROM host_baseline_deviations"
+        ).fetchone()
+
+        # Per-classification breakdown
+        cls_rows = conn.execute(
+            "SELECT final_classification, COUNT(*) AS cnt "
+            "FROM host_baseline_deviations WHERE resolved=0 "
+            "GROUP BY final_classification ORDER BY cnt DESC"
+        ).fetchall()
+
+        # Top affected hosts
+        host_rows = conn.execute(
+            "SELECT host, COUNT(*) AS open_devs, MAX(risk_score) AS top_score "
+            "FROM host_baseline_deviations WHERE resolved=0 "
+            "GROUP BY host ORDER BY top_score DESC, open_devs DESC LIMIT 10"
+        ).fetchall()
+
+        # Deviation type breakdown
+        type_rows = conn.execute(
+            "SELECT deviation_type, COUNT(*) AS cnt "
+            "FROM host_baseline_deviations WHERE resolved=0 "
+            "GROUP BY deviation_type ORDER BY cnt DESC"
+        ).fetchall()
+
+    return {
+        "total": total_row["total"] or 0,
+        "open": total_row["open"] or 0,
+        "critical": total_row["critical"] or 0,
+        "suspicious": total_row["suspicious"] or 0,
+        "needs_investigation": total_row["investigate"] or 0,
+        "escalated": total_row["escalated"] or 0,
+        "by_classification": {r["final_classification"]: r["cnt"] for r in cls_rows},
+        "top_hosts": [{"host": r["host"], "open_devs": r["open_devs"], "top_score": r["top_score"]} for r in host_rows],
+        "by_type": {r["deviation_type"]: r["cnt"] for r in type_rows},
+    }
 

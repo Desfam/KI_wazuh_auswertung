@@ -660,6 +660,25 @@ select {
   }
 }
 
+/* ── Full-scan running animation keyframes ────────────────────── */
+@keyframes scanBeam {
+  0%   { top: 4%;  opacity: 0; }
+  8%   { opacity: 1; }
+  92%  { opacity: 1; }
+  100% { top: 96%; opacity: 0; }
+}
+
+@keyframes scanCornerPulse {
+  0%, 100% { opacity: 0.45; }
+  50%       { opacity: 1;    }
+}
+
+@keyframes scanDataBlip {
+  0%, 100% { opacity: 0;   transform: scale(0.4); }
+  40%, 60% { opacity: 1;   transform: scale(1);   }
+}
+/* ────────────────────────────────────────────────────────────── */
+
 /* Base backgrounds */
 .hosts-bg {
   background: var(--soc-background);

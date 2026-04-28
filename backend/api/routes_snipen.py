@@ -12,6 +12,7 @@ from schemas.types import (
     SnipenAnalysisResult,
     SnipenAnalyzeRequest,
     SnipenEvent,
+    SnipenExplainContextRequest,
     SnipenExplainRequest,
     SnipenExplainResult,
     SnipenHostInfo,
@@ -23,6 +24,7 @@ from services.snipen_service import (
     ai_query_host,
     analyze_host,
     explain_event,
+    explain_event_with_context,
     get_host_events,
     get_host_snipen_overview,
     get_related_events,
@@ -56,7 +58,7 @@ def snipen_hosts(
 def snipen_host_events(
     host: str,
     hours: int = Query(default=24, ge=1, le=168),
-    limit: int = Query(default=100, ge=10, le=500),
+    limit: int = Query(default=200, ge=10, le=2000),
     platform: str | None = Query(default=None, description="windows or linux"),
     min_rule_level: int | None = Query(default=None, ge=0, le=20),
     category: str | None = Query(default=None, description="auth|process|service|registry|powershell|network"),
@@ -139,6 +141,13 @@ def snipen_remediate_event(body: SnipenRemediateRequest) -> SnipenExplainResult:
     """Ask the AI for remediation steps for a single Wazuh event."""
     conn = _get_active_connection_dict()
     return remediate_event(conn, body.event_raw)
+
+
+@router.post("/event/explain-context")
+def snipen_explain_event_with_context(body: SnipenExplainContextRequest) -> SnipenExplainResult:
+    """Context-aware explain: fetches ±15-min surrounding events and enriches the AI analysis."""
+    conn = _get_active_connection_dict()
+    return explain_event_with_context(conn, body.event_raw)
 
 
 @router.post("/event/related")

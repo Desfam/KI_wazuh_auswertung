@@ -113,6 +113,99 @@ def init_db() -> None:
         )
         ensure_connection_columns(connection)
 
+        # ── Baseline tables (idempotent) ──────────────────────────────────────
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS host_baseline_snapshots (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                host TEXT NOT NULL,
+                computed_at TEXT NOT NULL,
+                window_hours INTEGER NOT NULL DEFAULT 168,
+                profile_id INTEGER,
+                total_events INTEGER NOT NULL DEFAULT 0,
+                high_alerts INTEGER NOT NULL DEFAULT 0,
+                critical_alerts INTEGER NOT NULL DEFAULT 0,
+                top_event_ids_json TEXT NOT NULL DEFAULT '[]',
+                top_rule_ids_json TEXT NOT NULL DEFAULT '[]',
+                top_processes_json TEXT NOT NULL DEFAULT '[]',
+                top_users_json TEXT NOT NULL DEFAULT '[]',
+                top_ips_json TEXT NOT NULL DEFAULT '[]',
+                top_event_families_json TEXT NOT NULL DEFAULT '[]',
+                event_volume_per_hour_json TEXT NOT NULL DEFAULT '{}',
+                notes_json TEXT NOT NULL DEFAULT '[]'
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS host_baseline_features (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                host TEXT NOT NULL,
+                feature_type TEXT NOT NULL,
+                feature_key TEXT NOT NULL,
+                count_seen INTEGER NOT NULL DEFAULT 0,
+                first_seen TEXT NOT NULL,
+                last_seen TEXT NOT NULL,
+                stability_score REAL NOT NULL DEFAULT 0.0,
+                is_expected INTEGER NOT NULL DEFAULT 1,
+                notes TEXT,
+                UNIQUE(host, feature_type, feature_key)
+            )
+            """
+        )
+        connection.execute(
+            """
+            CREATE TABLE IF NOT EXISTS host_baseline_deviations (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                host TEXT NOT NULL,
+                detected_at TEXT NOT NULL,
+                feature_type TEXT NOT NULL,
+                feature_key TEXT NOT NULL,
+                deviation_type TEXT NOT NULL,
+                severity_hint TEXT NOT NULL DEFAULT 'info',
+                details_json TEXT NOT NULL DEFAULT '{}',
+                resolved INTEGER NOT NULL DEFAULT 0,
+                resolved_at TEXT,
+                risk_score INTEGER NOT NULL DEFAULT 0,
+                risk_level TEXT NOT NULL DEFAULT 'info',
+                reason TEXT NOT NULL DEFAULT '',
+                confidence REAL NOT NULL DEFAULT 0.0,
+                final_classification TEXT NOT NULL DEFAULT 'unknown'
+            )
+            """
+        )
+        ensure_baseline_deviation_columns(connection)
+
+    # Seed built-in profiles (safe to call on every startup)
+    try:
+        from services.snipen_profiles import seed_builtin_profiles
+        seed_builtin_profiles()
+    except Exception:
+        pass  # non-fatal: profiles can be created manually via API
+
+
+def ensure_baseline_deviation_columns(connection: sqlite3.Connection) -> None:
+    """Add new columns to host_baseline_deviations for existing databases."""
+    tables = {
+        row["name"]
+        for row in connection.execute(
+            "SELECT name FROM sqlite_master WHERE type='table'"
+        ).fetchall()
+    }
+    if "host_baseline_deviations" not in tables:
+        return
+    existing = {
+        row["name"]
+        for row in connection.execute(
+            "PRAGMA table_info(host_baseline_deviations)"
+        ).fetchall()
+    }
+    if "final_classification" not in existing:
+        connection.execute(
+            "ALTER TABLE host_baseline_deviations "
+            "ADD COLUMN final_classification TEXT NOT NULL DEFAULT 'unknown'"
+        )
+
 
 def ensure_connection_columns(connection: sqlite3.Connection) -> None:
     existing_columns = {
@@ -179,7 +272,7 @@ def ensure_default_connection() -> None:
                 "",
                 "",
                 "http://127.0.0.1:11434",
-                "llama3",
+                "qwen2.5-coder:7b",
                 0,
                 24,
                 1,  # vm_enabled=true
@@ -593,3 +686,96 @@ def list_reports() -> list[dict[str, Any]]:
             """
         ).fetchall()
     return rows_to_dicts(rows)
+
+
+# ── Fullscan Reports ──────────────────────────────────────────────────────────
+
+def save_fullscan_report(
+    host: str,
+    fullscan_job_id: str,
+    status: str,
+    risk_score: float,
+    findings_count: int,
+    high_findings: int,
+    ti_matches: int,
+    summary: dict[str, Any],
+    result: dict[str, Any],
+    markdown_report: str,
+) -> int:
+    import json as _json
+    now = utc_now_iso()
+    with get_connection() as conn:
+        cur = conn.execute(
+            """
+            INSERT INTO fullscan_reports
+                (host, fullscan_job_id, status, risk_score, findings_count,
+                 high_findings, ti_matches, summary_json, result_json, markdown_report, created_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                host, fullscan_job_id, status, risk_score, findings_count,
+                high_findings, ti_matches,
+                _json.dumps(summary, ensure_ascii=False),
+                _json.dumps(result, ensure_ascii=False),
+                markdown_report,
+                now,
+            ),
+        )
+    return cur.lastrowid
+
+
+def get_latest_fullscan_report(host: str) -> dict[str, Any] | None:
+    import json as _json
+    with get_connection() as conn:
+        row = conn.execute(
+            """
+            SELECT id, host, fullscan_job_id, status, risk_score, findings_count,
+                   high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+            FROM fullscan_reports
+            WHERE host = ?
+            ORDER BY created_at DESC
+            LIMIT 1
+            """,
+            (host,),
+        ).fetchone()
+    if row is None:
+        return None
+    d = dict(row)
+    d["summary"] = _json.loads(d.pop("summary_json", "{}") or "{}")
+    d["result"]  = _json.loads(d.pop("result_json",  "{}") or "{}")
+    return d
+
+
+def list_fullscan_reports(host: str | None = None, limit: int = 20) -> list[dict[str, Any]]:
+    import json as _json
+    with get_connection() as conn:
+        if host:
+            rows = conn.execute(
+                """
+                SELECT id, host, fullscan_job_id, status, risk_score, findings_count,
+                       high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+                FROM fullscan_reports
+                WHERE host = ?
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (host, limit),
+            ).fetchall()
+        else:
+            rows = conn.execute(
+                """
+                SELECT id, host, fullscan_job_id, status, risk_score, findings_count,
+                       high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+                FROM fullscan_reports
+                ORDER BY created_at DESC
+                LIMIT ?
+                """,
+                (limit,),
+            ).fetchall()
+    result = []
+    for row in rows:
+        d = dict(row)
+        d["summary"] = _json.loads(d.pop("summary_json", "{}") or "{}")
+        d["result"]  = _json.loads(d.pop("result_json",  "{}") or "{}")
+        result.append(d)
+    return result

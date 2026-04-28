@@ -8,7 +8,7 @@ from schemas.types import AnalysisRunRequest
 from services.grouping import group_alerts, is_relevant
 from services.ollama_client import assess_group
 from services.reporting import build_report
-from services.scoring import score_group
+from services.scoring import apply_profile_modifiers, score_group
 from services.wazuh_indexer import fetch_alerts, fetch_vulnerabilities, normalize_alert
 
 
@@ -52,9 +52,24 @@ def run_analysis_job(job_id: int, connection: dict[str, Any], request: AnalysisR
         relevant_alerts = limited_alerts
     grouped = group_alerts(relevant_alerts)
 
+    # Pre-load profile assignments for profile-aware scoring.
+    # We do this once per job to avoid per-group DB round-trips.
+    _profile_map: dict[str, str | None] = {}
+    try:
+        from services.snipen_profiles import list_all_assignments
+        for a in list_all_assignments():
+            _profile_map[a.host] = a.profile_name
+    except Exception:
+        pass
+
     findings: list[dict[str, Any]] = []
     for group in grouped:
         scoring = score_group(group)
+        # Apply profile modifiers (sysadmin suppression, etc.)
+        # Merge group into scoring so apply_profile_modifiers sees event_id, sample, etc.
+        host_key = str(group.get("host") or "")
+        profile_for_host = _profile_map.get(host_key)
+        scoring = apply_profile_modifiers({**group, **scoring}, profile_for_host)
         finding = {
             **group,
             **scoring,

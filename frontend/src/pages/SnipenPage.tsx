@@ -12,19 +12,22 @@ import {
   FileText,
   Database,
   Plus,
-  Play,
   Download,
   GitBranch,
   RefreshCw,
+  Sparkles,
 } from 'lucide-react';
 import {
   getSnipenHostEvents,
   getSnipenHosts,
+  explainSnipenEvent,
+  explainSnipenEventWithContext,
 } from '../services/api';
 import type {
   HostProfileAssignment,
   SnipenEvent,
   SnipenHostInfo,
+  SnipenExplainResult,
 } from '../types';
 
 // ── Types & constants ─────────────────────────────────────────────────────────
@@ -34,6 +37,7 @@ interface SnipenPageProps {
   theme: 'light' | 'dark';
   profileAssignments: Record<string, HostProfileAssignment>;
   prefillHost?: string | null;
+  prefillEventTs?: string | null;
   onPrefillConsumed?: () => void;
 }
 
@@ -100,11 +104,18 @@ function categoryIcon(cat: CategoryFilter): React.ComponentType<{ className?: st
   return found?.icon ?? FileText;
 }
 
+/** Format a UTC ISO timestamp string as HH:MM:SS in the browser's local timezone. */
+function fmtTime(ts: string | null | undefined): string {
+  if (!ts) return '—';
+  return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
 // ── Main component ────────────────────────────────────────────────────────────
 
 export function SnipenPage({
   active,
   prefillHost,
+  prefillEventTs,
   onPrefillConsumed,
 }: SnipenPageProps) {
   // Host list state
@@ -113,6 +124,7 @@ export function SnipenPage({
   const [hostsError, setHostsError] = useState<string | null>(null);
   const [selectedHost, setSelectedHost] = useState<string | null>(null);
   const [hours, setHours] = useState<TimePreset>(24);
+  const [eventLimit, setEventLimit] = useState<number>(500);
 
   // Event state
   const [events, setEvents] = useState<SnipenEvent[]>([]);
@@ -120,6 +132,14 @@ export function SnipenPage({
   const [selectedEventTs, setSelectedEventTs] = useState<string | null>(null);
   const [typeFilter, setTypeFilter] = useState<CategoryFilter>('all');
   const [query, setQuery] = useState('');
+
+  // AI explain state
+  const [explainResult, setExplainResult] = useState<SnipenExplainResult | null>(null);
+  const [explainLoading, setExplainLoading] = useState(false);
+  const [explainContextLoading, setExplainContextLoading] = useState(false);
+  const [explainError, setExplainError] = useState<string | null>(null);
+  const [rawExpanded, setRawExpanded] = useState(false);
+  const [detailMode, setDetailMode] = useState<'smart' | 'raw' | 'ai'>('smart');
 
   const loadHosts = useCallback(() => {
     setHostsLoading(true);
@@ -151,20 +171,29 @@ export function SnipenPage({
     }
   }, [prefillHost, active, onPrefillConsumed]);
 
+  // Auto-select a specific event after events are loaded
+  useEffect(() => {
+    if (prefillEventTs && events.length > 0) {
+      setSelectedEventTs(prefillEventTs);
+    }
+  }, [prefillEventTs, events]);
+
   // Load events when host changes
   useEffect(() => {
     if (!selectedHost) return;
     setEventsLoading(true);
     setEvents([]);
     setSelectedEventTs(null);
-    getSnipenHostEvents(selectedHost, { hours, limit: 200 })
+    setExplainResult(null);
+    setExplainError(null);
+    getSnipenHostEvents(selectedHost, { hours, limit: eventLimit })
       .then((data) => {
         setEvents(data);
         if (data.length > 0) setSelectedEventTs(data[0].smart.timestamp ?? null);
       })
       .catch(() => setEvents([]))
       .finally(() => setEventsLoading(false));
-  }, [selectedHost, hours]);
+  }, [selectedHost, hours, eventLimit]);
 
   // Filtered events
   const filtered = useMemo(() => {
@@ -198,6 +227,37 @@ export function SnipenPage({
 
   const selectedEvent = events.find((e) => e.smart.timestamp === selectedEventTs) ?? filtered[0] ?? null;
 
+  // Clear explain when event changes
+  useEffect(() => {
+    setExplainResult(null);
+    setExplainError(null);
+    setExplainContextLoading(false);
+    setRawExpanded(false);
+    setDetailMode('smart');
+  }, [selectedEventTs]);
+
+  function handleExplain() {
+    if (!selectedEvent || explainLoading) return;
+    setDetailMode('ai');
+    setExplainLoading(true);
+    setExplainError(null);
+    explainSnipenEvent((selectedEvent.raw ?? selectedEvent.smart) as unknown as Record<string, unknown>)
+      .then((res) => setExplainResult(res))
+      .catch((e: unknown) => setExplainError(e instanceof Error ? e.message : 'Explain failed'))
+      .finally(() => setExplainLoading(false));
+  }
+
+  function handleExplainWithContext() {
+    if (!selectedEvent || explainContextLoading) return;
+    setDetailMode('ai');
+    setExplainContextLoading(true);
+    setExplainError(null);
+    explainSnipenEventWithContext((selectedEvent.raw ?? selectedEvent.smart) as unknown as Record<string, unknown>)
+      .then((res) => setExplainResult(res))
+      .catch((e: unknown) => setExplainError(e instanceof Error ? e.message : 'Context explain failed'))
+      .finally(() => setExplainContextLoading(false));
+  }
+
   // Top host stats
   const topHosts = useMemo(() => {
     const counts: Record<string, number> = {};
@@ -212,7 +272,7 @@ export function SnipenPage({
   }, [events]);
 
   return (
-    <div className="h-full grid grid-cols-[180px_1fr_360px] min-h-0">
+    <div className="h-full grid grid-cols-[180px_1fr_460px] min-h-0">
       {/* Left: type filter + context */}
       <aside className="border-r border-border bg-[var(--panel)] flex flex-col min-h-0">
         <FSec title="Type">
@@ -254,7 +314,7 @@ export function SnipenPage({
           ))}
         </FSec>
 
-        <FSec title="Hosts">
+        <FSec title="Hosts" scrollable>
           {hostsLoading && (
             <div className="px-2 text-[11px] font-mono text-muted-foreground">loading…</div>
           )}
@@ -265,7 +325,12 @@ export function SnipenPage({
             <button
               key={h.host}
               onClick={() => { setSelectedHost(h.host); setQuery(`host:${h.host}`); }}
-              className="w-full text-left h-6 px-2 rounded-sm text-[11.5px] font-mono text-muted-foreground hover:bg-accent hover:text-foreground truncate"
+              className={
+                'w-full text-left h-6 px-2 rounded-sm text-[11.5px] font-mono truncate ' +
+                (selectedHost === h.host
+                  ? 'bg-accent text-foreground'
+                  : 'text-muted-foreground hover:bg-accent hover:text-foreground')
+              }
             >
               → {h.host}
             </button>
@@ -325,8 +390,20 @@ export function SnipenPage({
             />
             <span className="text-[10px] font-mono text-muted-foreground shrink-0">{filtered.length} hits</span>
           </div>
-          <button className="h-7 px-2 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center gap-1">
-            <Play className="h-3 w-3" /> Run
+          <select
+            value={eventLimit}
+            onChange={(e) => setEventLimit(Number(e.target.value))}
+            className="h-7 px-2 rounded-sm border border-border bg-[var(--panel)] text-[11px] font-mono text-muted-foreground cursor-pointer hover:bg-accent"
+          >
+            {[200, 500, 1000, 2000].map((l) => (
+              <option key={l} value={l}>{l}</option>
+            ))}
+          </select>
+          <button
+            onClick={loadHosts}
+            className="h-7 px-2 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center gap-1"
+          >
+            <RefreshCw className="h-3 w-3" />
           </button>
           <button className="h-7 px-2 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center gap-1">
             <Plus className="h-3 w-3" /> Add to Incident
@@ -387,7 +464,7 @@ export function SnipenPage({
                 }
               >
                 <span className="text-[11px] font-mono text-muted-foreground truncate">
-                  {s.timestamp ? s.timestamp.slice(11, 19) : '—'}
+                  {fmtTime(s.timestamp)}
                 </span>
                 <Icon className="h-3.5 w-3.5 text-muted-foreground" />
                 <span
@@ -412,6 +489,14 @@ export function SnipenPage({
           })}
         </div>
 
+        {/* Footer: event count */}
+        {!eventsLoading && events.length > 0 && (
+          <div className="border-t border-border bg-[var(--panel)] px-3 h-6 flex items-center justify-between flex-shrink-0">
+            <span className="text-[10.5px] font-mono text-muted-foreground">{filtered.length} Events</span>
+            <span className="text-[10.5px] font-mono text-muted-foreground">{selectedHost ?? ''}</span>
+          </div>
+        )}
+
         {/* Process tree mini */}
         <div className="border-t border-border bg-[var(--panel)] px-3 py-2">
           <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5 flex items-center gap-1">
@@ -427,104 +512,356 @@ export function SnipenPage({
 
       {/* Right: event detail */}
       <aside className="bg-[var(--panel)] flex flex-col min-h-0">
-        <div className="h-9 px-3 flex items-center border-b border-border">
-          <span className="text-[12px] font-semibold tracking-wide">EVENT</span>
-          {selectedEvent && (
-            <span className="ml-2 text-[10.5px] font-mono text-muted-foreground">
-              [{selectedEvent.smart.event_id}] · {selectedEvent.smart.timestamp?.slice(11, 19) ?? '—'}
-            </span>
-          )}
-          {selectedEvent && (
-            <span className="ml-auto">
+        {/* Header: mode tabs + actions */}
+        <div className="h-9 px-2 flex items-center gap-2 border-b border-border shrink-0">
+          {selectedEvent ? (
+            <>
+              {/* Mode toggle */}
+              <div className="flex rounded-sm overflow-hidden border border-border text-[11px] font-mono shrink-0">
+                {(['smart', 'raw', 'ai'] as const).map((m) => (
+                  <button
+                    key={m}
+                    type="button"
+                    onClick={() => setDetailMode(m)}
+                    className={
+                      'px-2.5 py-0.5 transition ' +
+                      (detailMode === m
+                        ? 'bg-accent text-foreground'
+                        : 'text-muted-foreground hover:text-foreground')
+                    }
+                  >
+                    {m === 'smart' ? '{ } Smart' : m === 'raw' ? 'Raw' : '✦ AI'}
+                  </button>
+                ))}
+              </div>
+              {/* Severity */}
               <span
                 className={
-                  'inline-flex items-center h-[18px] px-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider border ' +
+                  'inline-flex items-center h-[18px] px-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider border shrink-0 ' +
                   sevBadgeClass(ruleLevelToSeverity(selectedEvent.smart.rule_level))
                 }
               >
                 {ruleLevelToSeverity(selectedEvent.smart.rule_level)}
               </span>
-            </span>
+              {/* Explain button */}
+              <button
+                type="button"
+                onClick={handleExplain}
+                disabled={explainLoading || explainContextLoading}
+                className="ml-auto h-6 px-2 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center gap-1 disabled:opacity-50 shrink-0"
+              >
+                <Sparkles className="h-3 w-3" />
+                {explainLoading ? 'AI…' : 'Erklären'}
+              </button>
+              {/* Context-aware explain button */}
+              <button
+                type="button"
+                onClick={handleExplainWithContext}
+                disabled={explainLoading || explainContextLoading}
+                title="Erklärt das Event im Kontext der ±15-Minuten-Ereignisse auf demselben Host"
+                className="h-6 px-2 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center gap-1 disabled:opacity-50 shrink-0"
+              >
+                <GitBranch className="h-3 w-3" />
+                {explainContextLoading ? 'Kontext…' : '+Kontext'}
+              </button>
+            </>
+          ) : (
+            <span className="text-[12px] font-semibold tracking-wide px-1">EVENT</span>
           )}
         </div>
 
         {selectedEvent ? (
           <div className="flex-1 overflow-y-auto">
-            <Sec title="Summary">
-              <div className="text-[12px] leading-snug">
-                {selectedEvent.smart.summary ?? selectedEvent.smart.rule_description ?? '—'}
+            {/* Event title + meta (always visible) */}
+            <div className="px-3 py-2 border-b border-border">
+              <div className="flex items-center gap-2 flex-wrap">
+                <span className="text-[12px] font-semibold leading-tight">
+                  {selectedEvent.smart.rule_description ?? `Rule ${selectedEvent.smart.rule_id ?? '?'}`}
+                </span>
               </div>
-              <div className="mt-1.5 grid grid-cols-2 gap-x-3 gap-y-1 text-[11px] font-mono">
-                <KV k="host" v={selectedEvent.smart.host ?? selectedHost ?? '—'} />
-                <KV k="type" v={deriveCategory(selectedEvent)} />
-                {selectedEvent.smart.user && <KV k="user" v={selectedEvent.smart.user} />}
-                {selectedEvent.smart.process && <KV k="proc" v={selectedEvent.smart.process} />}
-                {selectedEvent.smart.mitre_id && <KV k="MITRE" v={selectedEvent.smart.mitre_id} />}
-                {selectedEvent.smart.mitre_tactic && <KV k="tactic" v={selectedEvent.smart.mitre_tactic} />}
+              <div className="mt-0.5 flex flex-wrap gap-x-2 text-[10.5px] font-mono text-muted-foreground">
+                <span>{selectedEvent.smart.host ?? selectedHost ?? '—'}</span>
+                <span>•</span>
+                <span>{fmtTime(selectedEvent.smart.timestamp)}</span>
+                {selectedEvent.smart.event_id && <><span>•</span><span>[{selectedEvent.smart.event_id}]</span></>}
               </div>
-            </Sec>
+            </div>
 
-            {selectedEvent.smart.command_line && (
-              <Sec title="Command Line">
-                <pre className="text-[11px] font-mono whitespace-pre-wrap leading-snug break-all">
-                  {selectedEvent.smart.command_line}
-                </pre>
-              </Sec>
-            )}
-
-            {selectedEvent.smart.ip_address && (
-              <Sec title="Network">
-                <KV k="IP" v={selectedEvent.smart.ip_address} />
-                {selectedEvent.smart.logon_type && <KV k="logon" v={selectedEvent.smart.logon_type} />}
-              </Sec>
-            )}
-
-            <Sec title="Raw Data">
-              <pre className="text-[11px] font-mono whitespace-pre-wrap leading-snug text-muted-foreground max-h-[200px] overflow-y-auto">
-                {Object.entries(selectedEvent.smart)
-                  .filter(([, v]) => v != null && v !== '' && (Array.isArray(v) ? v.length > 0 : true))
-                  .map(([k, v]) => `${k.padEnd(18)} ${Array.isArray(v) ? v.join(', ') : v}`)
-                  .join('\n')}
-              </pre>
-            </Sec>
-
-            <Sec title="Quick Pivots">
-              <div className="grid grid-cols-2 gap-1">
-                {[
-                  selectedEvent.smart.host ? `host:${selectedEvent.smart.host}` : null,
-                  selectedEvent.smart.event_id ? `eid:${selectedEvent.smart.event_id}` : null,
-                  selectedEvent.smart.user ? `user:${selectedEvent.smart.user}` : null,
-                  selectedEvent.smart.process ? `process:${selectedEvent.smart.process}` : null,
-                ]
-                  .filter(Boolean)
-                  .map((p) => (
-                    <button
-                      key={p as string}
-                      onClick={() => setQuery(p as string)}
-                      className="text-left h-6 px-2 rounded-sm border border-border hover:bg-accent text-[11px] font-mono truncate"
+            {/* ── SMART view: flat field rows ── */}
+            {detailMode === 'smart' && (
+              <div className="border-b border-border">
+                {([
+                  ['FIM Path',       selectedEvent.smart.fim_path],
+                  ['FIM Mode',       selectedEvent.smart.fim_mode],
+                  ['FIM Owner',      selectedEvent.smart.fim_owner],
+                  ['FIM Group',      selectedEvent.smart.fim_group],
+                  ['Event Meaning',  selectedEvent.smart.event_explanation],
+                  ['System Message', selectedEvent.smart.system_message],
+                  ['Rule ID',        selectedEvent.smart.rule_id],
+                  ['Rule Level',     selectedEvent.smart.rule_level != null ? String(selectedEvent.smart.rule_level) : null],
+                  ['MITRE ID',       selectedEvent.smart.mitre_id],
+                  ['MITRE Tactic',   selectedEvent.smart.mitre_tactic],
+                  ['User',           selectedEvent.smart.user],
+                  ['IP Address',     selectedEvent.smart.ip_address],
+                  ['Process',        selectedEvent.smart.process],
+                  ['Command Line',   selectedEvent.smart.command_line],
+                  ['Logon Type',     selectedEvent.smart.logon_type],
+                  ['Service',        selectedEvent.smart.service_name],
+                  ['Registry Key',   selectedEvent.smart.registry_key],
+                  ['Decoder',        selectedEvent.smart.decoder],
+                  ['Location',       selectedEvent.smart.location],
+                ] as [string, string | null | undefined][])
+                  .filter(([, v]) => v != null && v !== '')
+                  .map(([label, value]) => (
+                    <div
+                      key={label}
+                      className="flex gap-3 px-3 py-1 text-[11px] border-b border-border/40 last:border-0"
                     >
-                      → {p}
-                    </button>
+                      <span className="w-28 shrink-0 text-muted-foreground font-mono">{label}</span>
+                      <span className="font-mono break-all text-foreground text-[10.5px]">{value}</span>
+                    </div>
                   ))}
-              </div>
-            </Sec>
-
-            <Sec title="Related Events">
-              {events
-                .filter((e) => e.smart.host === selectedEvent.smart.host && e.smart.timestamp !== selectedEvent.smart.timestamp)
-                .slice(0, 4)
-                .map((e) => (
-                  <div
-                    key={(e.smart.timestamp ?? '') + (e.smart.event_id ?? '')}
-                    className="grid grid-cols-[60px_44px_1fr] gap-2 text-[11px] font-mono py-1 border-b border-border/60 last:border-0 cursor-pointer hover:bg-[var(--row-hover)]"
-                    onClick={() => setSelectedEventTs(e.smart.timestamp ?? null)}
-                  >
-                    <span className="text-muted-foreground">{e.smart.timestamp?.slice(11, 19) ?? '—'}</span>
-                    <span className="text-info">[{e.smart.event_id ?? '—'}]</span>
-                    <span className="truncate">{e.smart.summary ?? e.smart.rule_description ?? '—'}</span>
+                {(selectedEvent.smart.groups?.length ?? 0) > 0 && (
+                  <div className="flex flex-wrap gap-1 px-3 py-1.5 border-b border-border/40">
+                    {selectedEvent.smart.groups.map((g) => (
+                      <span key={g} className="font-mono text-[10px] px-1.5 py-0.5 rounded-sm border border-border bg-muted/40 text-muted-foreground">
+                        #{g}
+                      </span>
+                    ))}
                   </div>
-                ))}
-            </Sec>
+                )}
+                {/* Quick Pivots */}
+                <div className="px-3 py-1.5">
+                  <div className="text-[9.5px] font-mono uppercase tracking-wider text-muted-foreground mb-1">Quick Pivots</div>
+                  <div className="flex flex-wrap gap-1">
+                    {[
+                      selectedEvent.smart.host        ? `host:${selectedEvent.smart.host}` : null,
+                      selectedEvent.smart.event_id    ? `eid:${selectedEvent.smart.event_id}` : null,
+                      selectedEvent.smart.user        ? `user:${selectedEvent.smart.user}` : null,
+                      selectedEvent.smart.process     ? `process:${selectedEvent.smart.process}` : null,
+                      selectedEvent.smart.ip_address  ? `ip:${selectedEvent.smart.ip_address}` : null,
+                      selectedEvent.smart.rule_id     ? `rule:${selectedEvent.smart.rule_id}` : null,
+                    ]
+                      .filter(Boolean)
+                      .map((p) => (
+                        <button
+                          key={p as string}
+                          onClick={() => setQuery(p as string)}
+                          className="h-5 px-2 rounded-sm border border-border hover:bg-accent text-[10px] font-mono truncate"
+                        >
+                          → {p}
+                        </button>
+                      ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* ── RAW view ── */}
+            {detailMode === 'raw' && (
+              <pre className="px-3 py-2 text-[11px] font-mono whitespace-pre-wrap leading-snug text-muted-foreground overflow-y-auto">
+                {JSON.stringify(selectedEvent.raw ?? selectedEvent.smart, null, 2)}
+              </pre>
+            )}
+
+            {/* ── AI view ── */}
+            {detailMode === 'ai' && (
+              <div className="px-3 py-2">
+                {(explainLoading || explainContextLoading) && (
+                  <div className="flex items-center gap-2 py-4 text-[11px] font-mono text-muted-foreground">
+                    <Sparkles className="h-3.5 w-3.5 animate-pulse" />
+                    {explainContextLoading ? 'Kontextfenster wird geladen…' : 'Analysing…'}
+                  </div>
+                )}
+                {explainError && (
+                  <div className="text-[11px] font-mono text-critical py-2">{explainError}</div>
+                )}
+                {!explainLoading && !explainContextLoading && !explainResult && !explainError && (
+                  <div className="flex flex-col items-center gap-3 py-8 text-[11px] font-mono text-muted-foreground">
+                    <Sparkles className="h-5 w-5" />
+                    <p>Click <strong className="text-foreground">Erklären</strong> or <strong className="text-foreground">+Kontext</strong> to analyse this event</p>
+                  </div>
+                )}
+                {explainResult && (
+                  <div className="space-y-3">
+                    {/* Header: severity + risk score + confidence */}
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className={
+                        'inline-flex items-center h-[18px] px-1.5 rounded-sm text-[10px] font-mono uppercase tracking-wider border ' +
+                        sevBadgeClass(explainResult.severity)
+                      }>
+                        {explainResult.severity}
+                      </span>
+                      {explainResult.confidence && (
+                        <span className="font-mono text-[10px] px-1.5 py-0.5 rounded-sm border border-border bg-muted text-muted-foreground">
+                          ±{explainResult.confidence}
+                        </span>
+                      )}
+                      {explainResult.risk_score != null && (
+                        <span className="ml-auto text-[13px] font-bold tabular-nums"
+                          style={{
+                            color: explainResult.risk_score >= 8 ? 'var(--color-critical)' :
+                                   explainResult.risk_score >= 6 ? '#ff8c00' :
+                                   explainResult.risk_score >= 4 ? 'var(--color-warning)' : 'var(--color-success)'
+                          }}>
+                          {explainResult.risk_score.toFixed(1)} / 10
+                        </span>
+                      )}
+                    </div>
+                    {/* Risk bar */}
+                    {explainResult.risk_score != null && (
+                      <div className="h-1.5 w-full rounded-full overflow-hidden bg-muted">
+                        <div className="h-full rounded-full transition-all duration-700"
+                          style={{
+                            width: `${Math.min(100, (explainResult.risk_score / 10) * 100)}%`,
+                            background: explainResult.risk_score >= 8 ? 'var(--color-critical)' :
+                                        explainResult.risk_score >= 6 ? '#ff8c00' :
+                                        explainResult.risk_score >= 4 ? 'var(--color-warning)' : 'var(--color-success)',
+                          }} />
+                      </div>
+                    )}
+                    {/* MITRE */}
+                    {explainResult.mitre_techniques.length > 0 && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-muted-foreground mb-1">⚔ MITRE ATT&amp;CK</div>
+                        <div className="flex flex-wrap gap-1">
+                          {explainResult.mitre_techniques.map((m) => (
+                            <span key={m} className="font-mono text-[10px] px-1.5 py-0.5 rounded-sm border border-border bg-muted text-muted-foreground">
+                              {m}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Summary */}
+                    <div className="text-[12px] leading-snug">{explainResult.summary}</div>
+                    {/* Why suspicious */}
+                    {explainResult.why_suspicious && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-warning mb-0.5">⚠ Warum verdächtig</div>
+                        <div className="text-[11px] font-mono text-foreground leading-snug">{explainResult.why_suspicious}</div>
+                      </div>
+                    )}
+                    {/* Against it */}
+                    {explainResult.against_it && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-success mb-0.5">✓ Spricht dagegen</div>
+                        <div className="text-[11px] font-mono text-foreground leading-snug">{explainResult.against_it}</div>
+                      </div>
+                    )}
+                    {/* Suspicious fields */}
+                    {explainResult.suspicious_fields.length > 0 && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-critical mb-1">⬥ Auffällige Felder</div>
+                        <div className="flex flex-wrap gap-1">
+                          {explainResult.suspicious_fields.map((f, i) => (
+                            <span key={`${f}-${i}`} className="font-mono text-[10px] px-1.5 py-0.5 rounded-sm border border-critical/30 bg-critical/10 text-critical">
+                              {f}
+                            </span>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                    {/* Unusual behavior */}
+                    {explainResult.unusual_behavior.length > 0 && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-warning mb-1">◈ Unusual Behavior</div>
+                        <ul className="space-y-0.5">
+                          {explainResult.unusual_behavior.map((item, i) => (
+                            <li key={i} className="text-[11px] font-mono flex gap-1.5">
+                              <span className="text-warning shrink-0">•</span>{item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Deviations */}
+                    {explainResult.deviations.length > 0 && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-muted-foreground mb-1">↗ Abweichungen</div>
+                        <ul className="space-y-0.5">
+                          {explainResult.deviations.map((item, i) => (
+                            <li key={i} className="text-[11px] font-mono flex gap-1.5 text-muted-foreground">
+                              <span className="shrink-0">↗</span>{item}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                    {/* Remediation */}
+                    {explainResult.remediation.length > 0 && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-muted-foreground mb-1">🛡 Maßnahmen</div>
+                        <ol className="space-y-0.5 list-none">
+                          {explainResult.remediation.map((r, i) => (
+                            <li key={i} className="text-[11px] font-mono flex gap-1.5">
+                              <span className="text-muted-foreground shrink-0 tabular-nums w-4">{i + 1}</span>{r}
+                            </li>
+                          ))}
+                        </ol>
+                      </div>
+                    )}
+                    {/* Next checks */}
+                    {explainResult.next_checks.length > 0 && (
+                      <div>
+                        <div className="text-[9.5px] font-mono uppercase tracking-wider text-muted-foreground mb-1">🔍 Nächste Checks</div>
+                        <ul className="space-y-0.5">
+                          {explainResult.next_checks.map((r, i) => (
+                            <li key={i} className="text-[11px] font-mono text-muted-foreground flex gap-1.5">
+                              <span className="shrink-0">→</span>{r}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* ── Event Trail (always visible) ── */}
+            {(() => {
+              const sorted = [...events]
+                .filter((e) => Boolean(e.smart.timestamp))
+                .sort((a, b) => new Date(a.smart.timestamp!).getTime() - new Date(b.smart.timestamp!).getTime());
+              const idx = sorted.findIndex((e) => e.smart.timestamp === selectedEvent.smart.timestamp);
+              if (idx < 0) return null;
+              const prev = sorted.slice(Math.max(0, idx - 4), idx).reverse();
+              const next = sorted.slice(idx + 1, idx + 5);
+              return (
+                <div className="px-3 py-1.5 border-t border-border">
+                  <div className="text-[9.5px] font-mono uppercase tracking-wider text-muted-foreground mb-1">Event Trail</div>
+                  <div className="grid grid-cols-2 gap-3 text-[11px] font-mono">
+                    <div>
+                      <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70 mb-0.5">Previous</div>
+                      {prev.length === 0 ? <span className="text-muted-foreground text-[10px]">—</span> : prev.map((e) => (
+                        <div
+                          key={(e.smart.timestamp ?? '') + (e.smart.event_id ?? '')}
+                          onClick={() => setSelectedEventTs(e.smart.timestamp ?? null)}
+                          className="py-px cursor-pointer hover:text-foreground text-muted-foreground"
+                        >
+                          <span className="tabular-nums text-[10px]">{fmtTime(e.smart.timestamp)}</span>
+                          <span className="ml-1 text-[10px] block truncate">{e.smart.summary ?? e.smart.rule_description ?? '—'}</span>
+                        </div>
+                      ))}
+                    </div>
+                    <div>
+                      <div className="text-[9px] uppercase tracking-wider text-muted-foreground/70 mb-0.5">Next</div>
+                      {next.length === 0 ? <span className="text-muted-foreground text-[10px]">—</span> : next.map((e) => (
+                        <div
+                          key={(e.smart.timestamp ?? '') + (e.smart.event_id ?? '')}
+                          onClick={() => setSelectedEventTs(e.smart.timestamp ?? null)}
+                          className="py-px cursor-pointer hover:text-foreground text-muted-foreground"
+                        >
+                          <span className="tabular-nums text-[10px]">{fmtTime(e.smart.timestamp)}</span>
+                          <span className="ml-1 text-[10px] block truncate">{e.smart.summary ?? e.smart.rule_description ?? '—'}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              );
+            })()}
           </div>
         ) : (
           <div className="flex-1 grid place-items-center text-[12px] font-mono text-muted-foreground">
@@ -538,33 +875,14 @@ export function SnipenPage({
 
 // ── Sub-components ────────────────────────────────────────────────────────────
 
-function FSec({ title, children }: { title: string; children: React.ReactNode }) {
+function FSec({ title, children, scrollable }: { title: string; children: React.ReactNode; scrollable?: boolean }) {
   return (
-    <div className="border-b border-border p-2">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1 px-1">
+    <div className={`border-b border-border p-2 ${scrollable ? 'flex flex-col min-h-0 flex-1 overflow-hidden' : ''}`}>
+      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1 px-1 flex-shrink-0">
         {title}
       </div>
-      <div className="space-y-[1px]">{children}</div>
+      <div className={`space-y-[1px] ${scrollable ? 'overflow-y-auto' : ''}`}>{children}</div>
     </div>
   );
 }
 
-function Sec({ title, children }: { title: string; children: React.ReactNode }) {
-  return (
-    <div className="px-3 py-2 border-b border-border">
-      <div className="text-[10px] font-mono uppercase tracking-wider text-muted-foreground mb-1.5">
-        {title}
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function KV({ k, v }: { k: string; v: string }) {
-  return (
-    <div className="flex gap-2 min-w-0">
-      <span className="text-muted-foreground w-12 shrink-0">{k}</span>
-      <span className="truncate">{v}</span>
-    </div>
-  );
-}

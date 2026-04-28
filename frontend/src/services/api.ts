@@ -194,6 +194,13 @@ export function explainSnipenEvent(event_raw: Record<string, unknown>): Promise<
   });
 }
 
+export function explainSnipenEventWithContext(event_raw: Record<string, unknown>): Promise<SnipenExplainResult> {
+  return request<SnipenExplainResult>('/snipen/event/explain-context', {
+    method: 'POST',
+    body: JSON.stringify({ event_raw })
+  });
+}
+
 export function remediateSnipenEvent(event_raw: Record<string, unknown>): Promise<SnipenExplainResult> {
   return request<SnipenExplainResult>('/snipen/event/remediate', {
     method: 'POST',
@@ -305,4 +312,20 @@ export function resolveDeviation(deviationId: number): Promise<{ status: string 
 
 export function getBaselineDiff(host: string): Promise<BaselineDiff> {
   return request<BaselineDiff>(`/baseline/${encodeURIComponent(host)}/diff`);
+}
+
+export function getGlobalBaselineDeviations(unresolvedOnly = true, limit = 200, classification?: string): Promise<BaselineDeviation[]> {
+  const params = new URLSearchParams({ unresolved_only: String(unresolvedOnly), limit: String(limit) });
+  if (classification) params.set('classification', classification);
+  return request<BaselineDeviation[]>(`/baseline/global/deviations?${params}`);
+}
+
+export function getGlobalBaselineSummary(): Promise<{
+  total: number; open: number; critical: number; suspicious: number;
+  needs_investigation: number; escalated: number;
+  by_classification: Record<string, number>;
+  top_hosts: Array<{ host: string; open_devs: number; top_score: number }>;
+  by_type: Record<string, number>;
+}> {
+  return request('/baseline/global/summary');
 }

@@ -11,6 +11,7 @@ type HostsPageProps = {
   profileAssignments: Record<string, HostProfileAssignment>;
   onProfileAssignmentChanged: (host: string, assignment: HostProfileAssignment | null) => void;
   onSwitchTab: (tab: 'dashboard' | 'chat' | 'tasks' | 'snipen' | 'fullscan' | 'hosts') => void;
+  onOpenOverview: (host: string) => void;
 };
 
 type StatusFilter = 'ALL' | 'ONLINE' | 'OFFLINE';
@@ -26,7 +27,7 @@ function riskBorderL(r: number) {
   return r >= 80 ? 'border-l-critical' : r >= 60 ? 'border-l-high' : r >= 40 ? 'border-l-warning' : 'border-l-success';
 }
 
-export function HostsPage({ active, onSwitchTab, profiles, profileAssignments, onProfileAssignmentChanged }: HostsPageProps) {
+export function HostsPage({ active, onSwitchTab, onOpenOverview, profiles, profileAssignments, onProfileAssignmentChanged }: HostsPageProps) {
   const [hosts, setHosts] = useState<HostCentralListItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -120,6 +121,14 @@ export function HostsPage({ active, onSwitchTab, profiles, profileAssignments, o
             ))}
           </div>
           <div className="ml-auto flex items-center gap-2">
+            <button
+              onClick={() => onSwitchTab('fullscan')}
+              className="h-6 px-2 rounded-sm border border-border hover:bg-accent inline-flex items-center gap-1 text-[11px] font-mono text-muted-foreground hover:text-foreground"
+              title="Full Scan All Hosts"
+            >
+              <Terminal className="h-3 w-3" />
+              Full Scan All
+            </button>
             <button
               onClick={loadHosts}
               className="h-6 w-6 rounded-sm border border-border hover:bg-accent inline-flex items-center justify-center"
@@ -222,7 +231,7 @@ export function HostsPage({ active, onSwitchTab, profiles, profileAssignments, o
                   return (
                     <tr
                       key={h.host}
-                      onClick={() => setSelected(h)}
+                      onClick={() => { setSelected(h); onOpenOverview(h.host); }}
                       className={
                         'cursor-pointer border-b border-border/60 hover:bg-[var(--row-hover)] ' +
                         (isSel ? 'bg-[var(--row-hover)]' : '')

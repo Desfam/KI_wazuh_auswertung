@@ -10,7 +10,7 @@ import { ShieldAlert, Activity, Server, Search, CheckCircle2, ShieldOff } from '
 interface Props {
   active: boolean;
   theme: 'light' | 'dark';
-  onSwitchTab: (tab: 'chat' | 'tasks' | 'dashboard' | 'hosts' | 'snipen' | 'fullscan', context?: { host?: string }) => void;
+  onSwitchTab: (tab: 'chat' | 'tasks' | 'dashboard' | 'hosts' | 'snipen' | 'fullscan', context?: { host?: string; eventTs?: string }) => void;
   profileAssignments: Record<string, HostProfileAssignment>;
 }
 
@@ -289,12 +289,7 @@ export function DashboardPage({ active, theme, onSwitchTab, profileAssignments }
 
   const socEvents = [...allEvents]
     .filter((ev) => Boolean(ev.smart.host && ev.smart.timestamp))
-    .sort((a, b) => {
-      const la = a.smart.rule_level ?? 0;
-      const lb = b.smart.rule_level ?? 0;
-      if (lb !== la) return lb - la;
-      return (toTs(b.smart.timestamp) ?? 0) - (toTs(a.smart.timestamp) ?? 0);
-    })
+    .sort((a, b) => (toTs(b.smart.timestamp) ?? 0) - (toTs(a.smart.timestamp) ?? 0))
     .slice(0, 300)
     .map((ev, idx): SocEvent => ({
       _key: ev.doc_id ?? `${ev.smart.host}-${ev.smart.timestamp}-${idx}`,
@@ -330,9 +325,21 @@ export function DashboardPage({ active, theme, onSwitchTab, profileAssignments }
     ? socEvents.find((ev) => ev._key === selectedEventKey) ?? null
     : null;
 
-  function handleInvestigate(host: string) {
-    onSwitchTab('snipen', { host });
+  function handleInvestigate(host: string, eventTs?: string) {
+    onSwitchTab('snipen', { host, eventTs });
   }
+
+  // Compute related events for the selected event
+  const selectedRelatedEvents = useMemo(() => {
+    if (!selectedEvent) return [];
+    return socEvents
+      .filter((ev) => ev._key !== selectedEvent._key && (
+        ev.host === selectedEvent.host ||
+        (selectedEvent.user && ev.user === selectedEvent.user) ||
+        (selectedEvent.mitre_id && ev.mitre_id === selectedEvent.mitre_id)
+      ))
+      .slice(0, 6);
+  }, [selectedEvent, socEvents]);
 
   const threatColor =
     lageBild.status === 'critical'
@@ -377,7 +384,16 @@ export function DashboardPage({ active, theme, onSwitchTab, profileAssignments }
           label="Agents"
           value={`${metrics.activeHosts} / ${hosts.length}`}
           tone="info"
-          sub={`${hosts.length - metrics.activeHosts} stale`}3.5 w-3.5 text-soc-critical flex-shrink-0" />
+          sub={`${hosts.length - metrics.activeHosts} stale`}
+        />
+      </div>
+      {/* Main content */}
+      <div className="flex flex-1 overflow-hidden">
+        {/* Left: queue + bottom strip */}
+        <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
+          {/* INCIDENT QUEUE header */}
+          <div className="soc-section-header flex-shrink-0">
+            <ShieldAlert className="h-3.5 w-3.5 text-soc-critical flex-shrink-0" />
             <span className="text-[var(--soc-foreground)]">INCIDENT QUEUE</span>
             <span
               className="rounded px-1.5 font-mono text-[10px] font-semibold leading-5"
@@ -524,13 +540,28 @@ export function DashboardPage({ active, theme, onSwitchTab, profileAssignments }
         >
           <div className="h-9 px-3 flex items-center gap-2 flex-shrink-0 border-b border-[var(--soc-border)]" style={{ background: 'var(--soc-panel)' }}>
             <span className="text-[12px] font-semibold tracking-wide text-[var(--soc-foreground)]">CONTEXT</span>
+          </div>
+          {selectedEvent
+            ? <ContextPanel kind="event" event={selectedEvent} relatedEvents={selectedRelatedEvents} onInvestigate={(host) => handleInvestigate(host, selectedEvent.timestamp)} />
+            : <ContextPanel kind="empty" />
+          }
+        </div>
+      </div>
+    </div>
+  );
+}
 
+function DashEventRow({
+  event,
+  selected,
+  onClick,
+  onInvestigate,
   onMarkSafe,
 }: {
   event: SocEvent;
   selected: boolean;
   onClick: () => void;
-  onInvestigate: (host: string) => void;
+  onInvestigate: (host: string, eventTs?: string) => void;
   onMarkSafe: (key: string) => void;
 }) {
   const borderCls = incidentBorderClass(event.severity, selected);
@@ -575,7 +606,7 @@ export function DashboardPage({ active, theme, onSwitchTab, profileAssignments }
       >
         <RowActionBtn
           label="Investigate"
-          onClick={() => onInvestigate(event.host)}
+          onClick={() => onInvestigate(event.host, event.timestamp)}
           icon={Search}
         />
         <RowActionBtn

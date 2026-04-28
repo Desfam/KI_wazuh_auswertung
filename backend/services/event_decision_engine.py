@@ -40,6 +40,66 @@ EVENT_CLASS_SECURITY = "security"
 
 Severity = Literal["info", "low", "medium", "high", "critical"]
 
+# ── Profile constants ─────────────────────────────────────────────────────────
+
+# Event IDs that are routine for a sysadmin — high volume is expected and should
+# NOT inflate the risk score unless paired with suspicious content.
+SYSADMIN_NORMAL_EIDS: frozenset[str] = frozenset({
+    "4624",   # logon success
+    "4634",   # logoff
+    "4647",   # user-initiated logoff
+    "4648",   # explicit-credential logon (RDP, runas, psexec)
+    "4672",   # special/admin privileges assigned
+    "4673",   # privileged-service call
+    "4674",   # privileged-object operation
+    "4688",   # process create
+    "4689",   # process terminate
+    "5156",   # WFP allowed connection
+    "5157",   # WFP blocked connection
+    "7040",   # service start-type changed
+})
+
+# Event families that are routine for sysadmin
+SYSADMIN_NORMAL_FAMILIES: frozenset[str] = frozenset({
+    "logon_success",
+    "logoff",
+    "privilege_use",
+    "process_create",
+    "process_terminate",
+    "service_config_change",
+    "network",
+})
+
+# Substring patterns in rule_description / event_explanation that are ALWAYS
+# suspicious — these bypass all profile discounts (sysadmin or otherwise).
+ALWAYS_SUSPICIOUS_PATTERNS: tuple[str, ...] = (
+    "-enc",
+    "-encodedcommand",
+    "iex(",
+    "invoke-expression",
+    "invoke-webrequest",
+    "downloadstring",
+    "downloadfile",
+    "new-object net.webclient",
+    "rundll32 javascript",
+    "mimikatz",
+    "sekurlsa",
+    "lsass",
+    "vssadmin delete",
+    "schtasks /create",
+    "net user /add",
+    "net localgroup administrators",
+    "reg add.*run",
+    "wscript.shell",
+    "powershell -w hidden",
+    "powershell -windowstyle hidden",
+    "amsi",
+    "bypass",
+    "reflective",
+    "shellcode",
+    "inject",
+)
+
 # Windows OS / licensing / maintenance events that are NEVER security-relevant
 SAFE_SYSTEM_EVENT_IDS: frozenset[str] = frozenset({
     "16384",   # Software Protection Service successfully scheduled
@@ -418,11 +478,59 @@ def decide_event(
         risk_score += 2.0
         reasoning.append("Threat-Intelligence-Treffer vorhanden.")
 
-    # Developer-profile discount for expected dev events
-    if profile_name and "dev" in profile_name.lower() and eid in {"4688", "4624", "4634"}:
-        risk_score -= 0.5
-        reasoning.append("Teilweise durch Entwicklerprofil erklärbar.")
+    # ── Profile-based scoring adjustments ────────────────────────────────────
+    profile_lower = (profile_name or "").lower()
 
+    if "sysadmin" in profile_lower:
+        # Build a searchable string from all available text signals
+        searchable = " ".join([
+            (rule_description or "").lower(),
+            (event_explanation or "").lower(),
+            " ".join(g.lower() for g in (groups or [])),
+        ])
+        has_hard_suspicious = any(p in searchable for p in ALWAYS_SUSPICIOUS_PATTERNS)
+
+        if has_hard_suspicious:
+            # Known attack pattern — do NOT apply any discount, amplify instead
+            risk_score = min(risk_score + 2.0, 10.0)
+            reasoning.append(
+                "SysAdmin-Profil: erkanntes Angriffsmuster im Event — kein Profil-Rabatt, Risiko erhöht."
+            )
+        elif eid in SYSADMIN_NORMAL_EIDS or event_family in SYSADMIN_NORMAL_FAMILIES:
+            # Expected routine admin activity
+            if not has_baseline_deviation and not has_ti_match:
+                # HARD RULE: known-normal, no deviation, no TI → cap at low
+                risk_score = min(risk_score, 3.0)
+                reasoning.append(
+                    f"SysAdmin-Profil: Event {eid} ist für diesen Host normal "
+                    "(Logins / Prozesse / Admin-Aktionen). Score auf LOW gedeckelt."
+                )
+            elif has_baseline_deviation and not has_ti_match:
+                # Known event type but deviates from baseline → allow medium at most
+                risk_score = min(risk_score, 5.5)
+                reasoning.append(
+                    f"SysAdmin-Profil: Event {eid} normal, aber Baseline-Abweichung erkannt — medium."
+                )
+            else:
+                # TI match on a sysadmin event — keep the elevated score
+                reasoning.append(
+                    f"SysAdmin-Profil: Event {eid} hat TI-Treffer — volle Bewertung."
+                )
+        else:
+            # Not expected for sysadmin but not hard-suspicious either
+            if not has_baseline_deviation and not has_ti_match:
+                risk_score = min(risk_score, 5.5)
+                reasoning.append(
+                    "SysAdmin-Profil: Event ungewöhnlich aber kein TI-Treffer / Baseline-Abw. — medium."
+                )
+
+    elif "dev" in profile_lower:
+        # Developer profile: discount on expected dev events
+        if eid in {"4688", "4624", "4634"}:
+            risk_score -= 0.5
+            reasoning.append("Teilweise durch Entwicklerprofil erklärbar.")
+
+    # ── Final score clamp ─────────────────────────────────────────────────────
     risk_score = max(0.5, min(risk_score, 10.0))
 
     if risk_score >= 8.5:
