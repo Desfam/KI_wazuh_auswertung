@@ -7,3 +7,8 @@ __pycache__/
 node_modules/
 dist/
 frontend/.vite/
+
+# Rust/Tauri build output
+desktop/tauri/target/
+**/target/
+
