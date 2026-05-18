@@ -19,6 +19,10 @@ type AppStartOverlayProps = {
   onRetry: () => void;
   onContinue: () => void;
   onExited: () => void;
+  onStartBackend?: () => void;
+  startingBackend?: boolean;
+  onRestartBackend?: () => void;
+  restartingBackend?: boolean;
 };
 
 // Merge plain CSSProperties with CSS custom properties (--var) without TypeScript errors
@@ -132,6 +136,8 @@ export function AppStartOverlay({
   visible, statusText, checks,
   canEnter, hasBlockingFailure,
   onRetry, onContinue, onExited,
+  onStartBackend, startingBackend = false,
+  onRestartBackend, restartingBackend = false,
 }: AppStartOverlayProps) {
   const rootRef   = useRef<HTMLDivElement | null>(null);
   const hasExited = useRef(false);
@@ -142,6 +148,7 @@ export function AppStartOverlay({
   const errorCount   = checks.filter((c) => c.state === 'error').length;
   const settledCount = checks.filter((c) => c.state !== 'pending' && c.state !== 'running').length;
   const progressPct  = totalCount > 0 ? Math.round((settledCount / totalCount) * 100) : 0;
+  const backendFailed = checks.some((c) => c.key === 'backend' && c.state === 'error');
 
   // Exit fade-out driven by visible → false
   useEffect(() => {
@@ -300,6 +307,42 @@ export function AppStartOverlay({
           <StatusDot color="#b03060" label="errors" value={String(errorCount)} valueColor="#b04060" dotDelay="0.9s" />
         )}
         <div style={{ marginLeft:'auto', display:'flex', gap:8, alignItems:'center' }}>
+          {backendFailed && onStartBackend && (
+            <button
+              type="button"
+              onClick={onStartBackend}
+              disabled={startingBackend}
+              style={{
+                fontSize:9, letterSpacing:'.1em',
+                color: startingBackend ? '#507040' : '#60e080',
+                background: startingBackend ? 'rgba(20,60,20,.35)' : 'rgba(10,60,20,.5)',
+                border: `1px solid ${startingBackend ? 'rgba(40,100,40,.35)' : 'rgba(40,160,80,.45)'}`,
+                borderRadius:4, padding:'3px 12px', cursor: startingBackend ? 'default' : 'pointer',
+                textTransform:'uppercase', fontFamily:'inherit',
+                transition:'all 0.25s',
+              }}
+            >
+              {startingBackend ? '⟳ Starting…' : '▶ Start Backend'}
+            </button>
+          )}
+          {onRestartBackend && (
+            <button
+              type="button"
+              onClick={onRestartBackend}
+              disabled={restartingBackend}
+              style={{
+                fontSize:9, letterSpacing:'.1em',
+                color: restartingBackend ? '#506080' : '#80b0e0',
+                background: restartingBackend ? 'rgba(20,40,80,.35)' : 'rgba(10,40,100,.5)',
+                border: `1px solid ${restartingBackend ? 'rgba(40,80,120,.35)' : 'rgba(40,100,200,.45)'}`,
+                borderRadius:4, padding:'3px 12px', cursor: restartingBackend ? 'default' : 'pointer',
+                textTransform:'uppercase', fontFamily:'inherit',
+                transition:'all 0.25s',
+              }}
+            >
+              {restartingBackend ? '⟳ Restarting…' : '↺ Restart Backend'}
+            </button>
+          )}
           {(hasBlockingFailure || canEnter) && (
             <button
               type="button"

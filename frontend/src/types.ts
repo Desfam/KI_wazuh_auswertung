@@ -213,6 +213,7 @@ export type HostCentralListItem = {
   fullscan_status: string;
   last_scan_at?: string | null;
   status: 'online' | 'offline';
+  tactical_status?: string | null;
   // ── Access (SSH / RDP) ──────────────────────────────────────────────────────
   ssh_enabled: boolean;
   rdp_enabled: boolean;
@@ -499,4 +500,83 @@ export type BaselineSummary = {
     risk_level: string;
     reason: string;
   }>;
+};
+
+// ── Tactical RMM / UnifiedHost types ──────────────────────────────────────
+
+export type TacticalAgent = {
+  id: number;
+  tactical_agent_id: string;
+  hostname: string;
+  fqdn?: string | null;
+  description?: string | null;
+  client_name?: string | null;
+  site_name?: string | null;
+  os_platform?: string | null;
+  os_full?: string | null;
+  local_ips?: string | null;
+  public_ip?: string | null;
+  last_checkin?: string | null;
+  status?: string | null;
+  agent_version?: string | null;
+  logged_user?: string | null;
+  mesh_node_id?: string | null;
+  checks_failing: number;
+  needs_reboot: number;
+  synced_at: string;
+};
+
+export type IdentityStatus = 'trusted' | 'likely' | 'uncertain' | 'unknown';
+export type ActionPolicy = 'full' | 'read_only' | 'blocked';
+
+export type UnifiedHost = {
+  id: number;
+  display_name: string;
+  hostname_short?: string | null;
+  fqdn?: string | null;
+  tactical_agent_id?: string | null;
+  wazuh_agent_id?: string | null;
+  mesh_node_id?: string | null;
+  match_score: number;
+  match_status: string;
+  match_source: string;
+  identity_status: IdentityStatus;
+  tactical_status: string;
+  wazuh_status: string;
+  mesh_status: string;
+  action_policy: ActionPolicy;
+  primary_ip?: string | null;
+  os_platform?: string | null;
+  os_full?: string | null;
+  last_seen_tactical?: string | null;
+  last_seen_wazuh?: string | null;
+  notes?: string | null;
+  created_at: string;
+  updated_at: string;
+  conflict_count?: number;
+};
+
+export type HostConflict = {
+  id: number;
+  unified_host_id: number;
+  conflict_type: string;
+  severity: 'info' | 'warning' | 'critical';
+  field_name?: string | null;
+  tactical_value?: string | null;
+  wazuh_value?: string | null;
+  description: string;
+  resolved: number;
+  is_active: number;
+  detected_at: string;
+};
+
+export type TacticalSyncResult = {
+  success: boolean;
+  agents_pulled: number;
+  agents_cached: number;
+  hosts_created: number;
+  hosts_updated: number;
+  conflicts_detected: number;
+  errors: string[];
+  duration_ms: number;
 };

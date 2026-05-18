@@ -111,100 +111,99 @@ def init_db() -> None:
             )
             """
         )
-        ensure_connection_columns(connection)
-
-        # ── Baseline tables (idempotent) ──────────────────────────────────────
-        connection.execute(
+        cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS host_baseline_snapshots (
+            CREATE TABLE IF NOT EXISTS fullscan_reports (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
+                fullscan_job_id TEXT NOT NULL,
                 host TEXT NOT NULL,
-                computed_at TEXT NOT NULL,
-                window_hours INTEGER NOT NULL DEFAULT 168,
-                profile_id INTEGER,
-                total_events INTEGER NOT NULL DEFAULT 0,
-                high_alerts INTEGER NOT NULL DEFAULT 0,
-                critical_alerts INTEGER NOT NULL DEFAULT 0,
-                top_event_ids_json TEXT NOT NULL DEFAULT '[]',
-                top_rule_ids_json TEXT NOT NULL DEFAULT '[]',
-                top_processes_json TEXT NOT NULL DEFAULT '[]',
-                top_users_json TEXT NOT NULL DEFAULT '[]',
-                top_ips_json TEXT NOT NULL DEFAULT '[]',
-                top_event_families_json TEXT NOT NULL DEFAULT '[]',
-                event_volume_per_hour_json TEXT NOT NULL DEFAULT '{}',
-                notes_json TEXT NOT NULL DEFAULT '[]'
+                status TEXT NOT NULL DEFAULT 'finished',
+                risk_score REAL NOT NULL DEFAULT 0.0,
+                findings_count INTEGER NOT NULL DEFAULT 0,
+                high_findings INTEGER NOT NULL DEFAULT 0,
+                ti_matches INTEGER NOT NULL DEFAULT 0,
+                summary_json TEXT,
+                result_json TEXT,
+                markdown_report TEXT,
+                created_at TEXT NOT NULL
             )
             """
         )
-        connection.execute(
+        # ── Tactical RMM integration tables ──────────────────────────────────
+        cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS host_baseline_features (
+            CREATE TABLE IF NOT EXISTS tactical_agents_cache (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                host TEXT NOT NULL,
-                feature_type TEXT NOT NULL,
-                feature_key TEXT NOT NULL,
-                count_seen INTEGER NOT NULL DEFAULT 0,
-                first_seen TEXT NOT NULL,
-                last_seen TEXT NOT NULL,
-                stability_score REAL NOT NULL DEFAULT 0.0,
-                is_expected INTEGER NOT NULL DEFAULT 1,
+                tactical_agent_id TEXT NOT NULL UNIQUE,
+                hostname TEXT NOT NULL,
+                fqdn TEXT,
+                description TEXT,
+                client_name TEXT,
+                site_name TEXT,
+                os_platform TEXT,
+                os_full TEXT,
+                local_ips TEXT,
+                public_ip TEXT,
+                last_checkin TEXT,
+                status TEXT,
+                agent_version TEXT,
+                logged_user TEXT,
+                mesh_node_id TEXT,
+                checks_failing INTEGER NOT NULL DEFAULT 0,
+                needs_reboot INTEGER NOT NULL DEFAULT 0,
+                raw_json TEXT,
+                synced_at TEXT NOT NULL
+            )
+            """
+        )
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS unified_hosts (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                display_name TEXT NOT NULL,
+                hostname_short TEXT,
+                fqdn TEXT,
+                tactical_agent_id TEXT,
+                wazuh_agent_id TEXT,
+                mesh_node_id TEXT,
+                match_score INTEGER NOT NULL DEFAULT 0,
+                match_status TEXT NOT NULL DEFAULT 'unmatched',
+                match_source TEXT NOT NULL DEFAULT 'auto',
+                identity_status TEXT NOT NULL DEFAULT 'unknown',
+                tactical_status TEXT NOT NULL DEFAULT 'unknown',
+                wazuh_status TEXT NOT NULL DEFAULT 'unknown',
+                mesh_status TEXT NOT NULL DEFAULT 'unknown',
+                action_policy TEXT NOT NULL DEFAULT 'read_only',
+                primary_ip TEXT,
+                os_platform TEXT,
+                os_full TEXT,
+                last_seen_tactical TEXT,
+                last_seen_wazuh TEXT,
                 notes TEXT,
-                UNIQUE(host, feature_type, feature_key)
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
             )
             """
         )
-        connection.execute(
+        cursor.execute(
             """
-            CREATE TABLE IF NOT EXISTS host_baseline_deviations (
+            CREATE TABLE IF NOT EXISTS host_conflicts (
                 id INTEGER PRIMARY KEY AUTOINCREMENT,
-                host TEXT NOT NULL,
-                detected_at TEXT NOT NULL,
-                feature_type TEXT NOT NULL,
-                feature_key TEXT NOT NULL,
-                deviation_type TEXT NOT NULL,
-                severity_hint TEXT NOT NULL DEFAULT 'info',
-                details_json TEXT NOT NULL DEFAULT '{}',
+                unified_host_id INTEGER NOT NULL,
+                conflict_type TEXT NOT NULL,
+                severity TEXT NOT NULL DEFAULT 'warning',
+                field_name TEXT,
+                tactical_value TEXT,
+                wazuh_value TEXT,
+                description TEXT NOT NULL,
                 resolved INTEGER NOT NULL DEFAULT 0,
-                resolved_at TEXT,
-                risk_score INTEGER NOT NULL DEFAULT 0,
-                risk_level TEXT NOT NULL DEFAULT 'info',
-                reason TEXT NOT NULL DEFAULT '',
-                confidence REAL NOT NULL DEFAULT 0.0,
-                final_classification TEXT NOT NULL DEFAULT 'unknown'
+                is_active INTEGER NOT NULL DEFAULT 1,
+                detected_at TEXT NOT NULL,
+                FOREIGN KEY(unified_host_id) REFERENCES unified_hosts(id)
             )
             """
         )
-        ensure_baseline_deviation_columns(connection)
-
-    # Seed built-in profiles (safe to call on every startup)
-    try:
-        from services.snipen_profiles import seed_builtin_profiles
-        seed_builtin_profiles()
-    except Exception:
-        pass  # non-fatal: profiles can be created manually via API
-
-
-def ensure_baseline_deviation_columns(connection: sqlite3.Connection) -> None:
-    """Add new columns to host_baseline_deviations for existing databases."""
-    tables = {
-        row["name"]
-        for row in connection.execute(
-            "SELECT name FROM sqlite_master WHERE type='table'"
-        ).fetchall()
-    }
-    if "host_baseline_deviations" not in tables:
-        return
-    existing = {
-        row["name"]
-        for row in connection.execute(
-            "PRAGMA table_info(host_baseline_deviations)"
-        ).fetchall()
-    }
-    if "final_classification" not in existing:
-        connection.execute(
-            "ALTER TABLE host_baseline_deviations "
-            "ADD COLUMN final_classification TEXT NOT NULL DEFAULT 'unknown'"
-        )
+        ensure_connection_columns(connection)
 
 
 def ensure_connection_columns(connection: sqlite3.Connection) -> None:
@@ -272,7 +271,7 @@ def ensure_default_connection() -> None:
                 "",
                 "",
                 "http://127.0.0.1:11434",
-                "qwen2.5-coder:7b",
+                "llama3",
                 0,
                 24,
                 1,  # vm_enabled=true
@@ -688,52 +687,18 @@ def list_reports() -> list[dict[str, Any]]:
     return rows_to_dicts(rows)
 
 
-# ── Fullscan Reports ──────────────────────────────────────────────────────────
-
-def save_fullscan_report(
-    host: str,
-    fullscan_job_id: str,
-    status: str,
-    risk_score: float,
-    findings_count: int,
-    high_findings: int,
-    ti_matches: int,
-    summary: dict[str, Any],
-    result: dict[str, Any],
-    markdown_report: str,
-) -> int:
-    import json as _json
-    now = utc_now_iso()
-    with get_connection() as conn:
-        cur = conn.execute(
-            """
-            INSERT INTO fullscan_reports
-                (host, fullscan_job_id, status, risk_score, findings_count,
-                 high_findings, ti_matches, summary_json, result_json, markdown_report, created_at)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-            (
-                host, fullscan_job_id, status, risk_score, findings_count,
-                high_findings, ti_matches,
-                _json.dumps(summary, ensure_ascii=False),
-                _json.dumps(result, ensure_ascii=False),
-                markdown_report,
-                now,
-            ),
-        )
-    return cur.lastrowid
-
-
 def get_latest_fullscan_report(host: str) -> dict[str, Any] | None:
-    import json as _json
-    with get_connection() as conn:
-        row = conn.execute(
+    """Return the latest fullscan report for a host, or None if no scan exists yet."""
+    with get_connection() as connection:
+        row = connection.execute(
             """
-            SELECT id, host, fullscan_job_id, status, risk_score, findings_count,
-                   high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+            SELECT id, fullscan_job_id, host, status, risk_score, findings_count,
+                   high_findings, ti_matches,
+                   summary_json AS summary, result_json AS result,
+                   markdown_report, created_at
             FROM fullscan_reports
             WHERE host = ?
-            ORDER BY created_at DESC
+            ORDER BY id DESC
             LIMIT 1
             """,
             (host,),
@@ -741,41 +706,323 @@ def get_latest_fullscan_report(host: str) -> dict[str, Any] | None:
     if row is None:
         return None
     d = dict(row)
-    d["summary"] = _json.loads(d.pop("summary_json", "{}") or "{}")
-    d["result"]  = _json.loads(d.pop("result_json",  "{}") or "{}")
+    # Deserialize JSON fields
+    for field in ("summary", "result"):
+        raw = d.get(field)
+        if raw and isinstance(raw, str):
+            try:
+                d[field] = json.loads(raw)
+            except Exception:
+                pass
     return d
 
 
 def list_fullscan_reports(host: str | None = None, limit: int = 20) -> list[dict[str, Any]]:
-    import json as _json
-    with get_connection() as conn:
+    """List fullscan reports, optionally filtered by host."""
+    with get_connection() as connection:
         if host:
-            rows = conn.execute(
+            rows = connection.execute(
                 """
-                SELECT id, host, fullscan_job_id, status, risk_score, findings_count,
-                       high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+                SELECT id, fullscan_job_id, host, status, risk_score, findings_count,
+                       high_findings, ti_matches, created_at, markdown_report
                 FROM fullscan_reports
                 WHERE host = ?
-                ORDER BY created_at DESC
+                ORDER BY id DESC
                 LIMIT ?
                 """,
                 (host, limit),
             ).fetchall()
         else:
-            rows = conn.execute(
+            rows = connection.execute(
                 """
-                SELECT id, host, fullscan_job_id, status, risk_score, findings_count,
-                       high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+                SELECT id, fullscan_job_id, host, status, risk_score, findings_count,
+                       high_findings, ti_matches, created_at, markdown_report
                 FROM fullscan_reports
-                ORDER BY created_at DESC
+                ORDER BY id DESC
                 LIMIT ?
                 """,
                 (limit,),
             ).fetchall()
-    result = []
-    for row in rows:
-        d = dict(row)
-        d["summary"] = _json.loads(d.pop("summary_json", "{}") or "{}")
-        d["result"]  = _json.loads(d.pop("result_json",  "{}") or "{}")
-        result.append(d)
-    return result
+    return rows_to_dicts(rows)
+
+
+def save_fullscan_report(
+    host: str,
+    fullscan_job_id: str,
+    status: str = "finished",
+    risk_score: float = 0.0,
+    findings_count: int = 0,
+    high_findings: int = 0,
+    ti_matches: int = 0,
+    summary: dict[str, Any] | None = None,
+    result: dict[str, Any] | None = None,
+    markdown_report: str = "",
+) -> int:
+    """Persist a fullscan report and return its row id."""
+    with get_connection() as connection:
+        cursor = connection.execute(
+            """
+            INSERT INTO fullscan_reports (
+                fullscan_job_id, host, status, risk_score, findings_count,
+                high_findings, ti_matches, summary_json, result_json, markdown_report, created_at
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+            (
+                fullscan_job_id,
+                host,
+                status,
+                risk_score,
+                findings_count,
+                high_findings,
+                ti_matches,
+                json.dumps(summary or {}),
+                json.dumps(result or {}),
+                markdown_report,
+                utc_now_iso(),
+            ),
+        )
+        return cursor.lastrowid or 0
+
+
+# ── Tactical RMM Cache DB functions ──────────────────────────────────────────
+
+def upsert_tactical_agent(agent: dict[str, Any]) -> None:
+    """Insert or update a tactical agent cache row."""
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT INTO tactical_agents_cache (
+                tactical_agent_id, hostname, fqdn, description,
+                client_name, site_name, os_platform, os_full,
+                local_ips, public_ip, last_checkin, status,
+                agent_version, logged_user, mesh_node_id,
+                checks_failing, needs_reboot, raw_json, synced_at
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            ON CONFLICT(tactical_agent_id) DO UPDATE SET
+                hostname=excluded.hostname,
+                fqdn=excluded.fqdn,
+                description=excluded.description,
+                client_name=excluded.client_name,
+                site_name=excluded.site_name,
+                os_platform=excluded.os_platform,
+                os_full=excluded.os_full,
+                local_ips=excluded.local_ips,
+                public_ip=excluded.public_ip,
+                last_checkin=excluded.last_checkin,
+                status=excluded.status,
+                agent_version=excluded.agent_version,
+                logged_user=excluded.logged_user,
+                mesh_node_id=excluded.mesh_node_id,
+                checks_failing=excluded.checks_failing,
+                needs_reboot=excluded.needs_reboot,
+                raw_json=excluded.raw_json,
+                synced_at=excluded.synced_at
+            """,
+            (
+                agent.get("tactical_agent_id", ""),
+                agent.get("hostname", ""),
+                agent.get("fqdn"),
+                agent.get("description"),
+                agent.get("client_name"),
+                agent.get("site_name"),
+                agent.get("os_platform"),
+                agent.get("os_full"),
+                agent.get("local_ips"),
+                agent.get("public_ip"),
+                agent.get("last_checkin"),
+                agent.get("status"),
+                agent.get("agent_version"),
+                agent.get("logged_user"),
+                agent.get("mesh_node_id"),
+                int(agent.get("checks_failing", 0)),
+                int(agent.get("needs_reboot", 0)),
+                agent.get("raw_json"),
+                utc_now_iso(),
+            ),
+        )
+
+
+def list_tactical_agents() -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM tactical_agents_cache ORDER BY hostname"
+        ).fetchall()
+    return rows_to_dicts(rows)
+
+
+def get_tactical_agent(tactical_agent_id: str) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM tactical_agents_cache WHERE tactical_agent_id = ?",
+            (tactical_agent_id,),
+        ).fetchone()
+    return row_to_dict(row)
+
+
+def clear_tactical_agents() -> int:
+    with get_connection() as conn:
+        cursor = conn.execute("DELETE FROM tactical_agents_cache")
+        return cursor.rowcount or 0
+
+
+# ── UnifiedHost DB functions ──────────────────────────────────────────────────
+
+def upsert_unified_host(host: dict[str, Any]) -> int:
+    """Insert or update a unified host row. Returns the row id."""
+    with get_connection() as conn:
+        existing = conn.execute(
+            """
+            SELECT id FROM unified_hosts
+            WHERE (tactical_agent_id IS NOT NULL AND tactical_agent_id = ?)
+               OR (wazuh_agent_id    IS NOT NULL AND wazuh_agent_id    = ?)
+               OR (hostname_short    IS NOT NULL AND hostname_short     = ?)
+            LIMIT 1
+            """,
+            (
+                host.get("tactical_agent_id"),
+                host.get("wazuh_agent_id"),
+                host.get("hostname_short"),
+            ),
+        ).fetchone()
+
+        now = utc_now_iso()
+        if existing:
+            host_id = existing["id"]
+            conn.execute(
+                """
+                UPDATE unified_hosts SET
+                    display_name=?, hostname_short=?, fqdn=?,
+                    tactical_agent_id=?, wazuh_agent_id=?, mesh_node_id=?,
+                    match_score=?, match_status=?, match_source=?,
+                    identity_status=?, tactical_status=?, wazuh_status=?,
+                    mesh_status=?, action_policy=?, primary_ip=?,
+                    os_platform=?, os_full=?,
+                    last_seen_tactical=?, last_seen_wazuh=?,
+                    notes=?, updated_at=?
+                WHERE id=?
+                """,
+                (
+                    host.get("display_name", ""),
+                    host.get("hostname_short"),
+                    host.get("fqdn"),
+                    host.get("tactical_agent_id"),
+                    host.get("wazuh_agent_id"),
+                    host.get("mesh_node_id"),
+                    host.get("match_score", 0),
+                    host.get("match_status", "unmatched"),
+                    host.get("match_source", "auto"),
+                    host.get("identity_status", "unknown"),
+                    host.get("tactical_status", "unknown"),
+                    host.get("wazuh_status", "unknown"),
+                    host.get("mesh_status", "unknown"),
+                    host.get("action_policy", "read_only"),
+                    host.get("primary_ip"),
+                    host.get("os_platform"),
+                    host.get("os_full"),
+                    host.get("last_seen_tactical"),
+                    host.get("last_seen_wazuh"),
+                    host.get("notes"),
+                    now,
+                    host_id,
+                ),
+            )
+        else:
+            cursor = conn.execute(
+                """
+                INSERT INTO unified_hosts (
+                    display_name, hostname_short, fqdn,
+                    tactical_agent_id, wazuh_agent_id, mesh_node_id,
+                    match_score, match_status, match_source,
+                    identity_status, tactical_status, wazuh_status,
+                    mesh_status, action_policy, primary_ip,
+                    os_platform, os_full,
+                    last_seen_tactical, last_seen_wazuh,
+                    notes, created_at, updated_at
+                ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+                """,
+                (
+                    host.get("display_name", ""),
+                    host.get("hostname_short"),
+                    host.get("fqdn"),
+                    host.get("tactical_agent_id"),
+                    host.get("wazuh_agent_id"),
+                    host.get("mesh_node_id"),
+                    host.get("match_score", 0),
+                    host.get("match_status", "unmatched"),
+                    host.get("match_source", "auto"),
+                    host.get("identity_status", "unknown"),
+                    host.get("tactical_status", "unknown"),
+                    host.get("wazuh_status", "unknown"),
+                    host.get("mesh_status", "unknown"),
+                    host.get("action_policy", "read_only"),
+                    host.get("primary_ip"),
+                    host.get("os_platform"),
+                    host.get("os_full"),
+                    host.get("last_seen_tactical"),
+                    host.get("last_seen_wazuh"),
+                    host.get("notes"),
+                    now,
+                    now,
+                ),
+            )
+            host_id = cursor.lastrowid or 0
+    return host_id
+
+
+def list_unified_hosts() -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM unified_hosts ORDER BY display_name"
+        ).fetchall()
+    return rows_to_dicts(rows)
+
+
+def get_unified_host(host_id: int) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM unified_hosts WHERE id = ?", (host_id,)
+        ).fetchone()
+    return row_to_dict(row)
+
+
+# ── HostConflict DB functions ─────────────────────────────────────────────────
+
+def add_host_conflict(conflict: dict[str, Any]) -> int:
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO host_conflicts (
+                unified_host_id, conflict_type, severity, field_name,
+                tactical_value, wazuh_value, description,
+                resolved, is_active, detected_at
+            ) VALUES (?,?,?,?,?,?,?,0,1,?)
+            """,
+            (
+                conflict["unified_host_id"],
+                conflict["conflict_type"],
+                conflict.get("severity", "warning"),
+                conflict.get("field_name"),
+                conflict.get("tactical_value"),
+                conflict.get("wazuh_value"),
+                conflict.get("description", ""),
+                utc_now_iso(),
+            ),
+        )
+        return cursor.lastrowid or 0
+
+
+def clear_host_conflicts(unified_host_id: int) -> None:
+    with get_connection() as conn:
+        conn.execute(
+            "DELETE FROM host_conflicts WHERE unified_host_id = ?",
+            (unified_host_id,),
+        )
+
+
+def list_host_conflicts(unified_host_id: int) -> list[dict[str, Any]]:
+    with get_connection() as conn:
+        rows = conn.execute(
+            "SELECT * FROM host_conflicts WHERE unified_host_id = ? AND is_active = 1 ORDER BY detected_at DESC",
+            (unified_host_id,),
+        ).fetchall()
+    return rows_to_dicts(rows)

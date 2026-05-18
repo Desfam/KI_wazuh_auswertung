@@ -12,6 +12,7 @@ from db.database import (
     get_latest_job_id,
     get_ranked_hosts,
     list_fullscan_reports,
+    list_unified_hosts,
 )
 from schemas.types import FindingGroupRecord, HostOverviewResponse, HostRankingRecord, HostTrendPoint
 from services.snipen_service import get_host_events, get_snipen_hosts
@@ -132,6 +133,17 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
         for item in get_ranked_hosts(latest_job_id):
             ranked_map[item["host"]] = item
 
+    # Build lookup from hostname_short → unified host row (for tactical_status + ip)
+    rmm_map: dict[str, dict[str, Any]] = {}
+    for uh in list_unified_hosts():
+        key = (uh.get("hostname_short") or "").lower()
+        if key:
+            rmm_map[key] = uh
+        # also index by display_name as fallback
+        dn = (uh.get("display_name") or "").lower()
+        if dn and dn not in rmm_map:
+            rmm_map[dn] = uh
+
     now = datetime.now(timezone.utc)
     output: list[dict[str, Any]] = []
     for host_info in snipen_hosts:
@@ -141,7 +153,19 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
         overview = get_host_overview(latest_job_id, host) if latest_job_id else None
         risk_score = float(latest_scan["risk_score"]) if latest_scan else _risk_from_overview(overview)
         last_seen_dt = _parse_iso(host_info.last_seen)
-        is_online = bool(last_seen_dt and (now - last_seen_dt) <= timedelta(hours=6))
+        is_online_wazuh = bool(last_seen_dt and (now - last_seen_dt) <= timedelta(hours=6))
+
+        # Tactical RMM status takes priority over Wazuh last-seen estimate
+        uh_row = rmm_map.get(host.lower())
+        tactical_status = (uh_row.get("tactical_status") or "unknown") if uh_row else "unknown"
+        if tactical_status == "online":
+            connection_status = "reachable"
+        elif tactical_status in ("offline", "overdue"):
+            connection_status = "unreachable"
+        else:
+            connection_status = "reachable" if is_online_wazuh else "unknown"
+
+        primary_ip = (uh_row.get("primary_ip") if uh_row else None)
 
         platforms = host_info.platforms or []
         # Access capabilities: inferred from platform until SSH/RDP manager integration
@@ -150,7 +174,7 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
         output.append(
             {
                 "host": host,
-                "ip": None,
+                "ip": primary_ip,
                 "platforms": platforms,
                 "last_activity": _as_iso(host_info.last_seen),
                 "alerts_24h": int(host_info.alert_count),
@@ -158,11 +182,12 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
                 "risk_score": risk_score,
                 "fullscan_status": latest_scan.get("status") if latest_scan else "never",
                 "last_scan_at": latest_scan.get("created_at") if latest_scan else None,
-                "status": "online" if is_online else "offline",
+                "status": "online" if connection_status == "reachable" else "offline",
                 # ── Access (SSH / RDP) ── populated by SSH/RDP manager later
                 "ssh_enabled": is_linux,
                 "rdp_enabled": is_windows,
-                "connection_status": "unknown",
+                "tactical_status": tactical_status,
+                "connection_status": connection_status,
                 "last_connection": None,
             }
         )

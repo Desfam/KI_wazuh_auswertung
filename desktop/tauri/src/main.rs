@@ -5,6 +5,8 @@ use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
 use std::sync::{Arc, Mutex};
 
+type BackendChild = Arc<Mutex<Option<Child>>>;
+
 fn workspace_root() -> PathBuf {
     PathBuf::from(env!("CARGO_MANIFEST_DIR"))
         .join(r"..\..")
@@ -30,12 +32,58 @@ fn spawn_backend() -> std::io::Result<Child> {
         .spawn()
 }
 
+#[tauri::command]
+fn start_backend(state: tauri::State<BackendChild>) -> bool {
+    if backend_running() {
+        return true;
+    }
+    match spawn_backend() {
+        Ok(child) => {
+            if let Ok(mut slot) = state.lock() {
+                *slot = Some(child);
+            }
+            true
+        }
+        Err(err) => {
+            eprintln!("failed to start backend on demand: {err}");
+            false
+        }
+    }
+}
+
+#[tauri::command]
+fn restart_backend(state: tauri::State<BackendChild>) -> bool {
+    // Kill existing process if we have one
+    if let Ok(mut slot) = state.lock() {
+        if let Some(mut child) = slot.take() {
+            let _ = child.kill();
+            let _ = child.wait();
+        }
+    }
+    // Small sleep to let the port free up
+    std::thread::sleep(std::time::Duration::from_millis(800));
+    match spawn_backend() {
+        Ok(child) => {
+            if let Ok(mut slot) = state.lock() {
+                *slot = Some(child);
+            }
+            true
+        }
+        Err(err) => {
+            eprintln!("failed to restart backend: {err}");
+            false
+        }
+    }
+}
+
 fn main() {
-    let backend_child: Arc<Mutex<Option<Child>>> = Arc::new(Mutex::new(None));
+    let backend_child: BackendChild = Arc::new(Mutex::new(None));
     let backend_on_setup = Arc::clone(&backend_child);
     let backend_on_exit = Arc::clone(&backend_child);
 
     let app = tauri::Builder::default()
+        .manage(Arc::clone(&backend_child))
+        .invoke_handler(tauri::generate_handler![start_backend, restart_backend])
         .setup(move |_app| {
             if !backend_running() {
                 match spawn_backend() {

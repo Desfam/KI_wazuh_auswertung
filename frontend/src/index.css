@@ -378,6 +378,24 @@ select {
   background: rgba(96, 165, 250, 0.62);
 }
 
+/* ─────────────────────── Scan HUD keyframes ──────────────────────── */
+@keyframes scanBeam {
+  0%   { top: 15%;  opacity: 0.9; }
+  40%  { top: 50%;  opacity: 1;   }
+  80%  { top: 85%;  opacity: 0.9; }
+  100% { top: 85%;  opacity: 0;   }
+}
+
+@keyframes scanCornerPulse {
+  0%, 100% { opacity: 0.55; }
+  50%       { opacity: 1;   }
+}
+
+@keyframes radarSweep {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+
 ::-webkit-scrollbar {
   width: 12px;
   height: 12px;

@@ -1,4 +1,4 @@
-﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, Report, RunAnalysisPayload, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview } from '../types';
+﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, Report, RunAnalysisPayload, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, UnifiedHost } from '../types';
 
 const isDesktopShell =
   window.location.protocol === 'tauri:' ||
@@ -328,4 +328,100 @@ export function getGlobalBaselineSummary(): Promise<{
   by_type: Record<string, number>;
 }> {
   return request('/baseline/global/summary');
+}
+
+// ── Tactical RMM ─────────────────────────────────────────────────────────────
+
+export function getTacticalHealth(): Promise<{ reachable: boolean; detail: string }> {
+  return request<{ reachable: boolean; detail: string }>('/integrations/tactical/health');
+}
+
+export function getTacticalAgents(): Promise<TacticalAgent[]> {
+  return request<TacticalAgent[]>('/integrations/tactical/agents');
+}
+
+export function triggerTacticalSync(): Promise<TacticalSyncResult> {
+  return request<TacticalSyncResult>('/integrations/tactical/sync', { method: 'POST' });
+}
+
+// ── Unified Hosts ─────────────────────────────────────────────────────────────
+
+export function getUnifiedHosts(): Promise<UnifiedHost[]> {
+  return request<UnifiedHost[]>('/unified-hosts');
+}
+
+export function getUnifiedHost(id: number): Promise<UnifiedHost> {
+  return request<UnifiedHost>(`/unified-hosts/${id}`);
+}
+
+export function getUnifiedHostConflicts(id: number): Promise<HostConflict[]> {
+  return request<HostConflict[]>(`/unified-hosts/${id}/conflicts`);
+}
+
+// ── Constellation / Event Map ─────────────────────────────────────────────────
+
+export interface ConstellationEventRaw {
+  id: string;
+  timestamp: string;
+  agentName: string;
+  agentId: string;
+  agentIp: string | null;
+  ruleId: string;
+  ruleLevel: number;
+  ruleDescription: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  eventId: string | null;
+  mitreTactic: string | null;
+  mitreId: string | null;
+  srcIp: string | null;
+  user: string | null;
+  process: string | null;
+  count: number;
+  explanation: string | null;
+}
+
+export function getConstellationEvents(params: {
+  host?: string;
+  lookbackHours: number;
+  limit?: number;
+}): Promise<ConstellationEventRaw[]> {
+  const qs = new URLSearchParams();
+  qs.set('lookback_hours', String(params.lookbackHours));
+  if (params.limit !== undefined) qs.set('limit', String(params.limit));
+  if (params.host) qs.set('host', params.host);
+  return request<ConstellationEventRaw[]>(`/constellation/events?${qs.toString()}`);
+}
+
+// ── Event Map Live Clusters ───────────────────────────────────────────────────
+
+export interface LiveEventCluster {
+  id: string;
+  kind: 'event_id' | 'rule' | 'mitre_tactic' | 'finding_type';
+  title: string;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  alertCount: number;
+  affectedHostCount: number;
+  affectedHosts: { hostname: string; agentId?: string; ip?: string; count: number; risk?: number }[];
+  users: { name: string; count: number }[];
+  processes: { name: string; count: number }[];
+  sourceIps: { ip: string; count: number }[];
+  ruleIds: string[];
+  eventIds: string[];
+  mitreTactics: string[];
+  mitreIds: string[];
+  firstSeen: string;
+  lastSeen: string;
+  shortExplanation: string;
+  recommendedActions: string[];
+}
+
+export function getLiveEventClusters(params: {
+  lookbackHours: number;
+  host?: string;
+  limit?: number;
+}): Promise<LiveEventCluster[]> {
+  const qs = new URLSearchParams({ lookback_hours: String(params.lookbackHours) });
+  if (params.host) qs.set('host', params.host);
+  if (params.limit != null) qs.set('limit', String(params.limit));
+  return request<LiveEventCluster[]>(`/event-map/live?${qs.toString()}`);
 }

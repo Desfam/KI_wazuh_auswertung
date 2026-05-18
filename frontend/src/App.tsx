@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react';
-import { CheckSquare, Cpu, Crosshair, Database, LayoutDashboard, MessageSquare, Search, Server, Settings, Shield } from 'lucide-react';
+import { lazy, Suspense, useEffect, useState } from 'react';
+import { CheckSquare, Cpu, Crosshair, Database, GitBranch, LayoutDashboard, MessageSquare, Network, Search, Server, Settings, Shield } from 'lucide-react';
+const EventConstellationView = lazy(() => import('./components/visual/EventConstellationView'));
 import { ChatPage } from './pages/ChatPage';
-import { DashboardPage } from './pages/DashboardPage';
 import { HostsPage } from './pages/HostsPage';
 import { HostOverviewPage } from './pages/HostOverviewPage';
 import { SnipenPage } from './pages/SnipenPage';
 import { TasksPage } from './pages/TasksPage';
 import FullScanTab from './pages/FullScanTab';
+import FleetOverviewPage from './pages/FleetOverviewPage';
 import { BaselinePage } from './pages/BaselinePage';
+import { UnifiedHostsPage } from './pages/UnifiedHostsPage';
 import { ServerPage } from './pages/ServerPage';
 import { FluidWaves } from './components/FluidWaves';
 import { AppStartOverlay, type PreflightCheck } from './components/AppStartOverlay';
@@ -64,10 +66,12 @@ const TAB_LABELS: Record<string, string> = {
   tasks: 'Incidents',
   hosts: 'Hosts',
   'host-overview': 'Host Overview',
+  'unified-hosts': 'Unified Hosts',
   snipen: 'Investigation',
   fullscan: 'Full Scan',
   baseline: 'Baseline',
   server: 'Server',
+  constellation: 'Event Map',
 };
 
 function fmtClock(): string {
@@ -75,8 +79,9 @@ function fmtClock(): string {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'snipen' | 'fullscan' | 'baseline' | 'server'>('chat');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'unified-hosts' | 'snipen' | 'fullscan' | 'baseline' | 'server' | 'constellation'>('dashboard');
   const [overviewHost, setOverviewHost] = useState<string | null>(null);
+  const [constellationHost, setConstellationHost] = useState<string | null>(null);
   const [clockStr, setClockStr] = useState(fmtClock);
 
   useEffect(() => {
@@ -109,6 +114,8 @@ function App() {
   const [bootAttempt, setBootAttempt] = useState(0);
   const [profiles, setProfiles] = useState<HostProfile[]>([]);
   const [profileAssignments, setProfileAssignments] = useState<Record<string, HostProfileAssignment>>({});
+  const [startingBackend, setStartingBackend] = useState(false);
+  const [restartingBackend, setRestartingBackend] = useState(false);
 
   const hasBlockingFailure = preflightChecks.some((check) => check.required && check.state === 'error');
   const preflightSettled = preflightChecks.every((check) => check.state !== 'pending' && check.state !== 'running');
@@ -424,6 +431,45 @@ function App() {
     }
   }
 
+  async function handleStartBackend() {
+    setStartingBackend(true);
+    try {
+      // Use Tauri IPC if running inside the desktop app (withGlobalTauri = true)
+      const tauri = (window as unknown as { __TAURI__?: { core?: { invoke: (cmd: string) => Promise<unknown> } } }).__TAURI__;
+      if (tauri?.core?.invoke) {
+        await tauri.core.invoke('start_backend');
+      }
+    } catch {
+      // not in Tauri context or command failed – fall through to retry anyway
+    }
+    // Give the backend ~3 s to bind the port, then re-run preflight
+    window.setTimeout(() => {
+      setStartingBackend(false);
+      setPreflightChecks(createInitialPreflightChecks());
+      setBootReady(false);
+      setBootAttempt((n) => n + 1);
+    }, 3000);
+  }
+
+  async function handleRestartBackend() {
+    setRestartingBackend(true);
+    try {
+      const tauri = (window as unknown as { __TAURI__?: { core?: { invoke: (cmd: string) => Promise<unknown> } } }).__TAURI__;
+      if (tauri?.core?.invoke) {
+        await tauri.core.invoke('restart_backend');
+      }
+    } catch {
+      // not in Tauri context or command failed – fall through to retry anyway
+    }
+    // Give the backend ~4 s to kill, restart and bind the port, then re-run preflight
+    window.setTimeout(() => {
+      setRestartingBackend(false);
+      setPreflightChecks(createInitialPreflightChecks());
+      setBootReady(false);
+      setBootAttempt((n) => n + 1);
+    }, 4000);
+  }
+
   return (
     <div className="flex h-screen overflow-hidden font-mono" style={{ background: 'var(--soc-background)', color: 'var(--soc-foreground)' }}>
       {introMounted && (
@@ -441,6 +487,10 @@ function App() {
           }}
           onContinue={() => setIntroVisible(false)}
           onExited={() => setIntroMounted(false)}
+          onStartBackend={handleStartBackend}
+          startingBackend={startingBackend}
+          onRestartBackend={handleRestartBackend}
+          restartingBackend={restartingBackend}
         />
       )}
 
@@ -460,13 +510,15 @@ function App() {
         <nav className="flex-1 py-2">
           {([
             { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard, badge: null as string | null },
-            { id: 'chat' as const, label: 'Chat', icon: MessageSquare, badge: null },
             { id: 'tasks' as const, label: 'Incidents', icon: CheckSquare, badge: generatedTasks.length > 0 ? String(generatedTasks.length) : null },
             { id: 'hosts' as const, label: 'Hosts', icon: Server, badge: null },
             { id: 'snipen' as const, label: 'Investigation', icon: Crosshair, badge: null },
             { id: 'fullscan' as const, label: 'Full Scan', icon: Cpu, badge: null },
             { id: 'baseline' as const, label: 'Baseline', icon: Database, badge: null },
+            { id: 'unified-hosts' as const, label: 'Unified Hosts', icon: Network, badge: null },
+            { id: 'constellation' as const, label: 'Event Map', icon: GitBranch, badge: null },
             { id: 'server' as const, label: 'Server', icon: Shield, badge: null },
+            { id: 'chat' as const, label: 'Chat', icon: MessageSquare, badge: null },
           ]).map(({ id, label, icon: Icon, badge }) => {
             const active = activeTab === id || (id === 'hosts' && activeTab === 'host-overview');
             return (
@@ -585,14 +637,17 @@ function App() {
           )}
           {activeTab === 'dashboard' && (
             <ErrorBoundary label="Dashboard">
-              <DashboardPage
+              <FleetOverviewPage
                 active
-                theme={theme}
-                profileAssignments={profileAssignments}
-                onSwitchTab={(tab, context) => {
-                  if (context?.host) setSnipenPrefillHost(context.host);
-                  if (context?.eventTs) setSnipenPrefillEventTs(context.eventTs);
-                  setActiveTab(tab);
+                onSwitchTab={(tab, payload) => {
+                  if (tab === 'hosts' && payload && typeof payload === 'object' && 'host' in payload) {
+                    setOverviewHost((payload as { host: string }).host);
+                    setActiveTab('host-overview');
+                  } else if (tab === 'findings' || tab === 'tasks') {
+                    setActiveTab('tasks');
+                  } else {
+                    setActiveTab(tab as typeof activeTab);
+                  }
                 }}
               />
             </ErrorBoundary>
@@ -661,6 +716,7 @@ function App() {
               <FullScanTab theme={theme} profileAssignments={profileAssignments} />
             </ErrorBoundary>
           )}
+
           {activeTab === 'baseline' && (
             <ErrorBoundary label="Baseline">
               <BaselinePage
@@ -676,6 +732,22 @@ function App() {
           {activeTab === 'server' && (
             <ErrorBoundary label="Server">
               <ServerPage active theme={theme} />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'unified-hosts' && (
+            <ErrorBoundary label="UnifiedHosts">
+              <UnifiedHostsPage active />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'constellation' && (
+            <ErrorBoundary label="Constellation">
+              <Suspense fallback={
+                <div className="flex h-full items-center justify-center" style={{ color: 'var(--soc-muted-fg)', fontFamily: 'monospace', fontSize: 12 }}>
+                  Loading constellation…
+                </div>
+              }>
+                <EventConstellationView initialHost={constellationHost ?? undefined} />
+              </Suspense>
             </ErrorBoundary>
           )}
         </div>

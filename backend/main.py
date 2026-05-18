@@ -1,3 +1,6 @@
+from dotenv import load_dotenv
+load_dotenv(dotenv_path=__import__('pathlib').Path(__file__).parent.parent / '.env', override=False)
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
@@ -11,6 +14,11 @@ from api.routes_reports import router as reports_router
 from api.routes_snipen import router as snipen_router
 from api.routes_system import router as system_router
 from api.routes_fullscan import router as fullscan_router
+from api.routes_fleet_scan import router as fleet_scan_router
+from api.routes_integrations_tactical import router as tactical_router
+from api.routes_unified_hosts import router as unified_hosts_router
+from api.routes_constellation import router as constellation_router
+from api.routes_event_map import router as event_map_router
 from db.database import init_db, ensure_default_connection
 from services.app_config import sync_config_connection_to_db
 
@@ -46,7 +54,12 @@ app.include_router(system_router)
 app.include_router(snipen_router)
 app.include_router(profiles_router)
 app.include_router(fullscan_router)
+app.include_router(fleet_scan_router)
 app.include_router(baseline_router)
+app.include_router(tactical_router)
+app.include_router(unified_hosts_router)
+app.include_router(constellation_router)
+app.include_router(event_map_router)
 
 
 @app.get("/")
