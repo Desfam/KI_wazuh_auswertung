@@ -1,5 +1,16 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+// Force NVIDIA Optimus / AMD Switchable Graphics to use the high-performance GPU.
+#[cfg(target_os = "windows")]
+#[no_mangle]
+#[allow(non_upper_case_globals)]
+pub static NvOptimusEnablement: u32 = 1;
+
+#[cfg(target_os = "windows")]
+#[no_mangle]
+#[allow(non_upper_case_globals)]
+pub static AmdPowerXpressRequestHighPerformance: u32 = 1;
+
 use std::net::TcpStream;
 use std::path::PathBuf;
 use std::process::{Child, Command, Stdio};
@@ -78,6 +89,13 @@ fn restart_backend(state: tauri::State<BackendChild>) -> bool {
 
 fn main() {
     let backend_child: BackendChild = Arc::new(Mutex::new(None));
+
+    // Ask WebView2/Chromium to use GPU rasterisation on Windows.
+    #[cfg(target_os = "windows")]
+    std::env::set_var(
+        "WEBVIEW2_ADDITIONAL_BROWSER_ARGUMENTS",
+        "--enable-gpu-rasterization --enable-zero-copy --ignore-gpu-blocklist --use-angle=d3d11 --force_high_performance_gpu",
+    );
     let backend_on_setup = Arc::clone(&backend_child);
     let backend_on_exit = Arc::clone(&backend_child);
 

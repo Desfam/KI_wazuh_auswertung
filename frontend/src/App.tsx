@@ -746,7 +746,17 @@ function App() {
                   Loading constellation…
                 </div>
               }>
-                <EventConstellationView initialHost={constellationHost ?? undefined} />
+                <EventConstellationView
+                  initialHost={constellationHost ?? undefined}
+                  onNavigate={(tab, host) => {
+                    if (tab === 'hosts') {
+                      if (host) { setOverviewHost(host); setActiveTab('host-overview'); }
+                      else setActiveTab('hosts');
+                    } else {
+                      setActiveTab(tab as typeof activeTab);
+                    }
+                  }}
+                />
               </Suspense>
             </ErrorBoundary>
           )}

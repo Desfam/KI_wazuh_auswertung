@@ -1,8 +1,10 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
 import type { ConstellationEventRaw } from '../../services/api';
 import { getConstellationEvents } from '../../services/api';
-import WatchDogsEventRadar from './WatchDogsEventRadar';
-//
+import WatchDogsEventRadar, { type RadarEventCluster, type RadarMode } from './WatchDogsEventRadar';
+import HostImpactMap from './HostImpactMap';
+import EventTimelineMap from './EventTimelineMap';
+import EventGeoMap from './EventGeoMap';
 
 
 type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info' | 'safe';
@@ -58,7 +60,7 @@ const SEVERITY_LABEL: Record<Severity, string> = {
   critical: 'Critical',
   high: 'High',
   medium: 'Medium',
-  low: 'Low',
+  low: 'Safe / Low',
   safe: 'Safe',
   info: 'Info',
 };
@@ -506,7 +508,7 @@ function SidebarFilter({
   enabled: Set<Severity>;
   toggle: (sev: Severity) => void;
 }) {
-  const rows: Severity[] = ['critical', 'high', 'medium', 'low', 'safe'];
+  const rows: Severity[] = ['critical', 'high', 'medium', 'low', 'info'];
 
   return (
     <Card title="SEVERITY FILTER">
@@ -806,12 +808,15 @@ function EventBreakdown({ counts }: { counts: Record<Severity, number> }) {
 
 export interface EventConstellationViewProps {
   initialHost?: string;
+  onNavigate?: (tab: 'hosts' | 'snipen', host?: string) => void;
 }
 
-export default function EventConstellationView({ initialHost }: EventConstellationViewProps) {
+export default function EventConstellationView({ initialHost, onNavigate }: EventConstellationViewProps) {
   const [events, setEvents] = useState<RawEvent[]>([]);
   const [mode, setMode] = useState<ViewMode>('live');
   const [selected, setSelected] = useState<EventCluster | null>(null);
+  const [selectedRadarCluster, setSelectedRadarCluster] = useState<RadarEventCluster | null>(null);
+  const [radarMode, setRadarMode] = useState<RadarMode>('investigation');
   const [lookback, setLookback] = useState<1 | 24 | 168 | 720>(1);
   const [hostInput, setHostInput] = useState(initialHost ?? '');
   const [appliedHost, setAppliedHost] = useState(initialHost ?? '');
@@ -863,7 +868,6 @@ export default function EventConstellationView({ initialHost }: EventConstellati
   }, [events, enabledSeverity]);
 
   const clusters = useMemo(() => buildClusters(filteredEvents, 28), [filteredEvents]);
-  const layout = useMemo(() => layoutClusters(clusters), [clusters]);
 
   const severityCounts = useMemo(() => {
     const counts: Record<Severity, number> = {
@@ -967,7 +971,63 @@ export default function EventConstellationView({ initialHost }: EventConstellati
               <button onClick={() => void load(true)}>Load demo data</button>
             </div>
           ) : (
-            <RadarMap clusters={layout} selected={selected} setSelected={setSelected} />
+            <>
+              {mode === 'live' && (
+                <WatchDogsEventRadar
+                  events={filteredEvents}
+                  selectedCluster={selectedRadarCluster}
+                  onSelectCluster={(cluster) => {
+                    setSelectedRadarCluster(cluster);
+                    if (cluster) {
+                      setSelected({
+                        id: cluster.id,
+                        title: cluster.title,
+                        severity: cluster.severity === 'safe' ? 'low' : cluster.severity,
+                        alertCount: cluster.count,
+                        affectedHosts: cluster.hosts.map((h) => ({
+                          hostname: h.hostname,
+                          ip: h.ip,
+                          count: h.count,
+                          severity: h.severity === 'safe' ? 'low' : h.severity,
+                        })),
+                        users: cluster.users,
+                        processes: cluster.processes,
+                        sourceIps: cluster.sourceIps,
+                        ruleIds: cluster.ruleIds,
+                        eventIds: cluster.eventIds,
+                        mitreTactics: cluster.mitreTactics,
+                        mitreIds: [],
+                        firstSeen: cluster.firstSeen,
+                        lastSeen: cluster.lastSeen,
+                        explanation: cluster.explanation,
+                        actions: [
+                          'Open investigation timeline',
+                          'Check affected hosts',
+                          'Correlate with baseline',
+                        ],
+                      });
+                    } else {
+                      setSelected(null);
+                    }
+                  }}
+                  onNavigate={onNavigate}
+                  mode={radarMode}
+                  onModeChange={setRadarMode}
+                />
+              )}
+              {mode === 'agent' && (
+                <HostImpactMap
+                  events={filteredEvents}
+                  onSelectHost={(host) => onNavigate?.('hosts', host)}
+                />
+              )}
+              {mode === 'timeline' && (
+                <EventTimelineMap events={filteredEvents} />
+              )}
+              {mode === 'geo' && (
+                <EventGeoMap events={filteredEvents} />
+              )}
+            </>
           )}
         </main>
 
