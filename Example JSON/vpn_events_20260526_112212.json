@@ -1,0 +1,6529 @@
+[
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 10:59:18"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_koellner_colin_home_office",
+      "srcip": "87.174.5.11",
+      "srcport": "63952"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779793159.22838751",
+    "GeoLocation": {
+      "city_name": "Burgheim",
+      "country_name": "Germany",
+      "region_name": "Bavaria",
+      "location": {
+        "lon": 11.016,
+        "lat": 48.7004
+      }
+    },
+    "full_log": "May 26 10:59:18 vpn openvpn[1104]: Tue May 26 10:59:18 2026 87.174.5.11:63952 [arzw_br_koellner_colin_home_office] Peer Connection Initiated with [AF_INET]87.174.5.11:63952",
+    "timestamp": "2026-05-26T10:59:19.790+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 08:39:06"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779784746.19122158",
+    "full_log": "May 26 08:39:06 vpn openvpn[1104]: Tue May 26 08:39:06 2026 arzw_br_danz_markus_home_office/83.135.13.74:20493 TLS Error: TLS handshake failed",
+    "timestamp": "2026-05-26T08:39:06.884+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 08:39:06"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779784746.19121770",
+    "full_log": "May 26 08:39:06 vpn openvpn[1104]: Tue May 26 08:39:06 2026 arzw_br_danz_markus_home_office/83.135.13.74:20493 TLS Error: TLS key negotiation failed to occur within 60 seconds (check your network connectivity)",
+    "timestamp": "2026-05-26T08:39:06.884+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 08:37:50"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779784670.19057069",
+    "full_log": "May 26 08:37:50 vpn openvpn[1104]: Tue May 26 08:37:50 2026 arzw_br_danz_markus_home_office/83.135.13.74:20493 TLS Error: TLS handshake failed",
+    "timestamp": "2026-05-26T08:37:50.918+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 08:37:50"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779784670.19056681",
+    "full_log": "May 26 08:37:50 vpn openvpn[1104]: Tue May 26 08:37:50 2026 arzw_br_danz_markus_home_office/83.135.13.74:20493 TLS Error: TLS key negotiation failed to occur within 60 seconds (check your network connectivity)",
+    "timestamp": "2026-05-26T08:37:50.876+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 07:36:49"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "212.104.214.150",
+      "srcport": "32223"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779781010.16222269",
+    "GeoLocation": {
+      "city_name": "Zwolle",
+      "country_name": "Netherlands",
+      "region_name": "Provincie Overijssel",
+      "location": {
+        "lon": 6.0921,
+        "lat": 52.5116
+      }
+    },
+    "full_log": "May 26 07:36:49 vpn openvpn[1104]: Tue May 26 07:36:49 2026 212.104.214.150:32223 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]212.104.214.150:32223",
+    "timestamp": "2026-05-26T07:36:50.578+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 07:33:49"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_fuchs_elizabeth_homeoffice",
+      "srcip": "84.186.117.238",
+      "srcport": "59773"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779780830.16047992",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4708,
+        "lat": 52.5603
+      }
+    },
+    "full_log": "May 26 07:33:49 vpn openvpn[1104]: Tue May 26 07:33:49 2026 84.186.117.238:59773 [arzw_br_fuchs_elizabeth_homeoffice] Peer Connection Initiated with [AF_INET]84.186.117.238:59773",
+    "timestamp": "2026-05-26T07:33:50.519+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T01:00:06",
+      "size_after": "982",
+      "gid_after": "0",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779584404_f09adf01-60ab-40f2-a675-0a9478d6e956",
+      "sha1_after": "07239a127cf81775342e5c001ee48ba3ed1e9161",
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-r--r--",
+      "event": "deleted",
+      "md5_after": "c4416ebc074edaae6d599f3e6505c3c4",
+      "sha256_after": "9951fd4fdbdc24f4e67f9fa98520f6780fd6b85d4c5bda788c88704034668f29",
+      "inode_after": 36
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "File deleted.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_deleted",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "File Deletion",
+          "Data Destruction"
+        ],
+        "id": [
+          "T1070.004",
+          "T1485"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Impact"
+        ]
+      },
+      "id": "553",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_deleted"
+    },
+    "id": "1779775758.11448602",
+    "full_log": "File '/boot/.synosnap_data/1779584404_f09adf01-60ab-40f2-a675-0a9478d6e956' deleted\nMode: scheduled\n",
+    "timestamp": "2026-05-26T06:09:18.762+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-26T01:00:08",
+      "inode_before": 266661,
+      "size_after": "1426",
+      "gid_after": "0",
+      "mtime_before": "2026-05-25T01:00:06",
+      "mode": "scheduled",
+      "path": "/etc/lvm/cache/.cache",
+      "sha1_after": "6d7f0af833e9a59953724921e693c160624ccb58",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "77155e185512d441fa416bf4b0ab535b",
+      "sha256_after": "01ea7f666a84a41d03df716085e807a41b8c1bbb9a8e47c30be97af8b840feaa",
+      "inode_after": 266476
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 6,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779775757.11447768",
+    "full_log": "File '/etc/lvm/cache/.cache' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779670806', now it is '1779757208'\nOld inode was: '266661', now it is '266476'\n",
+    "timestamp": "2026-05-26T06:09:17.589+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-26T01:00:13",
+      "size_after": "102",
+      "gid_after": "0",
+      "md5_before": "401a430b4d894b6dcfde8c5f8e104e92",
+      "sha256_before": "6f4c6aad3192ea5a5c859748e03a19dc73bb9ea4a521e5a065fc848c2b909a54",
+      "mtime_before": "2026-05-25T01:00:11",
+      "mode": "scheduled",
+      "path": "/etc/synosnap/dla/reload_vda2",
+      "sha1_after": "3794d089d5640a7cdebcdd001bf1454d969200d0",
+      "changed_attributes": [
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rwxr-xr-x",
+      "event": "modified",
+      "md5_after": "6faf2fa4f2be69ac9a7f34966066aeee",
+      "sha1_before": "dcc6e81305b3e15020e9589690a0debdcc57d7e2",
+      "sha256_after": "1a01962dc15167c317f2bad71693dee55dbf448295f6a0a7b77e36582f97d10e",
+      "inode_after": 133279
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779775757.11446567",
+    "full_log": "File '/etc/synosnap/dla/reload_vda2' modified\nMode: scheduled\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1779670811', now it is '1779757213'\nOld md5sum was: '401a430b4d894b6dcfde8c5f8e104e92'\nNew md5sum is : '6faf2fa4f2be69ac9a7f34966066aeee'\nOld sha1sum was: 'dcc6e81305b3e15020e9589690a0debdcc57d7e2'\nNew sha1sum is : '3794d089d5640a7cdebcdd001bf1454d969200d0'\nOld sha256sum was: '6f4c6aad3192ea5a5c859748e03a19dc73bb9ea4a521e5a065fc848c2b909a54'\nNew sha256sum is : '1a01962dc15167c317f2bad71693dee55dbf448295f6a0a7b77e36582f97d10e'\n",
+    "timestamp": "2026-05-26T06:09:17.216+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-26T01:01:42",
+      "size_after": "107",
+      "gid_after": "0",
+      "md5_before": "8017039113f7784b2d708e63476747bf",
+      "sha256_before": "b11d3bb72a84f751b2889fdc29a6272cdb3ba9fcb5953714dd3124292e5303f7",
+      "mtime_before": "2026-05-25T01:00:53",
+      "mode": "scheduled",
+      "path": "/etc/synosnap/dla/reload_root",
+      "sha1_after": "3ba759eafb9ca0837824fdeeb0263297b52b6f9d",
+      "changed_attributes": [
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rwxr-xr-x",
+      "event": "modified",
+      "md5_after": "d68dc8a9786bcebb0108b62cbc3e9149",
+      "sha1_before": "afe01650f28487930156697cc931ea3aba514f5f",
+      "sha256_after": "f40df8fd5222ac877b6b20b0c06ad60312ac9ff1f846a7a9ded6f2942fef3163",
+      "inode_after": 133327
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779775757.11445366",
+    "full_log": "File '/etc/synosnap/dla/reload_root' modified\nMode: scheduled\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1779670853', now it is '1779757302'\nOld md5sum was: '8017039113f7784b2d708e63476747bf'\nNew md5sum is : 'd68dc8a9786bcebb0108b62cbc3e9149'\nOld sha1sum was: 'afe01650f28487930156697cc931ea3aba514f5f'\nNew sha1sum is : '3ba759eafb9ca0837824fdeeb0263297b52b6f9d'\nOld sha256sum was: 'b11d3bb72a84f751b2889fdc29a6272cdb3ba9fcb5953714dd3124292e5303f7'\nNew sha256sum is : 'f40df8fd5222ac877b6b20b0c06ad60312ac9ff1f846a7a9ded6f2942fef3163'\n",
+    "timestamp": "2026-05-26T06:09:17.215+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-26T06:00:01",
+      "size_after": "2631",
+      "gid_after": "991",
+      "mtime_before": "2026-05-25T18:00:01",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/crl.pem",
+      "sha1_after": "41b632cbd37659bb7a28976c789daf79e4f57952",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "982b8cf106c56a49bb306d845df181d5",
+      "sha256_after": "54954a823be61aa8188002c8d987a835cea48d05a7b89f86bc5b29da4b1bff25",
+      "inode_after": 133340
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779775757.11444573",
+    "full_log": "File '/etc/openvpn/crl.pem' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779732001', now it is '1779775201'\n",
+    "timestamp": "2026-05-26T06:09:17.147+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-26T06:04:47",
+      "size_after": "2547",
+      "gid_after": "991",
+      "mtime_before": "2026-05-25T18:04:38",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/ipp.txt",
+      "sha1_after": "2c6ef709e2ed9e8b15b2db4135b5a9dfee482a92",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "5626020c8853a54349879ff0f3339083",
+      "sha256_after": "99aa9ab1a6697aab5eb83f22ef8633f35e10f4703c17e8f8a7366a043fb82f11",
+      "inode_after": 143682
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779775757.11443780",
+    "full_log": "File '/etc/openvpn/ipp.txt' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779732278', now it is '1779775487'\n",
+    "timestamp": "2026-05-26T06:09:17.105+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "1019904",
+      "perm_before": "---------",
+      "uname_after": "root",
+      "mtime_after": "2026-05-26T01:00:08",
+      "inode_before": 34,
+      "size_after": "982",
+      "gid_after": "0",
+      "md5_before": "a797e0dd1e09477e8ec462e9646c4b0f",
+      "sha256_before": "eba6dca61988768d95a2a51c2b8fbb5027745c6586004a1483d8db18dafc00a4",
+      "mtime_before": "2026-05-25T01:00:11",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779670806_6bda2457-80a7-40c7-800c-a61cf785cc5e",
+      "sha1_after": "791be9e57b8d47f66facc49a2398ce6ee57ddd31",
+      "changed_attributes": [
+        "size",
+        "permission",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "edb9963931f194693dda99e0cf59c26f",
+      "sha1_before": "06ac052c59c161a88c9e37ac2d000d3da531d172",
+      "sha256_after": "2dab5032d7d719ee56bd8b07ed58f075c823e32b6b25666102b7e07b33d1500a",
+      "inode_after": 36
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779775756.11442397",
+    "full_log": "File '/boot/.synosnap_data/1779670806_6bda2457-80a7-40c7-800c-a61cf785cc5e' modified\nMode: scheduled\nChanged attributes: size,permission,inode,mtime,md5,sha1,sha256\nSize changed from '1019904' to '982'\nPermissions changed from '---------' to 'rw-r--r--'\nOld modification time was: '1779670811', now it is '1779757208'\nOld inode was: '34', now it is '36'\nOld md5sum was: 'a797e0dd1e09477e8ec462e9646c4b0f'\nNew md5sum is : 'edb9963931f194693dda99e0cf59c26f'\nOld sha1sum was: '06ac052c59c161a88c9e37ac2d000d3da531d172'\nNew sha1sum is : '791be9e57b8d47f66facc49a2398ce6ee57ddd31'\nOld sha256sum was: 'eba6dca61988768d95a2a51c2b8fbb5027745c6586004a1483d8db18dafc00a4'\nNew sha256sum is : '2dab5032d7d719ee56bd8b07ed58f075c823e32b6b25666102b7e07b33d1500a'\n",
+    "timestamp": "2026-05-26T06:09:16.900+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-26T01:00:13",
+      "size_after": "1019904",
+      "gid_after": "0",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779757208_5d5f5a4f-c031-4035-9b6f-c10ed0f4b764",
+      "sha1_after": "c90196393aedb4e317dc8ea51a99549ddb8f2a35",
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "---------",
+      "event": "added",
+      "md5_after": "69fd92254726e2e07774fdbdfcf0f20e",
+      "sha256_after": "7a321dae382f097fa3d165e80b3270c528d71c0b53e0db1e1585935fef18081d",
+      "inode_after": 35
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 5,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "File added to the system.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_added",
+        "syscheck_file"
+      ],
+      "id": "554",
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gpg13": [
+        "4.11"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_new_entry"
+    },
+    "id": "1779775756.11441665",
+    "full_log": "File '/boot/.synosnap_data/1779757208_5d5f5a4f-c031-4035-9b6f-c10ed0f4b764' added\nMode: scheduled\n",
+    "timestamp": "2026-05-26T06:09:16.899+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 04:50:27"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_weissbrodt_christian_arbeitsrechner",
+      "srcip": "91.19.207.70",
+      "srcport": "63210"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779771027.5303740",
+    "GeoLocation": {
+      "city_name": "Freiburg",
+      "country_name": "Germany",
+      "region_name": "Baden-Württemberg",
+      "location": {
+        "lon": 7.85,
+        "lat": 48.0
+      }
+    },
+    "full_log": "May 26 04:50:27 vpn openvpn[1104]: Tue May 26 04:50:27 2026 91.19.207.70:63210 [arzw_br_weissbrodt_christian_arbeitsrechner] Peer Connection Initiated with [AF_INET]91.19.207.70:63210",
+    "timestamp": "2026-05-26T04:50:27.509+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 04:38:51"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "Nicole.Koellner",
+      "srcip": "84.166.245.197",
+      "srcport": "63670"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779770331.4440262",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 26 04:38:51 vpn openvpn[1104]: Tue May 26 04:38:51 2026 84.166.245.197:63670 [Nicole.Koellner] Peer Connection Initiated with [AF_INET]84.166.245.197:63670",
+    "timestamp": "2026-05-26T04:38:51.438+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 04:18:44"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_norman_sittig_arbeitsrechner_1",
+      "srcip": "87.174.6.130",
+      "srcport": "62098"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779769125.3642517",
+    "GeoLocation": {
+      "city_name": "Burgheim",
+      "country_name": "Germany",
+      "region_name": "Bavaria",
+      "location": {
+        "lon": 11.016,
+        "lat": 48.7004
+      }
+    },
+    "full_log": "May 26 04:18:44 vpn openvpn[1104]: Tue May 26 04:18:44 2026 87.174.6.130:62098 [arzw_br_norman_sittig_arbeitsrechner_1] Peer Connection Initiated with [AF_INET]87.174.6.130:62098",
+    "timestamp": "2026-05-26T04:18:45.315+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 26 03:12:27"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_norman_sittig_arbeitsrechner_1",
+      "srcip": "87.174.6.130",
+      "srcport": "64368"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779765148.1612695",
+    "GeoLocation": {
+      "city_name": "Burgheim",
+      "country_name": "Germany",
+      "region_name": "Bavaria",
+      "location": {
+        "lon": 11.016,
+        "lat": 48.7004
+      }
+    },
+    "full_log": "May 26 03:12:27 vpn openvpn[1104]: Tue May 26 03:12:27 2026 87.174.6.130:64368 [arzw_br_norman_sittig_arbeitsrechner_1] Peer Connection Initiated with [AF_INET]87.174.6.130:64368",
+    "timestamp": "2026-05-26T03:12:28.890+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 19:41:41"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18967"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779738102.12209171",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 19:41:41 vpn openvpn[1104]: Mon May 25 19:41:41 2026 83.135.13.78:18967 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18967",
+    "timestamp": "2026-05-25T19:41:42.033+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-25T18:04:38",
+      "size_after": "2547",
+      "gid_after": "991",
+      "mtime_before": "2026-05-25T06:04:23",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/ipp.txt",
+      "sha1_after": "2c6ef709e2ed9e8b15b2db4135b5a9dfee482a92",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "5626020c8853a54349879ff0f3339083",
+      "sha256_after": "99aa9ab1a6697aab5eb83f22ef8633f35e10f4703c17e8f8a7366a043fb82f11",
+      "inode_after": 143682
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779732552.11489528",
+    "full_log": "File '/etc/openvpn/ipp.txt' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779689063', now it is '1779732278'\n",
+    "timestamp": "2026-05-25T18:09:12.263+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-25T18:00:01",
+      "size_after": "2631",
+      "gid_after": "991",
+      "mtime_before": "2026-05-25T06:00:01",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/crl.pem",
+      "sha1_after": "41b632cbd37659bb7a28976c789daf79e4f57952",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "982b8cf106c56a49bb306d845df181d5",
+      "sha256_after": "54954a823be61aa8188002c8d987a835cea48d05a7b89f86bc5b29da4b1bff25",
+      "inode_after": 133340
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779732552.11490321",
+    "full_log": "File '/etc/openvpn/crl.pem' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779688801', now it is '1779732001'\n",
+    "timestamp": "2026-05-25T18:09:12.263+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 18:06:57"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.251.221",
+      "srcport": "56909"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779732419.11427255",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 18:06:57 vpn openvpn[1104]: Mon May 25 18:06:57 2026 84.166.251.221:56909 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.251.221:56909",
+    "timestamp": "2026-05-25T18:06:59.398+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 18:04:47"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.251.221",
+      "srcport": "64158"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779732289.11426753",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 18:04:47 vpn openvpn[1104]: Mon May 25 18:04:47 2026 84.166.251.221:64158 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.251.221:64158",
+    "timestamp": "2026-05-25T18:04:49.387+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 18:00:30"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.251.221",
+      "srcport": "63068"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779732031.11389604",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 18:00:30 vpn openvpn[1104]: Mon May 25 18:00:30 2026 84.166.251.221:63068 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.251.221:63068",
+    "timestamp": "2026-05-25T18:00:31.365+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 17:54:10"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.251.221",
+      "srcport": "53632"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779731651.11320765",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 17:54:10 vpn openvpn[1104]: Mon May 25 17:54:10 2026 84.166.251.221:53632 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.251.221:53632",
+    "timestamp": "2026-05-25T17:54:11.315+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 17:51:08"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_zscharnt_holger_homeoffice_pc",
+      "srcip": "91.12.66.123",
+      "srcport": "61609"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779731469.11267535",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 17:51:08 vpn openvpn[1104]: Mon May 25 17:51:08 2026 91.12.66.123:61609 [arzw_zscharnt_holger_homeoffice_pc] Peer Connection Initiated with [AF_INET]91.12.66.123:61609",
+    "timestamp": "2026-05-25T17:51:09.288+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 17:48:54"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_rz_ho_003_arbeitsrechner",
+      "srcip": "87.174.7.148",
+      "srcport": "36668"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779731335.11253824",
+    "GeoLocation": {
+      "city_name": "Burgheim",
+      "country_name": "Germany",
+      "region_name": "Bavaria",
+      "location": {
+        "lon": 11.016,
+        "lat": 48.7004
+      }
+    },
+    "full_log": "May 25 17:48:54 vpn openvpn[1104]: Mon May 25 17:48:54 2026 87.174.7.148:36668 [arzw_br_rz_ho_003_arbeitsrechner] Peer Connection Initiated with [AF_INET]87.174.7.148:36668",
+    "timestamp": "2026-05-25T17:48:55.304+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 14:55:03"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18762"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779720904.8712608",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 14:55:03 vpn openvpn[1104]: Mon May 25 14:55:03 2026 83.135.13.78:18762 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18762",
+    "timestamp": "2026-05-25T14:55:04.076+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 14:24:29"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "80.153.237.63",
+      "srcport": "32563"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779719071.8488571",
+    "GeoLocation": {
+      "city_name": "Hildesheim",
+      "country_name": "Germany",
+      "region_name": "Lower Saxony",
+      "location": {
+        "lon": 9.9713,
+        "lat": 52.1353
+      }
+    },
+    "full_log": "May 25 14:24:29 vpn openvpn[1104]: Mon May 25 14:24:29 2026 80.153.237.63:32563 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]80.153.237.63:32563",
+    "timestamp": "2026-05-25T14:24:31.875+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 12:52:07"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "61.8.131.173",
+      "srcport": "4857"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779713529.7334967",
+    "GeoLocation": {
+      "city_name": "New Delhi",
+      "country_name": "India",
+      "region_name": "National Capital Territory of Delhi",
+      "location": {
+        "lon": 77.2245,
+        "lat": 28.6358
+      }
+    },
+    "full_log": "May 25 12:52:07 vpn openvpn[1104]: Mon May 25 12:52:07 2026 61.8.131.173:4857 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]61.8.131.173:4857",
+    "timestamp": "2026-05-25T12:52:09.256+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 12:32:18"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "80.153.237.63",
+      "srcport": "44064"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779712339.7186012",
+    "GeoLocation": {
+      "city_name": "Hildesheim",
+      "country_name": "Germany",
+      "region_name": "Lower Saxony",
+      "location": {
+        "lon": 9.9713,
+        "lat": 52.1353
+      }
+    },
+    "full_log": "May 25 12:32:18 vpn openvpn[1104]: Mon May 25 12:32:18 2026 80.153.237.63:44064 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]80.153.237.63:44064",
+    "timestamp": "2026-05-25T12:32:19.132+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 11:58:09"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18698"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779710290.6675458",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 11:58:09 vpn openvpn[1104]: Mon May 25 11:58:09 2026 83.135.13.78:18698 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18698",
+    "timestamp": "2026-05-25T11:58:10.882+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 11:56:16"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18994"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779710176.6631227",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 11:56:16 vpn openvpn[1104]: Mon May 25 11:56:16 2026 83.135.13.78:18994 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18994",
+    "timestamp": "2026-05-25T11:56:16.866+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 11:42:12"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18931"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779709334.6584118",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 11:42:12 vpn openvpn[1104]: Mon May 25 11:42:12 2026 83.135.13.78:18931 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18931",
+    "timestamp": "2026-05-25T11:42:14.777+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 11:40:44"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18851"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779709244.6576043",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 11:40:44 vpn openvpn[1104]: Mon May 25 11:40:44 2026 83.135.13.78:18851 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18851",
+    "timestamp": "2026-05-25T11:40:44.765+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 11:40:11"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18833"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779709212.6573894",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 11:40:11 vpn openvpn[1104]: Mon May 25 11:40:11 2026 83.135.13.78:18833 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18833",
+    "timestamp": "2026-05-25T11:40:12.759+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 10:22:20"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_kuemmel_ronny_homeoffice_pc",
+      "srcip": "217.93.155.108",
+      "srcport": "55791"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779704542.5937448",
+    "GeoLocation": {
+      "city_name": "Kaltennordheim",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.1591,
+        "lat": 50.6265
+      }
+    },
+    "full_log": "May 25 10:22:20 vpn openvpn[1104]: Mon May 25 10:22:20 2026 217.93.155.108:55791 [arzw_br_kuemmel_ronny_homeoffice_pc] Peer Connection Initiated with [AF_INET]217.93.155.108:55791",
+    "timestamp": "2026-05-25T10:22:22.215+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 10:03:10"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.78",
+      "srcport": "18762"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779703392.5764546",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 25 10:03:10 vpn openvpn[1104]: Mon May 25 10:03:10 2026 83.135.13.78:18762 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.78:18762",
+    "timestamp": "2026-05-25T10:03:12.096+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 09:56:51"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.254.124",
+      "srcport": "44984"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779703012.5708622",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 09:56:51 vpn openvpn[1104]: Mon May 25 09:56:51 2026 84.166.254.124:44984 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.254.124:44984",
+    "timestamp": "2026-05-25T09:56:52.087+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 25 08:26:36"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_zscharnt_holger_homeoffice_pc",
+      "srcip": "91.12.66.123",
+      "srcport": "50521"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779697597.5018385",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 25 08:26:36 vpn openvpn[1104]: Mon May 25 08:26:36 2026 91.12.66.123:50521 [arzw_zscharnt_holger_homeoffice_pc] Peer Connection Initiated with [AF_INET]91.12.66.123:50521",
+    "timestamp": "2026-05-25T08:26:37.442+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T01:00:04",
+      "size_after": "982",
+      "gid_after": "0",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779498004_a38f329e-3ffb-4739-9a30-77c4711ddd4a",
+      "sha1_after": "a2a4acbdea1759ae173d06c362022d8ecdb848a5",
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-r--r--",
+      "event": "deleted",
+      "md5_after": "32e09d63dad7b55b25f9b409ce343742",
+      "sha256_after": "f822289b42845f3ba4e78daa434c6f0f013a856055c8d6d9fb65084bfee9717d",
+      "inode_after": 36
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "File deleted.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_deleted",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "File Deletion",
+          "Data Destruction"
+        ],
+        "id": [
+          "T1070.004",
+          "T1485"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Impact"
+        ]
+      },
+      "id": "553",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_deleted"
+    },
+    "id": "1779689348.3776971",
+    "full_log": "File '/boot/.synosnap_data/1779498004_a38f329e-3ffb-4739-9a30-77c4711ddd4a' deleted\nMode: scheduled\n",
+    "timestamp": "2026-05-25T06:09:08.108+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T01:00:06",
+      "inode_before": 266476,
+      "size_after": "1426",
+      "gid_after": "0",
+      "mtime_before": "2026-05-24T01:00:04",
+      "mode": "scheduled",
+      "path": "/etc/lvm/cache/.cache",
+      "sha1_after": "6d7f0af833e9a59953724921e693c160624ccb58",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "77155e185512d441fa416bf4b0ab535b",
+      "sha256_after": "01ea7f666a84a41d03df716085e807a41b8c1bbb9a8e47c30be97af8b840feaa",
+      "inode_after": 266661
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 6,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779689346.3776138",
+    "full_log": "File '/etc/lvm/cache/.cache' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779584404', now it is '1779670806'\nOld inode was: '266476', now it is '266661'\n",
+    "timestamp": "2026-05-25T06:09:06.919+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T01:00:11",
+      "size_after": "102",
+      "gid_after": "0",
+      "md5_before": "82e3a1ee7263b48a47e666ecc6961419",
+      "sha256_before": "d1aafecdd111110ad1cb52599e82f9e3b58166c20cd7fd54632c026404f20a85",
+      "mtime_before": "2026-05-24T01:00:09",
+      "mode": "scheduled",
+      "path": "/etc/synosnap/dla/reload_vda2",
+      "sha1_after": "dcc6e81305b3e15020e9589690a0debdcc57d7e2",
+      "changed_attributes": [
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rwxr-xr-x",
+      "event": "modified",
+      "md5_after": "401a430b4d894b6dcfde8c5f8e104e92",
+      "sha1_before": "52d1dcef6d571585e5f8ba6e929c89eda5866f68",
+      "sha256_after": "6f4c6aad3192ea5a5c859748e03a19dc73bb9ea4a521e5a065fc848c2b909a54",
+      "inode_after": 133279
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779689346.3774938",
+    "full_log": "File '/etc/synosnap/dla/reload_vda2' modified\nMode: scheduled\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1779584409', now it is '1779670811'\nOld md5sum was: '82e3a1ee7263b48a47e666ecc6961419'\nNew md5sum is : '401a430b4d894b6dcfde8c5f8e104e92'\nOld sha1sum was: '52d1dcef6d571585e5f8ba6e929c89eda5866f68'\nNew sha1sum is : 'dcc6e81305b3e15020e9589690a0debdcc57d7e2'\nOld sha256sum was: 'd1aafecdd111110ad1cb52599e82f9e3b58166c20cd7fd54632c026404f20a85'\nNew sha256sum is : '6f4c6aad3192ea5a5c859748e03a19dc73bb9ea4a521e5a065fc848c2b909a54'\n",
+    "timestamp": "2026-05-25T06:09:06.548+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T01:00:53",
+      "size_after": "107",
+      "gid_after": "0",
+      "md5_before": "ee0071fa9aa9d95df40de14ab1946446",
+      "sha256_before": "2975e187509f37124b6c83be45f7f00b1467177eac93824b6b89d7cd5b6fbf29",
+      "mtime_before": "2026-05-24T01:00:38",
+      "mode": "scheduled",
+      "path": "/etc/synosnap/dla/reload_root",
+      "sha1_after": "afe01650f28487930156697cc931ea3aba514f5f",
+      "changed_attributes": [
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rwxr-xr-x",
+      "event": "modified",
+      "md5_after": "8017039113f7784b2d708e63476747bf",
+      "sha1_before": "8e55a718faf2b8d05a3a3cc1f4751f756b3c28b4",
+      "sha256_after": "b11d3bb72a84f751b2889fdc29a6272cdb3ba9fcb5953714dd3124292e5303f7",
+      "inode_after": 133327
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779689346.3773738",
+    "full_log": "File '/etc/synosnap/dla/reload_root' modified\nMode: scheduled\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1779584438', now it is '1779670853'\nOld md5sum was: 'ee0071fa9aa9d95df40de14ab1946446'\nNew md5sum is : '8017039113f7784b2d708e63476747bf'\nOld sha1sum was: '8e55a718faf2b8d05a3a3cc1f4751f756b3c28b4'\nNew sha1sum is : 'afe01650f28487930156697cc931ea3aba514f5f'\nOld sha256sum was: '2975e187509f37124b6c83be45f7f00b1467177eac93824b6b89d7cd5b6fbf29'\nNew sha256sum is : 'b11d3bb72a84f751b2889fdc29a6272cdb3ba9fcb5953714dd3124292e5303f7'\n",
+    "timestamp": "2026-05-25T06:09:06.547+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-25T06:04:23",
+      "size_after": "2547",
+      "gid_after": "991",
+      "mtime_before": "2026-05-24T18:04:22",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/ipp.txt",
+      "sha1_after": "2c6ef709e2ed9e8b15b2db4135b5a9dfee482a92",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "5626020c8853a54349879ff0f3339083",
+      "sha256_after": "99aa9ab1a6697aab5eb83f22ef8633f35e10f4703c17e8f8a7366a043fb82f11",
+      "inode_after": 143682
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779689346.3772154",
+    "full_log": "File '/etc/openvpn/ipp.txt' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779645862', now it is '1779689063'\n",
+    "timestamp": "2026-05-25T06:09:06.438+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-25T06:00:01",
+      "size_after": "2631",
+      "gid_after": "991",
+      "mtime_before": "2026-05-24T18:00:01",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/crl.pem",
+      "sha1_after": "41b632cbd37659bb7a28976c789daf79e4f57952",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "982b8cf106c56a49bb306d845df181d5",
+      "sha256_after": "54954a823be61aa8188002c8d987a835cea48d05a7b89f86bc5b29da4b1bff25",
+      "inode_after": 133340
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779689346.3772946",
+    "full_log": "File '/etc/openvpn/crl.pem' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779645601', now it is '1779688801'\n",
+    "timestamp": "2026-05-25T06:09:06.438+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T01:00:11",
+      "size_after": "1019904",
+      "gid_after": "0",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779670806_6bda2457-80a7-40c7-800c-a61cf785cc5e",
+      "sha1_after": "06ac052c59c161a88c9e37ac2d000d3da531d172",
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "---------",
+      "event": "added",
+      "md5_after": "a797e0dd1e09477e8ec462e9646c4b0f",
+      "sha256_after": "eba6dca61988768d95a2a51c2b8fbb5027745c6586004a1483d8db18dafc00a4",
+      "inode_after": 34
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 5,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "File added to the system.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_added",
+        "syscheck_file"
+      ],
+      "id": "554",
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gpg13": [
+        "4.11"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_new_entry"
+    },
+    "id": "1779689346.3771423",
+    "full_log": "File '/boot/.synosnap_data/1779670806_6bda2457-80a7-40c7-800c-a61cf785cc5e' added\nMode: scheduled\n",
+    "timestamp": "2026-05-25T06:09:06.233+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "1019904",
+      "perm_before": "---------",
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T01:00:06",
+      "inode_before": 35,
+      "size_after": "982",
+      "gid_after": "0",
+      "md5_before": "4d03c9f15dc04636afa40ba1d9e92e99",
+      "sha256_before": "135d2fb4f51a9d057931bbfc9f7c21a079cfeaaaaf1769266659c9af37778fee",
+      "mtime_before": "2026-05-24T01:00:09",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779584404_f09adf01-60ab-40f2-a675-0a9478d6e956",
+      "sha1_after": "07239a127cf81775342e5c001ee48ba3ed1e9161",
+      "changed_attributes": [
+        "size",
+        "permission",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "c4416ebc074edaae6d599f3e6505c3c4",
+      "sha1_before": "e4b5610cd5141d99141e32a303d1080c20b1c5f9",
+      "sha256_after": "9951fd4fdbdc24f4e67f9fa98520f6780fd6b85d4c5bda788c88704034668f29",
+      "inode_after": 36
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779689346.3770041",
+    "full_log": "File '/boot/.synosnap_data/1779584404_f09adf01-60ab-40f2-a675-0a9478d6e956' modified\nMode: scheduled\nChanged attributes: size,permission,inode,mtime,md5,sha1,sha256\nSize changed from '1019904' to '982'\nPermissions changed from '---------' to 'rw-r--r--'\nOld modification time was: '1779584409', now it is '1779670806'\nOld inode was: '35', now it is '36'\nOld md5sum was: '4d03c9f15dc04636afa40ba1d9e92e99'\nNew md5sum is : 'c4416ebc074edaae6d599f3e6505c3c4'\nOld sha1sum was: 'e4b5610cd5141d99141e32a303d1080c20b1c5f9'\nNew sha1sum is : '07239a127cf81775342e5c001ee48ba3ed1e9161'\nOld sha256sum was: '135d2fb4f51a9d057931bbfc9f7c21a079cfeaaaaf1769266659c9af37778fee'\nNew sha256sum is : '9951fd4fdbdc24f4e67f9fa98520f6780fd6b85d4c5bda788c88704034668f29'\n",
+    "timestamp": "2026-05-25T06:09:06.226+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 21:40:31"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.251.221",
+      "srcport": "50492"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779658833.13391015",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 24 21:40:31 vpn openvpn[1104]: Sun May 24 21:40:31 2026 84.166.251.221:50492 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.251.221:50492",
+    "timestamp": "2026-05-24T21:40:33.068+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 19:31:07"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.86",
+      "srcport": "15476"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779651068.12338132",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 24 19:31:07 vpn openvpn[1104]: Sun May 24 19:31:07 2026 83.135.13.86:15476 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.86:15476",
+    "timestamp": "2026-05-24T19:31:08.149+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-24T18:00:01",
+      "size_after": "2631",
+      "gid_after": "991",
+      "mtime_before": "2026-05-24T06:00:01",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/crl.pem",
+      "sha1_after": "41b632cbd37659bb7a28976c789daf79e4f57952",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "982b8cf106c56a49bb306d845df181d5",
+      "sha256_after": "54954a823be61aa8188002c8d987a835cea48d05a7b89f86bc5b29da4b1bff25",
+      "inode_after": 133340
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779646140.11596406",
+    "full_log": "File '/etc/openvpn/crl.pem' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779602401', now it is '1779645601'\n",
+    "timestamp": "2026-05-24T18:09:00.497+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-24T18:04:22",
+      "size_after": "2547",
+      "gid_after": "991",
+      "mtime_before": "2026-05-24T06:04:21",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/ipp.txt",
+      "sha1_after": "2c6ef709e2ed9e8b15b2db4135b5a9dfee482a92",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "5626020c8853a54349879ff0f3339083",
+      "sha256_after": "99aa9ab1a6697aab5eb83f22ef8633f35e10f4703c17e8f8a7366a043fb82f11",
+      "inode_after": 143682
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779646140.11595613",
+    "full_log": "File '/etc/openvpn/ipp.txt' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779602661', now it is '1779645862'\n",
+    "timestamp": "2026-05-24T18:09:00.496+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 16:40:01"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_koellner_colin_home_office",
+      "srcip": "87.174.4.241",
+      "srcport": "64605"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779640803.10180150",
+    "GeoLocation": {
+      "city_name": "Burgheim",
+      "country_name": "Germany",
+      "region_name": "Bavaria",
+      "location": {
+        "lon": 11.016,
+        "lat": 48.7004
+      }
+    },
+    "full_log": "May 24 16:40:01 vpn openvpn[1104]: Sun May 24 16:40:01 2026 87.174.4.241:64605 [arzw_br_koellner_colin_home_office] Peer Connection Initiated with [AF_INET]87.174.4.241:64605",
+    "timestamp": "2026-05-24T16:40:03.015+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 14:55:22"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcip": "138.197.215.12",
+      "srcport": "55746"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779634528.8736821",
+    "GeoLocation": {
+      "city_name": "Santa Clara",
+      "country_name": "United States",
+      "region_name": "California",
+      "location": {
+        "lon": -121.9753,
+        "lat": 37.3417
+      }
+    },
+    "full_log": "May 24 14:55:22 vpn openvpn[1104]: Sun May 24 14:55:22 2026 TLS Error: cannot locate HMAC in incoming packet from [AF_INET]138.197.215.12:55746",
+    "timestamp": "2026-05-24T14:55:28.242+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 14:31:25"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcip": "161.35.230.3",
+      "srcport": "49285"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779633088.8515846",
+    "GeoLocation": {
+      "city_name": "New York",
+      "country_name": "United States",
+      "region_name": "New York",
+      "location": {
+        "lon": -74.0,
+        "lat": 40.7157
+      }
+    },
+    "full_log": "May 24 14:31:25 vpn openvpn[1104]: Sun May 24 14:31:25 2026 TLS Error: cannot locate HMAC in incoming packet from [AF_INET]161.35.230.3:49285",
+    "timestamp": "2026-05-24T14:31:28.080+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 14:26:41"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_kuemmel_ronny_homeoffice_pc",
+      "srcip": "217.93.156.137",
+      "srcport": "42144"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779632802.8432687",
+    "GeoLocation": {
+      "city_name": "Dorndorf",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.0892,
+        "lat": 50.8347
+      }
+    },
+    "full_log": "May 24 14:26:41 vpn openvpn[1104]: Sun May 24 14:26:41 2026 217.93.156.137:42144 [arzw_br_kuemmel_ronny_homeoffice_pc] Peer Connection Initiated with [AF_INET]217.93.156.137:42144",
+    "timestamp": "2026-05-24T14:26:42.128+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 10:05:04"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_br_danz_markus_home_office",
+      "srcip": "83.135.13.86",
+      "srcport": "15491"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779617106.6021088",
+    "GeoLocation": {
+      "city_name": "Berlin",
+      "country_name": "Germany",
+      "region_name": "Land Berlin",
+      "location": {
+        "lon": 13.4672,
+        "lat": 52.4866
+      }
+    },
+    "full_log": "May 24 10:05:04 vpn openvpn[1104]: Sun May 24 10:05:04 2026 83.135.13.86:15491 [arzw_br_danz_markus_home_office] Peer Connection Initiated with [AF_INET]83.135.13.86:15491",
+    "timestamp": "2026-05-24T10:05:06.330+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 09:25:28"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_zscharnt_holger_homeoffice_pc",
+      "srcip": "91.12.66.123",
+      "srcport": "61110"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779614730.5659044",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 24 09:25:28 vpn openvpn[1104]: Sun May 24 09:25:28 2026 91.12.66.123:61110 [arzw_zscharnt_holger_homeoffice_pc] Peer Connection Initiated with [AF_INET]91.12.66.123:61110",
+    "timestamp": "2026-05-24T09:25:30.011+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T01:00:04",
+      "size_after": "982",
+      "gid_after": "0",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779411605_6772f63e-2ac9-47f1-a4ce-791a64a03fdd",
+      "sha1_after": "02a74ce74530c84e6b33920982e7b19c44823d4b",
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-r--r--",
+      "event": "deleted",
+      "md5_after": "20ff43fc2f36b8b01d7fcd0a6e6d00be",
+      "sha256_after": "fd3831e2ab0ab3166ff6f9dfb19d5e45b932a1d8c86bce07317a603ef43e06a3",
+      "inode_after": 36
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "File deleted.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_deleted",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "File Deletion",
+          "Data Destruction"
+        ],
+        "id": [
+          "T1070.004",
+          "T1485"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Impact"
+        ]
+      },
+      "id": "553",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_deleted"
+    },
+    "id": "1779602936.3920107",
+    "full_log": "File '/boot/.synosnap_data/1779411605_6772f63e-2ac9-47f1-a4ce-791a64a03fdd' deleted\nMode: scheduled\n",
+    "timestamp": "2026-05-24T06:08:56.182+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T01:00:04",
+      "inode_before": 266661,
+      "size_after": "1426",
+      "gid_after": "0",
+      "mtime_before": "2026-05-23T01:00:04",
+      "mode": "scheduled",
+      "path": "/etc/lvm/cache/.cache",
+      "sha1_after": "6d7f0af833e9a59953724921e693c160624ccb58",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "77155e185512d441fa416bf4b0ab535b",
+      "sha256_after": "01ea7f666a84a41d03df716085e807a41b8c1bbb9a8e47c30be97af8b840feaa",
+      "inode_after": 266476
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 6,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779602935.3919274",
+    "full_log": "File '/etc/lvm/cache/.cache' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779498004', now it is '1779584404'\nOld inode was: '266661', now it is '266476'\n",
+    "timestamp": "2026-05-24T06:08:55.009+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T01:00:09",
+      "size_after": "102",
+      "gid_after": "0",
+      "md5_before": "21d37f75532f7ea4162386176a54c7c4",
+      "sha256_before": "35bdd18fb4937093c9edd113306fd0b233a42edab2df57f7bedb272a76102aae",
+      "mtime_before": "2026-05-23T01:00:07",
+      "mode": "scheduled",
+      "path": "/etc/synosnap/dla/reload_vda2",
+      "sha1_after": "52d1dcef6d571585e5f8ba6e929c89eda5866f68",
+      "changed_attributes": [
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rwxr-xr-x",
+      "event": "modified",
+      "md5_after": "82e3a1ee7263b48a47e666ecc6961419",
+      "sha1_before": "0e2aeb72822ed1524dc33e2d1cae7beec1aa7e9c",
+      "sha256_after": "d1aafecdd111110ad1cb52599e82f9e3b58166c20cd7fd54632c026404f20a85",
+      "inode_after": 133279
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779602934.3916447",
+    "full_log": "File '/etc/synosnap/dla/reload_vda2' modified\nMode: scheduled\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1779498007', now it is '1779584409'\nOld md5sum was: '21d37f75532f7ea4162386176a54c7c4'\nNew md5sum is : '82e3a1ee7263b48a47e666ecc6961419'\nOld sha1sum was: '0e2aeb72822ed1524dc33e2d1cae7beec1aa7e9c'\nNew sha1sum is : '52d1dcef6d571585e5f8ba6e929c89eda5866f68'\nOld sha256sum was: '35bdd18fb4937093c9edd113306fd0b233a42edab2df57f7bedb272a76102aae'\nNew sha256sum is : 'd1aafecdd111110ad1cb52599e82f9e3b58166c20cd7fd54632c026404f20a85'\n",
+    "timestamp": "2026-05-24T06:08:54.627+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T01:00:38",
+      "size_after": "107",
+      "gid_after": "0",
+      "md5_before": "7a8e4903c60e129224c290221083be9d",
+      "sha256_before": "d9d6b1c48d59c9215c52284983fd6eb6173a8ff99c13923c61cb68a1a97fbc9d",
+      "mtime_before": "2026-05-23T01:00:30",
+      "mode": "scheduled",
+      "path": "/etc/synosnap/dla/reload_root",
+      "sha1_after": "8e55a718faf2b8d05a3a3cc1f4751f756b3c28b4",
+      "changed_attributes": [
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rwxr-xr-x",
+      "event": "modified",
+      "md5_after": "ee0071fa9aa9d95df40de14ab1946446",
+      "sha1_before": "4991123f057de237742481f23a70f9ffc219f0f2",
+      "sha256_after": "2975e187509f37124b6c83be45f7f00b1467177eac93824b6b89d7cd5b6fbf29",
+      "inode_after": 133327
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779602934.3915247",
+    "full_log": "File '/etc/synosnap/dla/reload_root' modified\nMode: scheduled\nChanged attributes: mtime,md5,sha1,sha256\nOld modification time was: '1779498030', now it is '1779584438'\nOld md5sum was: '7a8e4903c60e129224c290221083be9d'\nNew md5sum is : 'ee0071fa9aa9d95df40de14ab1946446'\nOld sha1sum was: '4991123f057de237742481f23a70f9ffc219f0f2'\nNew sha1sum is : '8e55a718faf2b8d05a3a3cc1f4751f756b3c28b4'\nOld sha256sum was: 'd9d6b1c48d59c9215c52284983fd6eb6173a8ff99c13923c61cb68a1a97fbc9d'\nNew sha256sum is : '2975e187509f37124b6c83be45f7f00b1467177eac93824b6b89d7cd5b6fbf29'\n",
+    "timestamp": "2026-05-24T06:08:54.626+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-24T06:04:21",
+      "size_after": "2547",
+      "gid_after": "991",
+      "mtime_before": "2026-05-23T18:04:20",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/ipp.txt",
+      "sha1_after": "2c6ef709e2ed9e8b15b2db4135b5a9dfee482a92",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "5626020c8853a54349879ff0f3339083",
+      "sha256_after": "99aa9ab1a6697aab5eb83f22ef8633f35e10f4703c17e8f8a7366a043fb82f11",
+      "inode_after": 143682
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779602934.3913663",
+    "full_log": "File '/etc/openvpn/ipp.txt' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779559460', now it is '1779602661'\n",
+    "timestamp": "2026-05-24T06:08:54.513+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-24T06:00:01",
+      "size_after": "2631",
+      "gid_after": "991",
+      "mtime_before": "2026-05-23T18:00:01",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/crl.pem",
+      "sha1_after": "41b632cbd37659bb7a28976c789daf79e4f57952",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "982b8cf106c56a49bb306d845df181d5",
+      "sha256_after": "54954a823be61aa8188002c8d987a835cea48d05a7b89f86bc5b29da4b1bff25",
+      "inode_after": 133340
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779602934.3914455",
+    "full_log": "File '/etc/openvpn/crl.pem' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779559201', now it is '1779602401'\n",
+    "timestamp": "2026-05-24T06:08:54.513+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T01:00:09",
+      "size_after": "1019904",
+      "gid_after": "0",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779584404_f09adf01-60ab-40f2-a675-0a9478d6e956",
+      "sha1_after": "e4b5610cd5141d99141e32a303d1080c20b1c5f9",
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "---------",
+      "event": "added",
+      "md5_after": "4d03c9f15dc04636afa40ba1d9e92e99",
+      "sha256_after": "135d2fb4f51a9d057931bbfc9f7c21a079cfeaaaaf1769266659c9af37778fee",
+      "inode_after": 35
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 5,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "File added to the system.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_added",
+        "syscheck_file"
+      ],
+      "id": "554",
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gpg13": [
+        "4.11"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_new_entry"
+    },
+    "id": "1779602934.3912932",
+    "full_log": "File '/boot/.synosnap_data/1779584404_f09adf01-60ab-40f2-a675-0a9478d6e956' added\nMode: scheduled\n",
+    "timestamp": "2026-05-24T06:08:54.304+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "1019904",
+      "perm_before": "---------",
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T01:00:04",
+      "inode_before": 34,
+      "size_after": "982",
+      "gid_after": "0",
+      "md5_before": "b54a1ec43c076f1598958c6c29ce7861",
+      "sha256_before": "e1ec92fda77fd60b1fb18de146fdb80cb0d599a1df3e89905302af23c93970d1",
+      "mtime_before": "2026-05-23T01:00:07",
+      "mode": "scheduled",
+      "path": "/boot/.synosnap_data/1779498004_a38f329e-3ffb-4739-9a30-77c4711ddd4a",
+      "sha1_after": "a2a4acbdea1759ae173d06c362022d8ecdb848a5",
+      "changed_attributes": [
+        "size",
+        "permission",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "root",
+      "uid_after": "0",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "32e09d63dad7b55b25f9b409ce343742",
+      "sha1_before": "44643a46e5bab9814a50458729e7e5e993d618f3",
+      "sha256_after": "f822289b42845f3ba4e78daa434c6f0f013a856055c8d6d9fb65084bfee9717d",
+      "inode_after": 36
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779602934.3911550",
+    "full_log": "File '/boot/.synosnap_data/1779498004_a38f329e-3ffb-4739-9a30-77c4711ddd4a' modified\nMode: scheduled\nChanged attributes: size,permission,inode,mtime,md5,sha1,sha256\nSize changed from '1019904' to '982'\nPermissions changed from '---------' to 'rw-r--r--'\nOld modification time was: '1779498007', now it is '1779584404'\nOld inode was: '34', now it is '36'\nOld md5sum was: 'b54a1ec43c076f1598958c6c29ce7861'\nNew md5sum is : '32e09d63dad7b55b25f9b409ce343742'\nOld sha1sum was: '44643a46e5bab9814a50458729e7e5e993d618f3'\nNew sha1sum is : 'a2a4acbdea1759ae173d06c362022d8ecdb848a5'\nOld sha256sum was: 'e1ec92fda77fd60b1fb18de146fdb80cb0d599a1df3e89905302af23c93970d1'\nNew sha256sum is : 'f822289b42845f3ba4e78daa434c6f0f013a856055c8d6d9fb65084bfee9717d'\n",
+    "timestamp": "2026-05-24T06:08:54.297+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 04:14:42"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcip": "146.190.249.122",
+      "srcport": "52576"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779596083.2198901",
+    "GeoLocation": {
+      "country_name": "United States",
+      "location": {
+        "lon": -97.822,
+        "lat": 37.751
+      }
+    },
+    "full_log": "May 24 04:14:42 vpn openvpn[1104]: Sun May 24 04:14:42 2026 TLS Error: cannot locate HMAC in incoming packet from [AF_INET]146.190.249.122:52576",
+    "timestamp": "2026-05-24T04:14:43.897+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.5.2",
+        "10.5.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC7.2",
+        "CC7.3",
+        "PI1.4",
+        "PI1.5",
+        "CC7.1",
+        "CC8.1"
+      ],
+      "description": "Log file rotated.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "591",
+      "nist_800_53": [
+        "AU.9"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "II_5.1.f",
+        "IV_35.7.d"
+      ]
+    },
+    "location": "logcollector",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779592642.1733981",
+    "full_log": "ossec: File rotated (inode changed): '/var/log/httpd/error_log'.",
+    "timestamp": "2026-05-24T03:17:22.931+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.5.2",
+        "10.5.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC7.2",
+        "CC7.3",
+        "PI1.4",
+        "PI1.5",
+        "CC7.1",
+        "CC8.1"
+      ],
+      "description": "Log file rotated.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "591",
+      "nist_800_53": [
+        "AU.9"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "II_5.1.f",
+        "IV_35.7.d"
+      ]
+    },
+    "location": "logcollector",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779592642.1734346",
+    "full_log": "ossec: File rotated (inode changed): '/var/log/httpd/access_log'.",
+    "timestamp": "2026-05-24T03:17:22.931+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 24 01:39:06"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcip": "159.65.227.141",
+      "srcport": "50083"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779586746.935238",
+    "GeoLocation": {
+      "city_name": "North Bergen",
+      "country_name": "United States",
+      "region_name": "New Jersey",
+      "location": {
+        "lon": -74.0247,
+        "lat": 40.793
+      }
+    },
+    "full_log": "May 24 01:39:06 vpn openvpn[1104]: Sun May 24 01:39:06 2026 TLS Error: cannot locate HMAC in incoming packet from [AF_INET]159.65.227.141:50083",
+    "timestamp": "2026-05-24T01:39:06.850+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 23 22:48:59"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcip": "159.65.227.141",
+      "srcport": "58418"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779576539.15315387",
+    "GeoLocation": {
+      "city_name": "North Bergen",
+      "country_name": "United States",
+      "region_name": "New Jersey",
+      "location": {
+        "lon": -74.0247,
+        "lat": 40.793
+      }
+    },
+    "full_log": "May 23 22:48:59 vpn openvpn[1104]: Sat May 23 22:48:59 2026 TLS Error: cannot locate HMAC in incoming packet from [AF_INET]159.65.227.141:58418",
+    "timestamp": "2026-05-23T22:48:59.696+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-23T18:00:01",
+      "size_after": "2631",
+      "gid_after": "991",
+      "mtime_before": "2026-05-23T06:00:02",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/crl.pem",
+      "sha1_after": "41b632cbd37659bb7a28976c789daf79e4f57952",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-r--r--",
+      "event": "modified",
+      "md5_after": "982b8cf106c56a49bb306d845df181d5",
+      "sha256_after": "54954a823be61aa8188002c8d987a835cea48d05a7b89f86bc5b29da4b1bff25",
+      "inode_after": 133340
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779559727.12949314",
+    "full_log": "File '/etc/openvpn/crl.pem' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779516002', now it is '1779559201'\n",
+    "timestamp": "2026-05-23T18:08:47.662+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "openvpn",
+      "mtime_after": "2026-05-23T18:04:20",
+      "size_after": "2547",
+      "gid_after": "991",
+      "mtime_before": "2026-05-23T06:04:19",
+      "mode": "scheduled",
+      "path": "/etc/openvpn/ipp.txt",
+      "sha1_after": "2c6ef709e2ed9e8b15b2db4135b5a9dfee482a92",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "openvpn",
+      "uid_after": "994",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "5626020c8853a54349879ff0f3339083",
+      "sha256_after": "99aa9ab1a6697aab5eb83f22ef8633f35e10f4703c17e8f8a7366a043fb82f11",
+      "inode_after": 143682
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779559727.12948521",
+    "full_log": "File '/etc/openvpn/ipp.txt' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779516259', now it is '1779559460'\n",
+    "timestamp": "2026-05-23T18:08:47.661+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.5.2",
+        "10.5.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC7.2",
+        "CC7.3",
+        "PI1.4",
+        "PI1.5",
+        "CC7.1",
+        "CC8.1"
+      ],
+      "description": "Log file rotated.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "591",
+      "nist_800_53": [
+        "AU.9"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "II_5.1.f",
+        "IV_35.7.d"
+      ]
+    },
+    "location": "logcollector",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779543929.9796709",
+    "full_log": "ossec: File rotated (inode changed): '/var/log/audit/audit.log'.",
+    "timestamp": "2026-05-23T13:45:29.682+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 23 13:15:10"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779542111.9058761",
+    "full_log": "May 23 13:15:10 vpn openvpn[1104]: Sat May 23 13:15:10 2026 arzw_br_koellner_colin_home_office/87.174.4.241:64670 TLS Error: TLS handshake failed",
+    "timestamp": "2026-05-23T13:15:11.863+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 23 13:15:10"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779542111.9058371",
+    "full_log": "May 23 13:15:10 vpn openvpn[1104]: Sat May 23 13:15:10 2026 arzw_br_koellner_colin_home_office/87.174.4.241:64670 TLS Error: TLS key negotiation failed to occur within 60 seconds (check your network connectivity)",
+    "timestamp": "2026-05-23T13:15:11.822+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 23 13:13:55"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779542035.9058048",
+    "full_log": "May 23 13:13:55 vpn openvpn[1104]: Sat May 23 13:13:55 2026 arzw_br_koellner_colin_home_office/87.174.4.241:64670 TLS Error: TLS handshake failed",
+    "timestamp": "2026-05-23T13:13:55.803+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 23 13:13:55"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 4,
+      "description": "OpenVPN: Connection Certificate Failed",
+      "groups": [
+        "openvpn",
+        "openvpn-error"
+      ],
+      "mitre": {
+        "technique": [
+          "External Remote Services"
+        ],
+        "id": [
+          "T1133"
+        ],
+        "tactic": [
+          "Persistence",
+          "Initial Access"
+        ]
+      },
+      "id": "81803",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "name": "openvpn"
+    },
+    "id": "1779542035.9057658",
+    "full_log": "May 23 13:13:55 vpn openvpn[1104]: Sat May 23 13:13:55 2026 arzw_br_koellner_colin_home_office/87.174.4.241:64670 TLS Error: TLS key negotiation failed to occur within 60 seconds (check your network connectivity)",
+    "timestamp": "2026-05-23T13:13:55.802+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "vpn",
+      "program_name": "openvpn",
+      "timestamp": "May 23 11:47:37"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.38",
+      "name": "vpn",
+      "id": "111"
+    },
+    "data": {
+      "srcuser": "arzw_geekom_mini_pc_homeoffice_1",
+      "srcip": "84.166.251.221",
+      "srcport": "63751"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "OpenVPN: User logged in",
+      "groups": [
+        "openvpn",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "81801",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "openvpn",
+      "name": "openvpn"
+    },
+    "id": "1779536859.8184928",
+    "GeoLocation": {
+      "city_name": "Schmalkalden",
+      "country_name": "Germany",
+      "region_name": "Thuringia",
+      "location": {
+        "lon": 10.4439,
+        "lat": 50.7214
+      }
+    },
+    "full_log": "May 23 11:47:37 vpn openvpn[1104]: Sat May 23 11:47:37 2026 84.166.251.221:63751 [arzw_geekom_mini_pc_homeoffice_1] Peer Connection Initiated with [AF_INET]84.166.251.221:63751",
+    "timestamp": "2026-05-23T11:47:39.276+0000"
+  }
+]

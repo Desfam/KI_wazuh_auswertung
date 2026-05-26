@@ -1382,6 +1382,34 @@ def ensure_runner_scripts() -> None:
     Uses INSERT OR IGNORE so it is idempotent on subsequent restarts.
     """
     now = utc_now_iso()
+
+    # ── per-all-hosts script ───────────────────────────────────────────────────
+    _per_host_body = '''\
+"""
+Fetch Events per Host — Local Runner Script
+============================================
+Discovers every Wazuh agent active in the chosen time window and
+fetches up to limit_per_host events for each one, saving a separate
+JSON file per agent named:
+  <hostname>_events_<timestamp>.json
+
+Parameters:
+  hours          — lookback window (default 72)
+  limit_per_host — max events per host (default 1000, max 100 000)
+
+Execution is handled by the backend runner endpoint:
+  POST /runner/fetch-events-per-host
+"""
+pass
+'''
+
+    _per_host_params = json.dumps([
+        {"name": "hours",          "type": "integer", "default": 72,   "min": 1, "max": 8760,
+         "description": "Lookback window in hours"},
+        {"name": "limit_per_host", "type": "integer", "default": 1000, "min": 1, "max": 100000,
+         "description": "Maximum events to fetch per host"},
+    ])
+
     with get_connection() as conn:
         conn.execute(
             """
@@ -1405,6 +1433,32 @@ def ensure_runner_scripts() -> None:
                 "local_runner",
                 _RUNNER_SCRIPT_BODY,
                 _RUNNER_SCRIPT_PARAMS,
+                now, now,
+            ),
+        )
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO script_library (
+                script_id, name, description, platform, category, executor,
+                script_body, parameters_json,
+                requires_admin, risk_level, dangerous, enabled, readonly,
+                created_at, updated_at
+            ) VALUES (?,?,?,?,?,?,?,?,0,'low',0,1,1,?,?)
+            """,
+            (
+                "fetch_events_per_host",
+                "Fetch Events per Host",
+                (
+                    "Automatically discovers every active Wazuh agent and fetches "
+                    "events for each one separately. Each host gets its own JSON file "
+                    "named after the PC (e.g. KS-01_events_20260526.json). "
+                    "Configure lookback window and per-host event limit."
+                ),
+                "both",
+                "data_collection",
+                "local_runner",
+                _per_host_body,
+                _per_host_params,
                 now, now,
             ),
         )

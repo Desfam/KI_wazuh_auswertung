@@ -618,3 +618,31 @@ export function runFetchWazuhEvents(params: {
     body: JSON.stringify(params),
   });
 }
+
+export interface HostFetchResult {
+  host: string;
+  events_fetched: number;
+  file_path: string;
+  file_size_kb: number;
+  status: string;
+  error: string | null;
+}
+
+export interface FetchEventsPerHostResult {
+  status: string;
+  hosts_processed: number;
+  total_events: number;
+  results: HostFetchResult[];
+  output_folder: string;
+  timestamp: string;
+}
+
+export function runFetchEventsPerHost(params: {
+  hours: number;
+  limit_per_host: number;
+}): Promise<FetchEventsPerHostResult> {
+  return request<FetchEventsPerHostResult>('/runner/fetch-events-per-host', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
+}

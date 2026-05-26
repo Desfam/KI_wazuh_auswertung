@@ -1,0 +1,2908 @@
+[
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T11:10:45Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T11:10:45Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T11:10:45.8032515Z",
+          "eventRecordID": "142036",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 26,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793845.23399640",
+    "timestamp": "2026-05-26T11:10:45.986+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T11:02:42Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T11:02:42Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T11:02:42.2148673Z",
+          "eventRecordID": "142034",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 6,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793361.23065340",
+    "timestamp": "2026-05-26T11:02:41.673+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "binary": "2D20436F64653A2020434F525356434330303030303737342D2043616C6C3A2020434F525356434330303030303735362D205049443A202030303031323336342D205449443A202030303030323136382D20434D443A2020433A5C57494E444F57535C73797374656D33325C76737376632E6578652020202D20557365723A204E616D653A204E542D4155544F524954C4545C53595354454D2C205349443A532D312D352D313820"
+        },
+        "system": {
+          "eventID": "8224",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der VSS-Dienst wird aufgrund eines Leerlaufzeitlimits heruntergefahren. \"",
+          "version": "0",
+          "systemTime": "2026-05-26T11:01:00.2468063Z",
+          "eventRecordID": "142032",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "VSS"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 5,
+      "description": "The VSS service is shutting down due to idle timeout.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60702"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793259.22951686",
+    "timestamp": "2026-05-26T11:00:59.713+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:59:13Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:59:13Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:59:13.5632069Z",
+          "eventRecordID": "142031",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 155,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793153.22835498",
+    "timestamp": "2026-05-26T10:59:13.035+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Manuell starten",
+          "param4": "TrustedInstaller",
+          "param1": "Windows Modules Installer",
+          "param2": "Automatisch starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Windows Modules Installer\" wurde von Automatisch starten in Manuell starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:49.8483284Z",
+          "eventRecordID": "118938",
+          "threadID": "6900",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 25,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793069.22789550",
+    "timestamp": "2026-05-26T10:57:49.681+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Automatisch starten",
+          "param4": "TrustedInstaller",
+          "param1": "Windows Modules Installer",
+          "param2": "Manuell starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Windows Modules Installer\" wurde von Manuell starten in Automatisch starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:49.0827089Z",
+          "eventRecordID": "118937",
+          "threadID": "9516",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 24,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793069.22787691",
+    "timestamp": "2026-05-26T10:57:49.640+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Manuell starten",
+          "param4": "TrustedInstaller",
+          "param1": "Windows Modules Installer",
+          "param2": "Automatisch starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Windows Modules Installer\" wurde von Automatisch starten in Manuell starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:48.8390733Z",
+          "eventRecordID": "118936",
+          "threadID": "6900",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 23,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793068.22785832",
+    "timestamp": "2026-05-26T10:57:48.529+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Automatisch starten",
+          "param4": "TrustedInstaller",
+          "param1": "Windows Modules Installer",
+          "param2": "Manuell starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Windows Modules Installer\" wurde von Manuell starten in Automatisch starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:47.0727527Z",
+          "eventRecordID": "118935",
+          "threadID": "1176",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 22,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793067.22783973",
+    "timestamp": "2026-05-26T10:57:47.520+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9660,D,50, DS_Token_DB:, 1, C:\\\\WINDOWS\\\\system32\\\\config\\\\systemprofile\\\\AppData\\\\Local\\\\DataSharing\\\\Storage\\\\DSTokenDB2.dat, 0,  [1] 0.000002 +J(0) [2] 0.000539 -0.000240 (1) WT +J(0) +M(C:0K, Fs:17, WS:4K # 12K, PF:4K # 0K, P:4K) [3] 0.006059 -0.000495 (6) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:11, WS:40K # 0K, PF:36K # 0K, P:36K) [4] 0.001231 +J(0) [5] - [6] - [7] - [8] 0.000678 -0.000574 (2) CM -0.000486 (2) WT +J(CM:2, PgRf:2, Rd:4/2, Dy:0/0, Lg:54/1) +M(C:8K, Fs:4, WS:16K # 0K, PF:28K # 0K, P:28K) [9] 0.001044 -0.000906 (3) CM -0.000777 (3) WT +J(CM:3, PgRf:23, Rd:0/3, Dy:0/0, Lg:0/0) +M(C:8K, Fs:25, WS:100K # 92K, PF:204K # 204K, P:204K) [10] 0.000294 -0.000231 (1) CM -0.000207 (1) WT +J(CM:1, PgRf:40, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:1, WS:4K # 4K, PF:64K # 64K, P:64K) [11] 0.000010 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K) [12] 0.000027 +J(CM:0, PgRf:42, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:6, WS:24K # 24K, PF:0K # 0K, P:0K) [13] 0.0 +J(0) [14] 0.0 +J(0) [15] 0.000003 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0)., 1 0, lgposAttach = 00000029:0009:0268, dbv = 1568.110.240"
+        },
+        "system": {
+          "eventID": "326",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9660,D,50) DS_Token_DB: The database engine attached a database (1, C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\DataSharing\\Storage\\DSTokenDB2.dat). (Time=0 seconds) \r\n \r\nSaved Cache: 1 0 \r\nAdditional Data: lgposAttach = 00000029:0009:0268,\ndbv = 1568.110.240 \r\n \r\nInternal Timing Sequence: \n[1] 0.000002 +J(0)\n[2] 0.000539 -0.000240 (1) WT +J(0) +M(C:0K, Fs:17, WS:4K # 12K, PF:4K # 0K, P:4K)\n[3] 0.006059 -0.000495 (6) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:11, WS:40K # 0K, PF:36K # 0K, P:36K)\n[4] 0.001231 +J(0)\n[5] -\n[6] -\n[7] -\n[8] 0.000678 -0.000574 (2) CM -0.000486 (2) WT +J(CM:2, PgRf:2, Rd:4/2, Dy:0/0, Lg:54/1) +M(C:8K, Fs:4, WS:16K # 0K, PF:28K # 0K, P:28K)\n[9] 0.001044 -0.000906 (3) CM -0.000777 (3) WT +J(CM:3, PgRf:23, Rd:0/3, Dy:0/0, Lg:0/0) +M(C:8K, Fs:25, WS:100K # 92K, PF:204K # 204K, P:204K)\n[10] 0.000294 -0.000231 (1) CM -0.000207 (1) WT +J(CM:1, PgRf:40, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:1, WS:4K # 4K, PF:64K # 64K, P:64K)\n[11] 0.000010 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K)\n[12] 0.000027 +J(CM:0, PgRf:42, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:6, WS:24K # 24K, PF:0K # 0K, P:0K)\n[13] 0.0 +J(0)\n[14] 0.0 +J(0)\n[15] 0.000003 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:47.5268616Z",
+          "eventRecordID": "142029",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine attached a database.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60798"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793067.22778007",
+    "timestamp": "2026-05-26T10:57:47.153+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9660,U,98, DS_Token_DB:"
+        },
+        "system": {
+          "eventID": "302",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9660,U,98) DS_Token_DB: Das Datenbankmodul hat erfolgreich die Schritte zur Wiederherstellung abgeschlossen.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:47.4799352Z",
+          "eventRecordID": "142027",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "3",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine has completed recovery steps.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60809"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793067.22776687",
+    "timestamp": "2026-05-26T10:57:47.116+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9660,R,98, DS_Token_DB:, C:\\\\WINDOWS\\\\system32\\\\config\\\\systemprofile\\\\AppData\\\\Local\\\\DataSharing\\\\Storage\\\\DSS.log,  [1] 0.045718 -0.002556 (8) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:24336/17) +M(C:0K, Fs:98, WS:252K # 256K, PF:152K # 156K, P:152K)., AttachDB, 2"
+        },
+        "system": {
+          "eventID": "301",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9660,R,98) DS_Token_DB: The database engine has finished replaying logfile C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\DataSharing\\Storage\\DSS.log. \r\n \r\nProcessing Stats: \n[1] 0.045718 -0.002556 (8) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:24336/17) +M(C:0K, Fs:98, WS:252K # 256K, PF:152K # 156K, P:152K). \r\nLog record of type 'AttachDB ' was seen most frequently (2 times)\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:47.4636076Z",
+          "eventRecordID": "142026",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "3",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is replaying log file C:\\Winnt\\system32\\wins\\j50.log.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60808"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793067.22774277",
+    "timestamp": "2026-05-26T10:57:47.089+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9660,R,98, DS_Token_DB:"
+        },
+        "system": {
+          "eventID": "300",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9660,R,98) DS_Token_DB: Das Datenbankmodul initiiert Schritte zur Wiederherstellung.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:47.4060470Z",
+          "eventRecordID": "142025",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "3",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is initiating recovery steps.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60807"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793067.22773005",
+    "timestamp": "2026-05-26T10:57:47.075+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9660,P,98, DS_Token_DB:, 0, 10, 00, 19045, 0000"
+        },
+        "system": {
+          "eventID": "102",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9660,P,98) DS_Token_DB: Das Datenbankmodul (10.00.19045.0000) startet eine neue Instanz (0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:57:47.3749009Z",
+          "eventRecordID": "142024",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is starting a new instance.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60805"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793067.22771671",
+    "timestamp": "2026-05-26T10:57:47.035+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:53:44Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:53:44Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:53:44.0868833Z",
+          "eventRecordID": "142023",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 143,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792835.22716757",
+    "timestamp": "2026-05-26T10:53:55.284+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Manuell starten",
+          "param4": "BITS",
+          "param1": "Background Intelligent Transfer Service",
+          "param2": "Automatisch starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Background Intelligent Transfer Service\" wurde von Automatisch starten in Manuell starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:52:47.5666394Z",
+          "eventRecordID": "118915",
+          "threadID": "6900",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 21,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792781.22713249",
+    "timestamp": "2026-05-26T10:53:01.630+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "bucketId": "02adfee8ab9decbd3c75af03c733aef9d6f59292d4692fc2a0ad07087aae307e",
+          "deviceAttributes": "BaseBoardManufacturer:Gigabyte Technology Co., Ltd.;FirmwareManufacturer:American Megatrends Inc.;FirmwareVersion:F11;OEMModelNumber:H310M H 2.0;OEMModelBaseBoard:H310M H 2.0;OEMModelSystemFamily:Default string;OEMManufacturerName:Gigabyte Technology Co., Ltd.;OEMModelSKU:Default string;OSArchitecture:amd64;",
+          "updateType": "0",
+          "hResult": "0"
+        },
+        "system": {
+          "eventID": "1801",
+          "keywords": "0x8000000000000000",
+          "providerGuid": "{7d5387b0-cbe0-11da-a94d-0800200c9a66}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Die Zertifizierungsstelle/Schlüssel für den sicheren Start müssen aktualisiert werden. Diese Gerätesignaturinformationen sind hier enthalten.\r\nDeviceAttributes: BaseBoardManufacturer:Gigabyte Technology Co., Ltd.;FirmwareManufacturer:American Megatrends Inc.;FirmwareVersion:F11;OEMModelNumber:H310M H 2.0;OEMModelBaseBoard:H310M H 2.0;OEMModelSystemFamily:Default string;OEMManufacturerName:Gigabyte Technology Co., Ltd.;OEMModelSKU:Default string;OSArchitecture:amd64;\r\nBucketId: 02adfee8ab9decbd3c75af03c733aef9d6f59292d4692fc2a0ad07087aae307e\r\nBucketConfidenceLevel: \r\nUpdateType: 0\r\nHResult: Der Vorgang wurde erfolgreich beendet.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:52:11.3980810Z",
+          "eventRecordID": "118890",
+          "threadID": "13296",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "13152",
+          "severityValue": "ERROR",
+          "providerName": "Microsoft-Windows-TPM-WMI"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 19,
+      "mail": false,
+      "level": 5,
+      "description": "Windows System error event",
+      "groups": [
+        "windows",
+        "windows_system",
+        "system_error"
+      ],
+      "id": "61102",
+      "gpg13": [
+        "4.3"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792746.22687747",
+    "timestamp": "2026-05-26T10:52:26.843+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:51:56Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:51:56Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:51:56.5608946Z",
+          "eventRecordID": "142020",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 139,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792730.22686121",
+    "timestamp": "2026-05-26T10:52:10.975+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "binary": "67007500700064006100740065000000",
+          "param1": "Google Update-Dienst (gupdate)",
+          "param2": "%%1053"
+        },
+        "system": {
+          "eventID": "7000",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Dienst \"Google Update-Dienst (gupdate)\" wurde aufgrund folgenden Fehlers nicht gestartet: \r\nDer Dienst antwortete nicht rechtzeitig auf die Start- oder Steuerungsanforderung.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:49:20.5090311Z",
+          "eventRecordID": "118886",
+          "threadID": "5084",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "ERROR",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 13,
+      "mail": false,
+      "level": 5,
+      "description": "Windows System error event",
+      "groups": [
+        "windows",
+        "windows_system",
+        "system_error"
+      ],
+      "id": "61102",
+      "gpg13": [
+        "4.3"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792575.22547788",
+    "timestamp": "2026-05-26T10:49:35.933+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "binary": "67007500700064006100740065000000",
+          "param1": "30000",
+          "param2": "Google Update-Dienst (gupdate)"
+        },
+        "system": {
+          "eventID": "7009",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Das Zeitlimit (30000 ms) wurde beim Verbindungsversuch mit dem Dienst Google Update-Dienst (gupdate) erreicht.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:49:20.5090311Z",
+          "eventRecordID": "118885",
+          "threadID": "5084",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "ERROR",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 12,
+      "mail": false,
+      "level": 5,
+      "description": "Windows System error event",
+      "groups": [
+        "windows",
+        "windows_system",
+        "system_error"
+      ],
+      "id": "61102",
+      "gpg13": [
+        "4.3"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792575.22546082",
+    "timestamp": "2026-05-26T10:49:35.931+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:48:45Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:48:45Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:48:46.6664562Z",
+          "eventRecordID": "142014",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 126,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792541.22519143",
+    "timestamp": "2026-05-26T10:49:01.076+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:48:11Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:48:11Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:48:14.6206256Z",
+          "eventRecordID": "142011",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 123,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792509.22474031",
+    "timestamp": "2026-05-26T10:48:29.383+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Automatisch starten",
+          "param4": "BITS",
+          "param1": "Background Intelligent Transfer Service",
+          "param2": "Manuell starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Background Intelligent Transfer Service\" wurde von Manuell starten in Automatisch starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:54.7819302Z",
+          "eventRecordID": "118884",
+          "threadID": "8956",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "0",
+          "processID": "816",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 18,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792493.22472140",
+    "timestamp": "2026-05-26T10:48:13.197+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0x13bd8e",
+          "targetUserName": "RZ_04_001$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x13BD8E\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:31.0522884Z",
+          "eventRecordID": "1662256",
+          "threadID": "80",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12545",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 31,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792467.22468061",
+    "timestamp": "2026-05-26T10:47:47.405+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0x13bd8e",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{ebcac904-9592-de0c-8754-e683559a490f}",
+          "targetUserName": "RZ_04_001$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0x13BD8E\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{ebcac904-9592-de0c-8754-e683559a490f}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:30.9296440Z",
+          "eventRecordID": "1662255",
+          "threadID": "80",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 29,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792467.22460555",
+    "timestamp": "2026-05-26T10:47:47.364+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0x1227ee",
+          "targetUserName": "RZ_04_001$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x1227EE\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:29.7270129Z",
+          "eventRecordID": "1662238",
+          "threadID": "968",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12545",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 30,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792465.22456500",
+    "timestamp": "2026-05-26T10:47:45.777+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0x1227ee",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{9991c369-b277-76b5-a80d-5a758f50070d}",
+          "targetUserName": "RZ_04_001$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0x1227EE\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{9991c369-b277-76b5-a80d-5a758f50070d}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:29.7129496Z",
+          "eventRecordID": "1662237",
+          "threadID": "76",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 28,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792465.22448994",
+    "timestamp": "2026-05-26T10:47:45.736+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "extraInfo": " "
+        },
+        "system": {
+          "eventID": "1003",
+          "eventSourceName": "Windows Search Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{CA4E628D-8567-4896-AB6B-835B221F373F}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Windows Search wurde gestartet.\n\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:20.3840124Z",
+          "eventRecordID": "142001",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Search"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "description": "The Windows search service started.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60668"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22445773",
+    "timestamp": "2026-05-26T10:47:40.388+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "SearchIndexer, 7468,D,50, Windows:, 1, C:\\\\ProgramData\\\\Microsoft\\\\Search\\\\Data\\\\Applications\\\\Windows\\\\Windows.edb, 0,  [1] 0.000002 +J(0) +M(C:0K, Fs:1, WS:4K # 0K, PF:0K # 0K, P:0K) [2] 0.001372 -0.000283 (1) WT +J(0) +M(C:0K, Fs:26, WS:40K # 0K, PF:32K # 0K, P:32K) [3] 0.004222 -0.000852 (5) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:39, WS:120K # 0K, PF:136K # 0K, P:136K) [4] 0.125695 +J(0) +M(C:0K, Fs:90, WS:360K # 0K, PF:20K # 0K, P:20K) [5] - [6] - [7] - [8] 0.001418 -0.001215 (2) CM +J(CM:2, PgRf:2, Rd:14/2, Dy:0/0, Lg:54/1) +M(C:0K, Fs:52, WS:204K # 76K, PF:696K # 0K, P:696K) [9] 0.017707 -0.000364 (5) CM -0.017188 (1) WT +J(CM:5, PgRf:23, Rd:0/5, Dy:0/0, Lg:0/0) +M(C:0K, Fs:73, WS:292K # 292K, PF:256K # 184K, P:256K) [10] 0.000528 -0.000463 (1) CM +J(CM:1, PgRf:40, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:9, WS:36K # 36K, PF:96K # 96K, P:96K) [11] 0.000009 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K) [12] 0.000024 +J(CM:0, PgRf:42, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:3, WS:12K # 12K, PF:0K # 0K, P:0K) [13] 0.0 +J(0) [14] 0.0 +J(0) [15] 0.000003 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0)., 0 0, lgposAttach = 000001AE:0062:0268, dbv = 1568.110.240"
+        },
+        "system": {
+          "eventID": "326",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"SearchIndexer (7468,D,50) Windows: The database engine attached a database (1, C:\\ProgramData\\Microsoft\\Search\\Data\\Applications\\Windows\\Windows.edb). (Time=0 seconds) \r\n \r\nSaved Cache: 0 0 \r\nAdditional Data: lgposAttach = 000001AE:0062:0268,\ndbv = 1568.110.240 \r\n \r\nInternal Timing Sequence: \n[1] 0.000002 +J(0) +M(C:0K, Fs:1, WS:4K # 0K, PF:0K # 0K, P:0K)\n[2] 0.001372 -0.000283 (1) WT +J(0) +M(C:0K, Fs:26, WS:40K # 0K, PF:32K # 0K, P:32K)\n[3] 0.004222 -0.000852 (5) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:39, WS:120K # 0K, PF:136K # 0K, P:136K)\n[4] 0.125695 +J(0) +M(C:0K, Fs:90, WS:360K # 0K, PF:20K # 0K, P:20K)\n[5] -\n[6] -\n[7] -\n[8] 0.001418 -0.001215 (2) CM +J(CM:2, PgRf:2, Rd:14/2, Dy:0/0, Lg:54/1) +M(C:0K, Fs:52, WS:204K # 76K, PF:696K # 0K, P:696K)\n[9] 0.017707 -0.000364 (5) CM -0.017188 (1) WT +J(CM:5, PgRf:23, Rd:0/5, Dy:0/0, Lg:0/0) +M(C:0K, Fs:73, WS:292K # 292K, PF:256K # 184K, P:256K)\n[10] 0.000528 -0.000463 (1) CM +J(CM:1, PgRf:40, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:9, WS:36K # 36K, PF:96K # 96K, P:96K)\n[11] 0.000009 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K)\n[12] 0.000024 +J(CM:0, PgRf:42, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:3, WS:12K # 12K, PF:0K # 0K, P:0K)\n[13] 0.0 +J(0)\n[14] 0.0 +J(0)\n[15] 0.000003 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:20.2512307Z",
+          "eventRecordID": "142000",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine attached a database.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60798"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22439589",
+    "timestamp": "2026-05-26T10:47:40.373+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "SearchIndexer, 7468,P,98, Windows:, 0, 10, 00, 19045, 0000"
+        },
+        "system": {
+          "eventID": "102",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"SearchIndexer (7468,P,98) Windows: Das Datenbankmodul (10.00.19045.0000) startet eine neue Instanz (0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:20.0617295Z",
+          "eventRecordID": "141998",
+          "threadID": "0",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is starting a new instance.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60805"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22438247",
+    "timestamp": "2026-05-26T10:47:40.358+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0xb7781",
+          "targetUserName": "RZ_04_001$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xB7781\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:24.2940915Z",
+          "eventRecordID": "1662189",
+          "threadID": "968",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12545",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 29,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22435826",
+    "timestamp": "2026-05-26T10:47:40.157+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "::1",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0xb7781",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{6b5b00c7-621b-e3f1-8070-44522b2690bf}",
+          "targetUserName": "RZ_04_001$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "ipPort": "0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0xB7781\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{6b5b00c7-621b-e3f1-8070-44522b2690bf}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t::1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:24.2937349Z",
+          "eventRecordID": "1662188",
+          "threadID": "968",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 27,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22428234",
+    "timestamp": "2026-05-26T10:47:40.130+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0xb27c6",
+          "targetUserName": "RZ_04_001$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xB27C6\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:24.2919785Z",
+          "eventRecordID": "1662186",
+          "threadID": "968",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12545",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 28,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22425813",
+    "timestamp": "2026-05-26T10:47:40.090+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "::1",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0xb27c6",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{6b5b00c7-621b-e3f1-8070-44522b2690bf}",
+          "targetUserName": "RZ_04_001$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "ipPort": "0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0xB27C6\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{6b5b00c7-621b-e3f1-8070-44522b2690bf}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t::1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:23.6413022Z",
+          "eventRecordID": "1662184",
+          "threadID": "3764",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 26,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22418219",
+    "timestamp": "2026-05-26T10:47:40.057+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0xa2261",
+          "targetUserName": "RZUser",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "logonType": "7"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA2261\r\n\r\nAnmeldetyp:\t\t\t7\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:22.0967472Z",
+          "eventRecordID": "1662182",
+          "threadID": "968",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12545",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 12,
+      "mail": false,
+      "level": 3,
+      "description": "Non service account logged off.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67023"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792460.22415784",
+    "timestamp": "2026-05-26T10:47:40.008+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0xa2a6e",
+          "targetUserName": "RZUser",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "logonType": "7"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA2A6E\r\n\r\nAnmeldetyp:\t\t\t7\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:22.0235265Z",
+          "eventRecordID": "1662181",
+          "threadID": "80",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12545",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 11,
+      "mail": false,
+      "level": 3,
+      "description": "Non service account logged off.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67023"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22413351",
+    "timestamp": "2026-05-26T10:47:39.994+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0xa2261",
+          "subjectUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "subjectDomainName": "ARZW",
+          "privilegeList": "SeSecurityPrivilege     SeTakeOwnershipPrivilege     SeLoadDriverPrivilege     SeBackupPrivilege     SeRestorePrivilege     SeDebugPrivilege     SeSystemEnvironmentPrivilege     SeImpersonatePrivilege     SeDelegateSessionUserImpersonatePrivilege",
+          "subjectUserName": "RZUser"
+        },
+        "system": {
+          "eventID": "4672",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Einer neuen Anmeldung wurden besondere Rechte zugewiesen.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA2261\r\n\r\nBerechtigungen:\t\tSeSecurityPrivilege\r\n\t\t\tSeTakeOwnershipPrivilege\r\n\t\t\tSeLoadDriverPrivilege\r\n\t\t\tSeBackupPrivilege\r\n\t\t\tSeRestorePrivilege\r\n\t\t\tSeDebugPrivilege\r\n\t\t\tSeSystemEnvironmentPrivilege\r\n\t\t\tSeImpersonatePrivilege\r\n\t\t\tSeDelegateSessionUserImpersonatePrivilege\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:22.0234215Z",
+          "eventRecordID": "1662180",
+          "threadID": "8172",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12548",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 8,
+      "mail": false,
+      "level": 3,
+      "description": "Special privileges assigned to new logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "mitre": {
+        "technique": [
+          "Domain Policy Modification"
+        ],
+        "id": [
+          "T1484"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Privilege Escalation"
+        ]
+      },
+      "id": "67028"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22410295",
+    "timestamp": "2026-05-26T10:47:39.974+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0xa2261",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "RZ_04_001",
+          "targetLogonId": "0xa2a6e",
+          "logonProcessName": "Negotiat",
+          "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+          "targetUserName": "RZUser",
+          "keyLength": "0",
+          "elevatedToken": "%%1843",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x338",
+          "processName": "C:\\\\Windows\\\\System32\\\\lsass.exe",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "virtualAccount": "%%1843",
+          "logonType": "7",
+          "subjectUserName": "RZ_04_001$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t7\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tNein\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA2A6E\r\n\tVerknüpfte Anmelde-ID:\t\t0xA2261\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x338\r\n\tProzessname:\t\tC:\\Windows\\System32\\lsass.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tRZ_04_001\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tNegotiat\r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:22.0234177Z",
+          "eventRecordID": "1662179",
+          "threadID": "8172",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 17,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22402373",
+    "timestamp": "2026-05-26T10:47:39.956+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0xa2a6e",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "RZ_04_001",
+          "targetLogonId": "0xa2261",
+          "logonProcessName": "Negotiat",
+          "logonGuid": "{7ed60650-b3f3-a15d-66ab-4478f432777a}",
+          "targetUserName": "RZUser",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x338",
+          "processName": "C:\\\\Windows\\\\System32\\\\lsass.exe",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "virtualAccount": "%%1843",
+          "logonType": "7",
+          "subjectUserName": "RZ_04_001$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t7\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA2261\r\n\tVerknüpfte Anmelde-ID:\t\t0xA2A6E\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{7ed60650-b3f3-a15d-66ab-4478f432777a}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x338\r\n\tProzessname:\t\tC:\\Windows\\System32\\lsass.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tRZ_04_001\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tNegotiat\r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:22.0234055Z",
+          "eventRecordID": "1662178",
+          "threadID": "8172",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 16,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22394455",
+    "timestamp": "2026-05-26T10:47:39.935+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0xa20a3",
+          "subjectUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "subjectDomainName": "ARZW",
+          "privilegeList": "SeSecurityPrivilege     SeTakeOwnershipPrivilege     SeLoadDriverPrivilege     SeBackupPrivilege     SeRestorePrivilege     SeDebugPrivilege     SeSystemEnvironmentPrivilege     SeImpersonatePrivilege     SeDelegateSessionUserImpersonatePrivilege",
+          "subjectUserName": "RZUser"
+        },
+        "system": {
+          "eventID": "4672",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Einer neuen Anmeldung wurden besondere Rechte zugewiesen.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA20A3\r\n\r\nBerechtigungen:\t\tSeSecurityPrivilege\r\n\t\t\tSeTakeOwnershipPrivilege\r\n\t\t\tSeLoadDriverPrivilege\r\n\t\t\tSeBackupPrivilege\r\n\t\t\tSeRestorePrivilege\r\n\t\t\tSeDebugPrivilege\r\n\t\t\tSeSystemEnvironmentPrivilege\r\n\t\t\tSeImpersonatePrivilege\r\n\t\t\tSeDelegateSessionUserImpersonatePrivilege\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:47:21.9343882Z",
+          "eventRecordID": "1662176",
+          "threadID": "76",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12548",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 7,
+      "mail": false,
+      "level": 3,
+      "description": "Special privileges assigned to new logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "mitre": {
+        "technique": [
+          "Domain Policy Modification"
+        ],
+        "id": [
+          "T1484"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Privilege Escalation"
+        ]
+      },
+      "id": "67028"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22391403",
+    "timestamp": "2026-05-26T10:47:39.917+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0xa20a3",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "127.0.0.1",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "RZ_04_001",
+          "targetLogonId": "0xa213b",
+          "logonProcessName": "User32",
+          "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+          "targetUserName": "RZUser",
+          "keyLength": "0",
+          "elevatedToken": "%%1843",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x854",
+          "processName": "C:\\\\Windows\\\\System32\\\\svchost.exe",
+          "ipPort": "0",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "virtualAccount": "%%1843",
+          "logonType": "11",
+          "subjectUserName": "RZ_04_001$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t11\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tNein\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA213B\r\n\tVerknüpfte Anmelde-ID:\t\t0xA20A3\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x854\r\n\tProzessname:\t\tC:\\Windows\\System32\\svchost.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tRZ_04_001\r\n\tQuellnetzwerkadresse:\t127.0.0.1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tUser32 \r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:21.9343839Z",
+          "eventRecordID": "1662175",
+          "threadID": "76",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 15,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22383367",
+    "timestamp": "2026-05-26T10:47:39.902+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0xa213b",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "127.0.0.1",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "RZ_04_001",
+          "targetLogonId": "0xa20a3",
+          "logonProcessName": "User32",
+          "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+          "targetUserName": "RZUser",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x854",
+          "processName": "C:\\\\Windows\\\\System32\\\\svchost.exe",
+          "ipPort": "0",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2125",
+          "virtualAccount": "%%1843",
+          "logonType": "11",
+          "subjectUserName": "RZ_04_001$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tRZ_04_001$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t11\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2125\r\n\tKontoname:\t\tRZUser\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xA20A3\r\n\tVerknüpfte Anmelde-ID:\t\t0xA213B\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x854\r\n\tProzessname:\t\tC:\\Windows\\System32\\svchost.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tRZ_04_001\r\n\tQuellnetzwerkadresse:\t127.0.0.1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tUser32 \r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:47:21.9343717Z",
+          "eventRecordID": "1662174",
+          "threadID": "76",
+          "computer": "RZ_04_001.arzw.local",
+          "task": "12544",
+          "processID": "824",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 14,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792459.22375335",
+    "timestamp": "2026-05-26T10:47:39.885+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.234",
+      "name": "RZ_04_001",
+      "id": "007"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "extra_data": "RZ_04_001->any"
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6.1",
+        "10.2.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.8"
+      ],
+      "description": "Wazuh agent started.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "503",
+      "nist_800_53": [
+        "AU.6",
+        "AU.14",
+        "AU.5"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "wazuh-agent",
+    "decoder": {
+      "parent": "ossec",
+      "name": "ossec"
+    },
+    "id": "1779792457.22375005",
+    "full_log": "ossec: Agent started: 'RZ_04_001->any'.",
+    "timestamp": "2026-05-26T10:47:37.352+0000"
+  }
+]

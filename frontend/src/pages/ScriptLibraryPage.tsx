@@ -19,8 +19,8 @@ import {
   X,
   XCircle,
 } from 'lucide-react';
-import { createScript, deleteScript, getScripts, logAuditAction, runFetchWazuhEvents, updateScript } from '../services/api';
-import type { FetchWazuhEventsResult } from '../services/api';
+import { createScript, deleteScript, getScripts, logAuditAction, runFetchWazuhEvents, runFetchEventsPerHost, updateScript } from '../services/api';
+import type { FetchWazuhEventsResult, FetchEventsPerHostResult, HostFetchResult } from '../services/api';
 import type { ScriptEntry } from '../types';
 
 // ── helpers ──────────────────────────────────────────────────────────────────
@@ -253,6 +253,13 @@ export function ScriptLibraryPage() {
   const [runBusy,   setRunBusy]   = useState(false);
   const [runResult, setRunResult] = useState<FetchWazuhEventsResult | null>(null);
   const [runError,  setRunError]  = useState<string | null>(null);
+
+  // runner panel (fetch_events_per_host)
+  const [phHours,  setPhHours]  = useState(72);
+  const [phLimit,  setPhLimit]  = useState(1000);
+  const [phBusy,   setPhBusy]   = useState(false);
+  const [phResult, setPhResult] = useState<FetchEventsPerHostResult | null>(null);
+  const [phError,  setPhError]  = useState<string | null>(null);
 
   // ── fetch ──────────────────────────────────────────────────────────────────
   const fetchScripts = useCallback(async () => {
@@ -789,7 +796,103 @@ export function ScriptLibraryPage() {
 
               {/* Run panel — live for local_runner scripts, disabled otherwise */}
               {selected.executor === 'local_runner' ? (
-                <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.05] p-3.5 space-y-3">
+                selected.script_id === 'fetch_events_per_host' ? (
+                  /* ── Per-host panel ─────────────────────────────────────── */
+                  <div className="rounded-xl border border-purple-500/20 bg-purple-500/[0.05] p-3.5 space-y-3">
+                    <div className="flex items-center gap-2 mb-0.5">
+                      <Play size={12} className="text-purple-400" />
+                      <p className="text-[11px] font-bold uppercase tracking-widest text-purple-300/70">Fetch per Host</p>
+                    </div>
+                    <p className="text-[10.5px] text-white/35 leading-relaxed">
+                      Discovers all active agents automatically and saves one JSON file per host.
+                    </p>
+
+                    <div className="grid grid-cols-2 gap-2">
+                      <div>
+                        <label className="block text-[10px] text-white/40 mb-1">Hours lookback</label>
+                        <input
+                          type="number" min={1} max={8760}
+                          value={phHours}
+                          onChange={e => setPhHours(Number(e.target.value))}
+                          className="w-full rounded border border-white/[0.08] bg-black/40 px-2.5 py-1.5 text-[12px] text-white/80 outline-none focus:border-purple-500/40"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-[10px] text-white/40 mb-1">Events per host (max 100,000)</label>
+                        <input
+                          type="number" min={1} max={100000}
+                          value={phLimit}
+                          onChange={e => setPhLimit(Number(e.target.value))}
+                          className="w-full rounded border border-white/[0.08] bg-black/40 px-2.5 py-1.5 text-[12px] text-white/80 outline-none focus:border-purple-500/40"
+                        />
+                      </div>
+                    </div>
+
+                    <button
+                      type="button"
+                      disabled={phBusy}
+                      onClick={async () => {
+                        setPhBusy(true);
+                        setPhResult(null);
+                        setPhError(null);
+                        try {
+                          const res = await runFetchEventsPerHost({ hours: phHours, limit_per_host: phLimit });
+                          setPhResult(res);
+                        } catch (e) {
+                          setPhError(e instanceof Error ? e.message : 'Execution failed');
+                        } finally {
+                          setPhBusy(false);
+                        }
+                      }}
+                      className="w-full flex items-center justify-center gap-2 rounded-lg border border-purple-500/30 bg-purple-500/15 py-2 text-[12px] font-semibold text-purple-200 hover:bg-purple-500/25 transition disabled:opacity-50 disabled:cursor-wait"
+                    >
+                      {phBusy
+                        ? <><RefreshCw size={13} className="animate-spin" /> Fetching from all hosts…</>
+                        : <><Play size={13} /> Fetch Events for every Host</>}
+                    </button>
+
+                    {phError && (
+                      <div className="flex items-start gap-2 rounded-lg border border-red-500/25 bg-red-500/[0.07] px-3 py-2">
+                        <XCircle size={13} className="text-red-400 flex-shrink-0 mt-0.5" />
+                        <p className="text-[11px] text-red-300">{phError}</p>
+                      </div>
+                    )}
+
+                    {phResult && (
+                      <div className="rounded-lg border border-emerald-500/20 bg-emerald-500/[0.05] px-3 py-2.5 space-y-2">
+                        <div className="flex items-center gap-1.5 mb-1">
+                          <CheckCircle size={12} className="text-emerald-400" />
+                          <p className="text-[11px] font-bold text-emerald-300">
+                            Completed — {phResult.hosts_processed} hosts · {phResult.total_events.toLocaleString()} total events
+                          </p>
+                        </div>
+                        <div className="max-h-52 overflow-y-auto space-y-1 pr-1 scrollbar-thin">
+                          {phResult.results.map((r: HostFetchResult) => (
+                            <div key={r.host} className={`flex items-center justify-between gap-2 rounded px-2 py-1.5 text-[10.5px] border ${r.status === 'ok' ? 'border-white/[0.06] bg-white/[0.02]' : 'border-red-500/20 bg-red-500/[0.05]'}`}>
+                              <span className="font-mono text-white/70 truncate flex-1">{r.host}</span>
+                              {r.status === 'ok' ? (
+                                <>
+                                  <span className="text-white/35 whitespace-nowrap">{r.events_fetched.toLocaleString()} events · {r.file_size_kb.toFixed(0)} KB</span>
+                                  <a
+                                    href={`http://127.0.0.1:8000/runner/download-events?filename=${encodeURIComponent(r.file_path.split(/[\\/]/).pop() ?? '')}`}
+                                    download
+                                    className="flex items-center gap-1 rounded border border-emerald-500/25 bg-emerald-500/10 px-1.5 py-0.5 text-[10px] text-emerald-200 hover:bg-emerald-500/20 transition whitespace-nowrap"
+                                  >
+                                    <Download size={10} /> Export
+                                  </a>
+                                </>
+                              ) : (
+                                <span className="text-red-300/70 text-[10px] truncate">{r.error}</span>
+                              )}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* ── Single-file panel (fetch_wazuh_events) ─────────────── */
+                  <div className="rounded-xl border border-cyan-500/20 bg-cyan-500/[0.05] p-3.5 space-y-3">
                   <div className="flex items-center gap-2 mb-0.5">
                     <Play size={12} className="text-cyan-400" />
                     <p className="text-[11px] font-bold uppercase tracking-widest text-cyan-300/70">Run Parameters</p>
@@ -894,6 +997,7 @@ export function ScriptLibraryPage() {
                     </div>
                   )}
                 </div>
+                )  /* end inner ternary: fetch_events_per_host vs fetch_wazuh_events */
               ) : (
                 <div className="pt-1">
                   <button

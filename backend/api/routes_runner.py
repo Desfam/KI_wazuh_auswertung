@@ -12,6 +12,7 @@ Current runners:
 from __future__ import annotations
 
 import json
+import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Any
@@ -231,4 +232,166 @@ def download_events_file(
         media_type="application/json",
         filename=safe_name,
         headers={"Content-Disposition": f'attachment; filename="{safe_name}"'},
+    )
+
+
+# ── per-host helpers ──────────────────────────────────────────────────────────
+
+def _list_agents(
+    conn: dict[str, Any],
+    lookback_hours: int,
+) -> list[str]:
+    """Return all unique agent.name values seen in the last `lookback_hours`."""
+    now   = datetime.now(timezone.utc)
+    start = now - timedelta(hours=lookback_hours)
+
+    base_url      = build_base_url(conn)
+    auth          = build_auth(conn)
+    verify        = build_verify(conn)
+    index_pattern = conn.get("indexer_index_pattern", "wazuh-alerts-*")
+
+    payload = {
+        "size": 0,
+        "query": {"bool": {"filter": [
+            {"range": {"timestamp": {
+                "gte": start.isoformat(),
+                "lte": now.isoformat(),
+                "format": "strict_date_optional_time",
+            }}}
+        ]}},
+        "aggs": {
+            "agents": {
+                "terms": {"field": "agent.name", "size": 2000}
+            }
+        },
+    }
+
+    with httpx.Client(verify=verify, timeout=60.0, auth=auth) as client:
+        resp = client.post(f"{base_url}/{index_pattern}/_search", json=payload)
+        resp.raise_for_status()
+
+    buckets = (
+        resp.json()
+        .get("aggregations", {})
+        .get("agents", {})
+        .get("buckets", [])
+    )
+    return [b["key"] for b in buckets if b.get("key")]
+
+
+def _safe_filename(name: str) -> str:
+    """Replace characters not safe in filenames with underscores."""
+    return re.sub(r"[^A-Za-z0-9._-]", "_", name)
+
+
+# ── per-host request / response models ───────────────────────────────────────
+
+class FetchEventsPerHostRequest(BaseModel):
+    hours:          int = Field(default=72,   ge=1,    le=8760,    description="Lookback window in hours")
+    limit_per_host: int = Field(default=1000, ge=1,    le=100_000, description="Max events per host")
+
+
+class HostFetchResult(BaseModel):
+    host:           str
+    events_fetched: int
+    file_path:      str
+    file_size_kb:   float
+    status:         str        # "ok" | "error"
+    error:          str | None = None
+
+
+class FetchEventsPerHostResponse(BaseModel):
+    status:          str
+    hosts_processed: int
+    total_events:    int
+    results:         list[HostFetchResult]
+    output_folder:   str
+    timestamp:       str
+
+
+# ── per-host endpoint ─────────────────────────────────────────────────────────
+
+@router.post("/fetch-events-per-host", response_model=FetchEventsPerHostResponse)
+def run_fetch_events_per_host(req: FetchEventsPerHostRequest) -> FetchEventsPerHostResponse:
+    """
+    Discover every agent seen in the last `hours` and fetch up to `limit_per_host`
+    events for each one. Each agent gets its own JSON file named after the host:
+      <project_root>/Example JSON/<hostname>_events_<timestamp>.json
+    """
+    conn = get_active_connection()
+    if not conn:
+        raise HTTPException(
+            status_code=503,
+            detail="No active Wazuh connection configured. Add one in Settings → Connections.",
+        )
+
+    # Discover agents
+    try:
+        agents = _list_agents(conn, lookback_hours=req.hours)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail=f"Could not list agents: {exc}") from exc
+
+    if not agents:
+        raise HTTPException(status_code=404, detail="No agents found for the selected time window.")
+
+    _OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
+    ts      = datetime.now(timezone.utc).strftime("%Y%m%d_%H%M%S")
+    results: list[HostFetchResult] = []
+    total   = 0
+
+    for agent_name in agents:
+        try:
+            events = _fetch_paginated(
+                conn=conn,
+                lookback_hours=req.hours,
+                total_limit=req.limit_per_host,
+                host_filter=agent_name,
+            )
+            safe = _safe_filename(agent_name)
+            out_path = _OUTPUT_DIR / f"{safe}_events_{ts}.json"
+            with out_path.open("w", encoding="utf-8") as fh:
+                json.dump(events, fh, ensure_ascii=False, indent=2, default=str)
+            size_kb = out_path.stat().st_size / 1024
+            total += len(events)
+            results.append(HostFetchResult(
+                host=agent_name,
+                events_fetched=len(events),
+                file_path=str(out_path.relative_to(_PROJECT_ROOT)),
+                file_size_kb=round(size_kb, 1),
+                status="ok",
+            ))
+        except Exception as exc:
+            results.append(HostFetchResult(
+                host=agent_name,
+                events_fetched=0,
+                file_path="",
+                file_size_kb=0.0,
+                status="error",
+                error=str(exc),
+            ))
+
+    # Audit
+    try:
+        create_audit_entry({
+            "action_type":  "script_executed",
+            "source_page":  "script_library",
+            "details_json": json.dumps({
+                "script_id":      "fetch_events_per_host",
+                "script_name":    "Fetch Events per Host",
+                "hours":          req.hours,
+                "limit_per_host": req.limit_per_host,
+                "hosts":          len(agents),
+                "total_events":   total,
+            }),
+        })
+    except Exception:
+        pass
+
+    return FetchEventsPerHostResponse(
+        status="ok",
+        hosts_processed=len(agents),
+        total_events=total,
+        results=results,
+        output_folder=str(_OUTPUT_DIR.relative_to(_PROJECT_ROOT)),
+        timestamp=ts,
     )

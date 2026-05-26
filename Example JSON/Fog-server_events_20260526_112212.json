@@ -1,0 +1,3982 @@
+[
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779760023.1023455",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-26T01:47:03.327+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779760023.1023069",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-26T01:47:03.316+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:32",
+      "inode_before": 3932480,
+      "size_after": "3652",
+      "gid_after": "7",
+      "md5_before": "3d9121640e4f44acad7b4a6d46caa2d9",
+      "sha256_before": "d0ad2b6a6431398884e6e491f9ac676a2c1296246d0321cc64aa393e291690a3",
+      "mtime_before": "2026-05-24T22:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf",
+      "sha1_after": "6602e8fb8e09654ee6351ddda48727b09fd2171e",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "2615ce1ed4493ee9b98a9189373f21fb",
+      "sha1_before": "e349e8436eea4eac079fab2796bf4efe13551166",
+      "sha256_after": "87f53c0aa0e8d2c52043c6e120e098a31ac4bf55437030b10f325c6251fce9fa",
+      "inode_after": 3932482
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 8,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.972670",
+    "full_log": "File '/etc/cups/printers.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779660032', now it is '1779746432'\nOld inode was: '3932480', now it is '3932482'\nOld md5sum was: '3d9121640e4f44acad7b4a6d46caa2d9'\nNew md5sum is : '2615ce1ed4493ee9b98a9189373f21fb'\nOld sha1sum was: 'e349e8436eea4eac079fab2796bf4efe13551166'\nNew sha1sum is : '6602e8fb8e09654ee6351ddda48727b09fd2171e'\nOld sha256sum was: 'd0ad2b6a6431398884e6e491f9ac676a2c1296246d0321cc64aa393e291690a3'\nNew sha256sum is : '87f53c0aa0e8d2c52043c6e120e098a31ac4bf55437030b10f325c6251fce9fa'\n",
+    "timestamp": "2026-05-26T01:42:09.617+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:08",
+      "inode_before": 3932477,
+      "size_after": "9388",
+      "gid_after": "7",
+      "mtime_before": "2026-05-24T22:00:11",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/EPSON_WF_5620_Series.ppd",
+      "sha1_after": "ee0703a8ec4873e6192ee02a2fa32701bda85959",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "b884f97f8abc99eceedcf5bbfbadbf5a",
+      "sha256_after": "ffbcc5c9f065f3f1ab9e05c890cc458cf5bc26b2cc1dc08dcdb02f52c50fd4ef",
+      "inode_after": 3932476
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 7,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.971813",
+    "full_log": "File '/etc/cups/ppd/EPSON_WF_5620_Series.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779660011', now it is '1779746408'\nOld inode was: '3932477', now it is '3932476'\n",
+    "timestamp": "2026-05-26T01:42:09.615+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:09",
+      "size_after": "11905",
+      "gid_after": "7",
+      "mtime_before": "2026-05-24T22:00:12",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/Kyocera_ECOSYS_P3155dn.ppd",
+      "sha1_after": "5b7a6b576deee3b7ad938583b3d2306ac8137a03",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "9e6e6b4e3709c3a2a6ed8b2dcceadbf7",
+      "sha256_after": "23252948bf32a1a7915f19103d36208d3e9d7b3835ed8e3e491aa44573c1c5bf",
+      "inode_after": 3932479
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 6,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.971005",
+    "full_log": "File '/etc/cups/ppd/Kyocera_ECOSYS_P3155dn.ppd' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779660012', now it is '1779746409'\n",
+    "timestamp": "2026-05-26T01:42:09.613+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:09",
+      "size_after": "11847",
+      "gid_after": "7",
+      "mtime_before": "2026-05-24T22:00:11",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/Kyocera_ECOSYS_M3655idn.ppd",
+      "sha1_after": "9deb033ee3f0133c1d477875387c883e3f329264",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "0bbd483e7c940ed2b23ea56e496bba9c",
+      "sha256_after": "31bead82a93f076f5f124bc97305cb4e9cab0c2c2677e3950471ca4bebabcc2c",
+      "inode_after": 3932478
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.970196",
+    "full_log": "File '/etc/cups/ppd/Kyocera_ECOSYS_M3655idn.ppd' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779660011', now it is '1779746409'\n",
+    "timestamp": "2026-05-26T01:42:09.611+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:08",
+      "inode_before": 3932274,
+      "size_after": "12169",
+      "gid_after": "7",
+      "mtime_before": "2026-05-24T22:00:05",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/EPSON_WF_C5710_Series_A9FD84.ppd",
+      "sha1_after": "612bd8f5757008cd4f6420e12538ff413ecf79fe",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "cb4b10c20f505f2b70a47732c1e729c8",
+      "sha256_after": "a9c43e1fa818409cb6567dab274f4b35bc79eaea4ca5fc9e36eb4ac834bd4a7d",
+      "inode_after": 3932477
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.969330",
+    "full_log": "File '/etc/cups/ppd/EPSON_WF_C5710_Series_A9FD84.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779660005', now it is '1779746408'\nOld inode was: '3932274', now it is '3932477'\n",
+    "timestamp": "2026-05-26T01:42:09.609+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:01",
+      "inode_before": 3932476,
+      "size_after": "129",
+      "gid_after": "7",
+      "md5_before": "088728985be0f8cec6b30c85754aac2a",
+      "sha256_before": "caf16513607185d23b59f34ed95fd0fab59c5318bd8663bbf07338d0dd5237d3",
+      "mtime_before": "2026-05-24T22:00:01",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf.O",
+      "sha1_after": "cc4b68fba336b83686ba76ec0c3808f6ae2f8487",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "fdb9b7391608467e799c468f40206a66",
+      "sha1_before": "46c35293b49a6c841889c542c8f5e9f3fe341b12",
+      "sha256_after": "731739c6ef0aee545f3587f1ed527308cc66e85e3f11108647287334e10b42d4",
+      "inode_after": 3932274
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.968077",
+    "full_log": "File '/etc/cups/printers.conf.O' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779660001', now it is '1779746401'\nOld inode was: '3932476', now it is '3932274'\nOld md5sum was: '088728985be0f8cec6b30c85754aac2a'\nNew md5sum is : 'fdb9b7391608467e799c468f40206a66'\nOld sha1sum was: '46c35293b49a6c841889c542c8f5e9f3fe341b12'\nNew sha1sum is : 'cc4b68fba336b83686ba76ec0c3808f6ae2f8487'\nOld sha256sum was: 'caf16513607185d23b59f34ed95fd0fab59c5318bd8663bbf07338d0dd5237d3'\nNew sha256sum is : '731739c6ef0aee545f3587f1ed527308cc66e85e3f11108647287334e10b42d4'\n",
+    "timestamp": "2026-05-26T01:42:09.607+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "386",
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:01",
+      "inode_before": 3932482,
+      "size_after": "92",
+      "gid_after": "7",
+      "md5_before": "24ba2d3d1375d3dda81cd26501aa8ae2",
+      "sha256_before": "c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54",
+      "mtime_before": "2026-05-24T22:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf.O",
+      "sha1_after": "73633a3884525cbb4f66e9f7c1860f35738f84ec",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "016628836e2bd49eb0f0d597737368a4",
+      "sha1_before": "303efda6580ff420ff42c96df4e185e963c450fa",
+      "sha256_after": "9854f5e49f5a72846e968d9402fffcd336aec584cde999391a58d33477b18d97",
+      "inode_after": 3932475
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.965527",
+    "full_log": "File '/etc/cups/subscriptions.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '386' to '92'\nOld modification time was: '1779660032', now it is '1779746401'\nOld inode was: '3932482', now it is '3932475'\nOld md5sum was: '24ba2d3d1375d3dda81cd26501aa8ae2'\nNew md5sum is : '016628836e2bd49eb0f0d597737368a4'\nOld sha1sum was: '303efda6580ff420ff42c96df4e185e963c450fa'\nNew sha1sum is : '73633a3884525cbb4f66e9f7c1860f35738f84ec'\nOld sha256sum was: 'c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54'\nNew sha256sum is : '9854f5e49f5a72846e968d9402fffcd336aec584cde999391a58d33477b18d97'\n",
+    "timestamp": "2026-05-26T01:42:09.605+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T22:00:32",
+      "inode_before": 3932278,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "b3295f3bd3966fe15f72410a1a5d274d",
+      "sha256_before": "f2dfca3c34ef66e37559a0a05b0dda1ed37bf1d42fd2ffbbae8c54c356c04bc7",
+      "mtime_before": "2026-05-25T10:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf",
+      "sha1_after": "802267e84f3efe552b09139ba34fe1739cf97d7b",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "57afbcfb29f07b40788933fb3b092370",
+      "sha1_before": "32268e62dea95ca4beeee446e53ce94c7f728f27",
+      "sha256_after": "e443c52603031faf168f79b7d40821da0a53dd140aae4c67fa8946140ac3ecfe",
+      "inode_after": 3932480
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779759729.966821",
+    "full_log": "File '/etc/cups/subscriptions.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779703232', now it is '1779746432'\nOld inode was: '3932278', now it is '3932480'\nOld md5sum was: 'b3295f3bd3966fe15f72410a1a5d274d'\nNew md5sum is : '57afbcfb29f07b40788933fb3b092370'\nOld sha1sum was: '32268e62dea95ca4beeee446e53ce94c7f728f27'\nNew sha1sum is : '802267e84f3efe552b09139ba34fe1739cf97d7b'\nOld sha256sum was: 'f2dfca3c34ef66e37559a0a05b0dda1ed37bf1d42fd2ffbbae8c54c356c04bc7'\nNew sha256sum is : 'e443c52603031faf168f79b7d40821da0a53dd140aae4c67fa8946140ac3ecfe'\n",
+    "timestamp": "2026-05-26T01:42:09.605+0000"
+  },
+  {
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.2.7",
+        "10.6.1"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Listened ports status (netstat) changed (new port opened or closed).",
+      "groups": [
+        "ossec"
+      ],
+      "id": "533",
+      "nist_800_53": [
+        "AU.14",
+        "AU.6"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "netstat listening ports",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779746752.13448732",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 898844/cupsd\ntcp6 ::1:631 :::* 898844/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "timestamp": "2026-05-25T22:05:52.222+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.5.2",
+        "10.5.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC7.2",
+        "CC7.3",
+        "PI1.4",
+        "PI1.5",
+        "CC7.1",
+        "CC8.1"
+      ],
+      "description": "Log file rotated.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "591",
+      "nist_800_53": [
+        "AU.9"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "II_5.1.f",
+        "IV_35.7.d"
+      ]
+    },
+    "location": "logcollector",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779746427.13435927",
+    "full_log": "ossec: File rotated (inode changed): '/var/log/apache2/error.log'.",
+    "timestamp": "2026-05-25T22:00:27.226+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779716799.8181110",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T13:46:39.161+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779716799.8180724",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T13:46:39.149+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "92",
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:32",
+      "inode_before": 3932475,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "0202c3477913fc9d1b36867a2755ec45",
+      "sha256_before": "a6e7060e54ccb1439ce5a9e7b20179c86381bb8f46093c227fd830ee8095fad6",
+      "mtime_before": "2026-05-24T22:00:01",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf.O",
+      "sha1_after": "303efda6580ff420ff42c96df4e185e963c450fa",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "24ba2d3d1375d3dda81cd26501aa8ae2",
+      "sha1_before": "bc178e0b20d87cba8721b6920bf2df2087fbdde9",
+      "sha256_after": "c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54",
+      "inode_after": 3932482
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779716526.8099062",
+    "full_log": "File '/etc/cups/subscriptions.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '92' to '386'\nOld modification time was: '1779660001', now it is '1779660032'\nOld inode was: '3932475', now it is '3932482'\nOld md5sum was: '0202c3477913fc9d1b36867a2755ec45'\nNew md5sum is : '24ba2d3d1375d3dda81cd26501aa8ae2'\nOld sha1sum was: 'bc178e0b20d87cba8721b6920bf2df2087fbdde9'\nNew sha1sum is : '303efda6580ff420ff42c96df4e185e963c450fa'\nOld sha256sum was: 'a6e7060e54ccb1439ce5a9e7b20179c86381bb8f46093c227fd830ee8095fad6'\nNew sha256sum is : 'c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54'\n",
+    "timestamp": "2026-05-25T13:42:06.345+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-25T10:00:32",
+      "inode_before": 3932482,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "24ba2d3d1375d3dda81cd26501aa8ae2",
+      "sha256_before": "c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54",
+      "mtime_before": "2026-05-24T22:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf",
+      "sha1_after": "32268e62dea95ca4beeee446e53ce94c7f728f27",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "b3295f3bd3966fe15f72410a1a5d274d",
+      "sha1_before": "303efda6580ff420ff42c96df4e185e963c450fa",
+      "sha256_after": "f2dfca3c34ef66e37559a0a05b0dda1ed37bf1d42fd2ffbbae8c54c356c04bc7",
+      "inode_after": 3932278
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779716526.8100358",
+    "full_log": "File '/etc/cups/subscriptions.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779660032', now it is '1779703232'\nOld inode was: '3932482', now it is '3932278'\nOld md5sum was: '24ba2d3d1375d3dda81cd26501aa8ae2'\nNew md5sum is : 'b3295f3bd3966fe15f72410a1a5d274d'\nOld sha1sum was: '303efda6580ff420ff42c96df4e185e963c450fa'\nNew sha1sum is : '32268e62dea95ca4beeee446e53ce94c7f728f27'\nOld sha256sum was: 'c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54'\nNew sha256sum is : 'f2dfca3c34ef66e37559a0a05b0dda1ed37bf1d42fd2ffbbae8c54c356c04bc7'\n",
+    "timestamp": "2026-05-25T13:42:06.345+0000"
+  },
+  {
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:34430 0.0.0.0:* 612/systemd-timesyn\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:34430 0.0.0.0:* 612/systemd-timesyn\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.2.7",
+        "10.6.1"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Listened ports status (netstat) changed (new port opened or closed).",
+      "groups": [
+        "ossec"
+      ],
+      "id": "533",
+      "nist_800_53": [
+        "AU.14",
+        "AU.6"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "netstat listening ports",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779705350.6081829",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "timestamp": "2026-05-25T10:35:50.322+0000"
+  },
+  {
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.2.7",
+        "10.6.1"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Listened ports status (netstat) changed (new port opened or closed).",
+      "groups": [
+        "ossec"
+      ],
+      "id": "533",
+      "nist_800_53": [
+        "AU.14",
+        "AU.6"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "netstat listening ports",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779704990.6010397",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:34430 0.0.0.0:* 612/systemd-timesyn\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "timestamp": "2026-05-25T10:29:50.305+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779673573.1093660",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T01:46:13.990+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779673573.1093274",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T01:46:13.979+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:32",
+      "inode_before": 3932482,
+      "size_after": "3652",
+      "gid_after": "7",
+      "md5_before": "d74eb50388f4a22202eb9c05dd8d8f91",
+      "sha256_before": "7285483cbe9b4ea2f15f15c0c66d2954a7ecabb278d0aaf994085a863fd7273e",
+      "mtime_before": "2026-05-23T22:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf",
+      "sha1_after": "e349e8436eea4eac079fab2796bf4efe13551166",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "3d9121640e4f44acad7b4a6d46caa2d9",
+      "sha1_before": "32dab28ad3fa683370b4df9d8a9358736df166db",
+      "sha256_after": "d0ad2b6a6431398884e6e491f9ac676a2c1296246d0321cc64aa393e291690a3",
+      "inode_after": 3932480
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 8,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1051350",
+    "full_log": "File '/etc/cups/printers.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779573632', now it is '1779660032'\nOld inode was: '3932482', now it is '3932480'\nOld md5sum was: 'd74eb50388f4a22202eb9c05dd8d8f91'\nNew md5sum is : '3d9121640e4f44acad7b4a6d46caa2d9'\nOld sha1sum was: '32dab28ad3fa683370b4df9d8a9358736df166db'\nNew sha1sum is : 'e349e8436eea4eac079fab2796bf4efe13551166'\nOld sha256sum was: '7285483cbe9b4ea2f15f15c0c66d2954a7ecabb278d0aaf994085a863fd7273e'\nNew sha256sum is : 'd0ad2b6a6431398884e6e491f9ac676a2c1296246d0321cc64aa393e291690a3'\n",
+    "timestamp": "2026-05-25T01:42:03.099+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:11",
+      "inode_before": 3932479,
+      "size_after": "9388",
+      "gid_after": "7",
+      "mtime_before": "2026-05-23T22:00:09",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/EPSON_WF_5620_Series.ppd",
+      "sha1_after": "ee0703a8ec4873e6192ee02a2fa32701bda85959",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "b884f97f8abc99eceedcf5bbfbadbf5a",
+      "sha256_after": "ffbcc5c9f065f3f1ab9e05c890cc458cf5bc26b2cc1dc08dcdb02f52c50fd4ef",
+      "inode_after": 3932477
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 7,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1050492",
+    "full_log": "File '/etc/cups/ppd/EPSON_WF_5620_Series.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779573609', now it is '1779660011'\nOld inode was: '3932479', now it is '3932477'\n",
+    "timestamp": "2026-05-25T01:42:03.097+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:12",
+      "inode_before": 3932478,
+      "size_after": "11905",
+      "gid_after": "7",
+      "mtime_before": "2026-05-23T22:00:09",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/Kyocera_ECOSYS_P3155dn.ppd",
+      "sha1_after": "5b7a6b576deee3b7ad938583b3d2306ac8137a03",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "9e6e6b4e3709c3a2a6ed8b2dcceadbf7",
+      "sha256_after": "23252948bf32a1a7915f19103d36208d3e9d7b3835ed8e3e491aa44573c1c5bf",
+      "inode_after": 3932479
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 6,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1049631",
+    "full_log": "File '/etc/cups/ppd/Kyocera_ECOSYS_P3155dn.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779573609', now it is '1779660012'\nOld inode was: '3932478', now it is '3932479'\n",
+    "timestamp": "2026-05-25T01:42:03.095+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:11",
+      "inode_before": 3932480,
+      "size_after": "11847",
+      "gid_after": "7",
+      "mtime_before": "2026-05-23T22:00:10",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/Kyocera_ECOSYS_M3655idn.ppd",
+      "sha1_after": "9deb033ee3f0133c1d477875387c883e3f329264",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "0bbd483e7c940ed2b23ea56e496bba9c",
+      "sha256_after": "31bead82a93f076f5f124bc97305cb4e9cab0c2c2677e3950471ca4bebabcc2c",
+      "inode_after": 3932478
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1048769",
+    "full_log": "File '/etc/cups/ppd/Kyocera_ECOSYS_M3655idn.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779573610', now it is '1779660011'\nOld inode was: '3932480', now it is '3932478'\n",
+    "timestamp": "2026-05-25T01:42:03.093+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:05",
+      "inode_before": 3932476,
+      "size_after": "12169",
+      "gid_after": "7",
+      "mtime_before": "2026-05-23T22:00:03",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/EPSON_WF_C5710_Series_A9FD84.ppd",
+      "sha1_after": "612bd8f5757008cd4f6420e12538ff413ecf79fe",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "cb4b10c20f505f2b70a47732c1e729c8",
+      "sha256_after": "a9c43e1fa818409cb6567dab274f4b35bc79eaea4ca5fc9e36eb4ac834bd4a7d",
+      "inode_after": 3932274
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1047902",
+    "full_log": "File '/etc/cups/ppd/EPSON_WF_C5710_Series_A9FD84.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779573603', now it is '1779660005'\nOld inode was: '3932476', now it is '3932274'\n",
+    "timestamp": "2026-05-25T01:42:03.091+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:01",
+      "inode_before": 3932475,
+      "size_after": "129",
+      "gid_after": "7",
+      "md5_before": "d3bd19c3dea0b6fbc1766ab8a0593198",
+      "sha256_before": "716474ca918343ba7884f57e88d4a4f7b906007808651cdb5dbba210d49cd3e6",
+      "mtime_before": "2026-05-23T22:00:00",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf.O",
+      "sha1_after": "46c35293b49a6c841889c542c8f5e9f3fe341b12",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "088728985be0f8cec6b30c85754aac2a",
+      "sha1_before": "145f1ef2b5bd990f83d928f2e5b9b9ab3ac1751b",
+      "sha256_after": "caf16513607185d23b59f34ed95fd0fab59c5318bd8663bbf07338d0dd5237d3",
+      "inode_after": 3932476
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1046648",
+    "full_log": "File '/etc/cups/printers.conf.O' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779573600', now it is '1779660001'\nOld inode was: '3932475', now it is '3932476'\nOld md5sum was: 'd3bd19c3dea0b6fbc1766ab8a0593198'\nNew md5sum is : '088728985be0f8cec6b30c85754aac2a'\nOld sha1sum was: '145f1ef2b5bd990f83d928f2e5b9b9ab3ac1751b'\nNew sha1sum is : '46c35293b49a6c841889c542c8f5e9f3fe341b12'\nOld sha256sum was: '716474ca918343ba7884f57e88d4a4f7b906007808651cdb5dbba210d49cd3e6'\nNew sha256sum is : 'caf16513607185d23b59f34ed95fd0fab59c5318bd8663bbf07338d0dd5237d3'\n",
+    "timestamp": "2026-05-25T01:42:03.089+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:32",
+      "inode_before": 3932278,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "02680e92528e998c63c98dc91f00e34b",
+      "sha256_before": "fe8394f23a681cdfbbb6c588e5b0f3b08bf32158fba54fa5ba175623aae7be78",
+      "mtime_before": "2026-05-24T10:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf",
+      "sha1_after": "303efda6580ff420ff42c96df4e185e963c450fa",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "24ba2d3d1375d3dda81cd26501aa8ae2",
+      "sha1_before": "2d5001b1d1cf29f9c54ee6634309e8c471239233",
+      "sha256_after": "c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54",
+      "inode_after": 3932482
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1044096",
+    "full_log": "File '/etc/cups/subscriptions.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779616832', now it is '1779660032'\nOld inode was: '3932278', now it is '3932482'\nOld md5sum was: '02680e92528e998c63c98dc91f00e34b'\nNew md5sum is : '24ba2d3d1375d3dda81cd26501aa8ae2'\nOld sha1sum was: '2d5001b1d1cf29f9c54ee6634309e8c471239233'\nNew sha1sum is : '303efda6580ff420ff42c96df4e185e963c450fa'\nOld sha256sum was: 'fe8394f23a681cdfbbb6c588e5b0f3b08bf32158fba54fa5ba175623aae7be78'\nNew sha256sum is : 'c346eebf7d813b470b83db90873902c9678fbfb4b4d8347f99a7268166480c54'\n",
+    "timestamp": "2026-05-25T01:42:03.086+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "386",
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T22:00:01",
+      "inode_before": 3932274,
+      "size_after": "92",
+      "gid_after": "7",
+      "md5_before": "259ea5c494e1731cec2675600211702a",
+      "sha256_before": "c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697",
+      "mtime_before": "2026-05-23T22:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf.O",
+      "sha1_after": "bc178e0b20d87cba8721b6920bf2df2087fbdde9",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "0202c3477913fc9d1b36867a2755ec45",
+      "sha1_before": "4ac5ed44f17393743cb5b0482c502a8d61f0ef99",
+      "sha256_after": "a6e7060e54ccb1439ce5a9e7b20179c86381bb8f46093c227fd830ee8095fad6",
+      "inode_after": 3932475
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779673323.1045353",
+    "full_log": "File '/etc/cups/subscriptions.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '386' to '92'\nOld modification time was: '1779573632', now it is '1779660001'\nOld inode was: '3932274', now it is '3932475'\nOld md5sum was: '259ea5c494e1731cec2675600211702a'\nNew md5sum is : '0202c3477913fc9d1b36867a2755ec45'\nOld sha1sum was: '4ac5ed44f17393743cb5b0482c502a8d61f0ef99'\nNew sha1sum is : 'bc178e0b20d87cba8721b6920bf2df2087fbdde9'\nOld sha256sum was: 'c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697'\nNew sha256sum is : 'a6e7060e54ccb1439ce5a9e7b20179c86381bb8f46093c227fd830ee8095fad6'\n",
+    "timestamp": "2026-05-25T01:42:03.086+0000"
+  },
+  {
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 616848/cupsd\ntcp6 ::1:631 :::* 616848/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 616848/cupsd\ntcp6 ::1:631 :::* 616848/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.2.7",
+        "10.6.1"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Listened ports status (netstat) changed (new port opened or closed).",
+      "groups": [
+        "ossec"
+      ],
+      "id": "533",
+      "nist_800_53": [
+        "AU.14",
+        "AU.6"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "netstat listening ports",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779660348.13590660",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 757829/cupsd\ntcp6 ::1:631 :::* 757829/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "timestamp": "2026-05-24T22:05:48.256+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.5.2",
+        "10.5.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC7.2",
+        "CC7.3",
+        "PI1.4",
+        "PI1.5",
+        "CC7.1",
+        "CC8.1"
+      ],
+      "description": "Log file rotated.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "591",
+      "nist_800_53": [
+        "AU.9"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "II_5.1.f",
+        "IV_35.7.d"
+      ]
+    },
+    "location": "logcollector",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779660019.13543118",
+    "full_log": "ossec: File rotated (inode changed): '/var/log/apache2/error.log'.",
+    "timestamp": "2026-05-24T22:00:19.318+0000"
+  },
+  {
+    "predecoder": {
+      "hostname": "fog",
+      "program_name": "kernel",
+      "timestamp": "May 24 22:00:01"
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "extra_data": "capable",
+      "status": "DENIED"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "description": "Apparmor DENIED",
+      "groups": [
+        "local",
+        "syslog",
+        "apparmor"
+      ],
+      "id": "52002"
+    },
+    "location": "journald",
+    "decoder": {
+      "parent": "kernel",
+      "name": "kernel"
+    },
+    "id": "1779660002.13531153",
+    "full_log": "May 24 22:00:01 fog kernel: audit: type=1400 audit(1779660001.877:33): apparmor=\"DENIED\" operation=\"capable\" profile=\"/usr/sbin/cupsd\" pid=757829 comm=\"cupsd\" capability=12  capname=\"net_admin\"",
+    "timestamp": "2026-05-24T22:00:02.263+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779630348.8122285",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T13:45:48.860+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779630348.8121899",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T13:45:48.849+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-24T10:00:32",
+      "inode_before": 3932274,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "259ea5c494e1731cec2675600211702a",
+      "sha256_before": "c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697",
+      "mtime_before": "2026-05-23T22:00:32",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf",
+      "sha1_after": "2d5001b1d1cf29f9c54ee6634309e8c471239233",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "02680e92528e998c63c98dc91f00e34b",
+      "sha1_before": "4ac5ed44f17393743cb5b0482c502a8d61f0ef99",
+      "sha256_after": "fe8394f23a681cdfbbb6c588e5b0f3b08bf32158fba54fa5ba175623aae7be78",
+      "inode_after": 3932278
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779630119.8098817",
+    "full_log": "File '/etc/cups/subscriptions.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779573632', now it is '1779616832'\nOld inode was: '3932274', now it is '3932278'\nOld md5sum was: '259ea5c494e1731cec2675600211702a'\nNew md5sum is : '02680e92528e998c63c98dc91f00e34b'\nOld sha1sum was: '4ac5ed44f17393743cb5b0482c502a8d61f0ef99'\nNew sha1sum is : '2d5001b1d1cf29f9c54ee6634309e8c471239233'\nOld sha256sum was: 'c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697'\nNew sha256sum is : 'fe8394f23a681cdfbbb6c588e5b0f3b08bf32158fba54fa5ba175623aae7be78'\n",
+    "timestamp": "2026-05-24T13:41:59.776+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "92",
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:32",
+      "inode_before": 3932477,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "e83ba4148f64e59bc8c5d72c6cb3ecae",
+      "sha256_before": "44caf96a920eda23336daaecafb8306c85237596bc28873834007fcb066e004c",
+      "mtime_before": "2026-05-23T22:00:00",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf.O",
+      "sha1_after": "4ac5ed44f17393743cb5b0482c502a8d61f0ef99",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "259ea5c494e1731cec2675600211702a",
+      "sha1_before": "9f6c0d31f6903a750ace37d9689a1e575db21516",
+      "sha256_after": "c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697",
+      "inode_after": 3932274
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779630119.8097521",
+    "full_log": "File '/etc/cups/subscriptions.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '92' to '386'\nOld modification time was: '1779573600', now it is '1779573632'\nOld inode was: '3932477', now it is '3932274'\nOld md5sum was: 'e83ba4148f64e59bc8c5d72c6cb3ecae'\nNew md5sum is : '259ea5c494e1731cec2675600211702a'\nOld sha1sum was: '9f6c0d31f6903a750ace37d9689a1e575db21516'\nNew sha1sum is : '4ac5ed44f17393743cb5b0482c502a8d61f0ef99'\nOld sha256sum was: '44caf96a920eda23336daaecafb8306c85237596bc28873834007fcb066e004c'\nNew sha256sum is : 'c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697'\n",
+    "timestamp": "2026-05-24T13:41:59.776+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779587123.960628",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T01:45:23.660+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779587123.960243",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T01:45:23.648+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:32",
+      "inode_before": 3932274,
+      "size_after": "3652",
+      "gid_after": "7",
+      "md5_before": "3b6c17077d08415a216cc24a1dd96b9e",
+      "sha256_before": "cfcf3dc495a7be2a8cdb43cefc49a03c444edb914e8c32ee81dc573847c9e429",
+      "mtime_before": "2026-05-23T10:32:43",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf",
+      "sha1_after": "32dab28ad3fa683370b4df9d8a9358736df166db",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "d74eb50388f4a22202eb9c05dd8d8f91",
+      "sha1_before": "38550103d6b2c466c4c802f5bb0a1ef87887759f",
+      "sha256_after": "7285483cbe9b4ea2f15f15c0c66d2954a7ecabb278d0aaf994085a863fd7273e",
+      "inode_after": 3932482
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 8,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.944690",
+    "full_log": "File '/etc/cups/printers.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779532363', now it is '1779573632'\nOld inode was: '3932274', now it is '3932482'\nOld md5sum was: '3b6c17077d08415a216cc24a1dd96b9e'\nNew md5sum is : 'd74eb50388f4a22202eb9c05dd8d8f91'\nOld sha1sum was: '38550103d6b2c466c4c802f5bb0a1ef87887759f'\nNew sha1sum is : '32dab28ad3fa683370b4df9d8a9358736df166db'\nOld sha256sum was: 'cfcf3dc495a7be2a8cdb43cefc49a03c444edb914e8c32ee81dc573847c9e429'\nNew sha256sum is : '7285483cbe9b4ea2f15f15c0c66d2954a7ecabb278d0aaf994085a863fd7273e'\n",
+    "timestamp": "2026-05-24T01:41:56.535+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:09",
+      "size_after": "9388",
+      "gid_after": "7",
+      "mtime_before": "2026-05-22T22:00:10",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/EPSON_WF_5620_Series.ppd",
+      "sha1_after": "ee0703a8ec4873e6192ee02a2fa32701bda85959",
+      "changed_attributes": [
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "b884f97f8abc99eceedcf5bbfbadbf5a",
+      "sha256_after": "ffbcc5c9f065f3f1ab9e05c890cc458cf5bc26b2cc1dc08dcdb02f52c50fd4ef",
+      "inode_after": 3932479
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 7,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.943885",
+    "full_log": "File '/etc/cups/ppd/EPSON_WF_5620_Series.ppd' modified\nMode: scheduled\nChanged attributes: mtime\nOld modification time was: '1779487210', now it is '1779573609'\n",
+    "timestamp": "2026-05-24T01:41:56.533+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:09",
+      "inode_before": 3932480,
+      "size_after": "11905",
+      "gid_after": "7",
+      "mtime_before": "2026-05-22T22:00:11",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/Kyocera_ECOSYS_P3155dn.ppd",
+      "sha1_after": "5b7a6b576deee3b7ad938583b3d2306ac8137a03",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "9e6e6b4e3709c3a2a6ed8b2dcceadbf7",
+      "sha256_after": "23252948bf32a1a7915f19103d36208d3e9d7b3835ed8e3e491aa44573c1c5bf",
+      "inode_after": 3932478
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 6,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.943025",
+    "full_log": "File '/etc/cups/ppd/Kyocera_ECOSYS_P3155dn.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779487211', now it is '1779573609'\nOld inode was: '3932480', now it is '3932478'\n",
+    "timestamp": "2026-05-24T01:41:56.531+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:10",
+      "inode_before": 3932478,
+      "size_after": "11847",
+      "gid_after": "7",
+      "mtime_before": "2026-05-22T22:00:10",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/Kyocera_ECOSYS_M3655idn.ppd",
+      "sha1_after": "9deb033ee3f0133c1d477875387c883e3f329264",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "0bbd483e7c940ed2b23ea56e496bba9c",
+      "sha256_after": "31bead82a93f076f5f124bc97305cb4e9cab0c2c2677e3950471ca4bebabcc2c",
+      "inode_after": 3932480
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 5,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.942164",
+    "full_log": "File '/etc/cups/ppd/Kyocera_ECOSYS_M3655idn.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779487210', now it is '1779573610'\nOld inode was: '3932478', now it is '3932480'\n",
+    "timestamp": "2026-05-24T01:41:56.529+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:03",
+      "inode_before": 3932477,
+      "size_after": "12169",
+      "gid_after": "7",
+      "mtime_before": "2026-05-22T22:00:03",
+      "mode": "scheduled",
+      "path": "/etc/cups/ppd/EPSON_WF_C5710_Series_A9FD84.ppd",
+      "sha1_after": "612bd8f5757008cd4f6420e12538ff413ecf79fe",
+      "changed_attributes": [
+        "inode",
+        "mtime"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "cb4b10c20f505f2b70a47732c1e729c8",
+      "sha256_after": "a9c43e1fa818409cb6567dab274f4b35bc79eaea4ca5fc9e36eb4ac834bd4a7d",
+      "inode_after": 3932476
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.941298",
+    "full_log": "File '/etc/cups/ppd/EPSON_WF_C5710_Series_A9FD84.ppd' modified\nMode: scheduled\nChanged attributes: inode,mtime\nOld modification time was: '1779487203', now it is '1779573603'\nOld inode was: '3932477', now it is '3932476'\n",
+    "timestamp": "2026-05-24T01:41:56.526+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "4536",
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:00",
+      "inode_before": 3933292,
+      "size_after": "129",
+      "gid_after": "7",
+      "md5_before": "517f8c473be43076bc18217aaab1d6a0",
+      "sha256_before": "12fc170f0b561af824d44555240cbcf82c7fef1a39d1d6256c2188174584f6ee",
+      "mtime_before": "2026-05-23T04:26:58",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf.O",
+      "sha1_after": "145f1ef2b5bd990f83d928f2e5b9b9ab3ac1751b",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "d3bd19c3dea0b6fbc1766ab8a0593198",
+      "sha1_before": "05cdd30469b60066daa34a24fe949a99fedfa7cd",
+      "sha256_after": "716474ca918343ba7884f57e88d4a4f7b906007808651cdb5dbba210d49cd3e6",
+      "inode_after": 3932475
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.940006",
+    "full_log": "File '/etc/cups/printers.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '4536' to '129'\nOld modification time was: '1779510418', now it is '1779573600'\nOld inode was: '3933292', now it is '3932475'\nOld md5sum was: '517f8c473be43076bc18217aaab1d6a0'\nNew md5sum is : 'd3bd19c3dea0b6fbc1766ab8a0593198'\nOld sha1sum was: '05cdd30469b60066daa34a24fe949a99fedfa7cd'\nNew sha1sum is : '145f1ef2b5bd990f83d928f2e5b9b9ab3ac1751b'\nOld sha256sum was: '12fc170f0b561af824d44555240cbcf82c7fef1a39d1d6256c2188174584f6ee'\nNew sha256sum is : '716474ca918343ba7884f57e88d4a4f7b906007808651cdb5dbba210d49cd3e6'\n",
+    "timestamp": "2026-05-24T01:41:56.524+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "386",
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:00",
+      "inode_before": 3932476,
+      "size_after": "92",
+      "gid_after": "7",
+      "md5_before": "9443168ff7b808529aa6d3045fc19720",
+      "sha256_before": "e5a90cb3723e78f34a6d3340ba0bf453d7960fbf2163a0a6af8a59705e3d9512",
+      "mtime_before": "2026-05-23T10:00:33",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf.O",
+      "sha1_after": "9f6c0d31f6903a750ace37d9689a1e575db21516",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "e83ba4148f64e59bc8c5d72c6cb3ecae",
+      "sha1_before": "7dad859f8227cae4e9f202340d0be3cc0cc331f1",
+      "sha256_after": "44caf96a920eda23336daaecafb8306c85237596bc28873834007fcb066e004c",
+      "inode_after": 3932477
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.937456",
+    "full_log": "File '/etc/cups/subscriptions.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '386' to '92'\nOld modification time was: '1779530433', now it is '1779573600'\nOld inode was: '3932476', now it is '3932477'\nOld md5sum was: '9443168ff7b808529aa6d3045fc19720'\nNew md5sum is : 'e83ba4148f64e59bc8c5d72c6cb3ecae'\nOld sha1sum was: '7dad859f8227cae4e9f202340d0be3cc0cc331f1'\nNew sha1sum is : '9f6c0d31f6903a750ace37d9689a1e575db21516'\nOld sha256sum was: 'e5a90cb3723e78f34a6d3340ba0bf453d7960fbf2163a0a6af8a59705e3d9512'\nNew sha256sum is : '44caf96a920eda23336daaecafb8306c85237596bc28873834007fcb066e004c'\n",
+    "timestamp": "2026-05-24T01:41:56.522+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T22:00:32",
+      "inode_before": 3932278,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "38a556c3c8d187bde69f93d5fe3e263d",
+      "sha256_before": "4ea4382bf07ec88b4ad1925b61175c761490abb4939dc04cb6ffc34950c3c6b8",
+      "mtime_before": "2026-05-23T10:32:43",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf",
+      "sha1_after": "4ac5ed44f17393743cb5b0482c502a8d61f0ef99",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "259ea5c494e1731cec2675600211702a",
+      "sha1_before": "8321c03da5fcac7831189347022809f637f1bd29",
+      "sha256_after": "c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697",
+      "inode_after": 3932274
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779586916.938750",
+    "full_log": "File '/etc/cups/subscriptions.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779532363', now it is '1779573632'\nOld inode was: '3932278', now it is '3932274'\nOld md5sum was: '38a556c3c8d187bde69f93d5fe3e263d'\nNew md5sum is : '259ea5c494e1731cec2675600211702a'\nOld sha1sum was: '8321c03da5fcac7831189347022809f637f1bd29'\nNew sha1sum is : '4ac5ed44f17393743cb5b0482c502a8d61f0ef99'\nOld sha256sum was: '4ea4382bf07ec88b4ad1925b61175c761490abb4939dc04cb6ffc34950c3c6b8'\nNew sha256sum is : 'c2001b61a4ca1253b6c96b84dc6ea335438494f0e07bff0f11a80cf219d84697'\n",
+    "timestamp": "2026-05-24T01:41:56.522+0000"
+  },
+  {
+    "previous_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 475856/cupsd\ntcp6 ::1:631 :::* 475856/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "previous_output": "Previous output:\nossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 475856/cupsd\ntcp6 ::1:631 :::* 475856/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.2.7",
+        "10.6.1"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Listened ports status (netstat) changed (new port opened or closed).",
+      "groups": [
+        "ossec"
+      ],
+      "id": "533",
+      "nist_800_53": [
+        "AU.14",
+        "AU.6"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "netstat listening ports",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779573944.14954844",
+    "full_log": "ossec: output: 'netstat listening ports':\ntcp6       0      0 :::2049                 :::*                    LISTEN      -                   \ntcp6       0      0 :::46771                :::*                    LISTEN      -                   \nudp6       0      0 :::34583                :::*                                -                   \ntcp        0      0 0.0.0.0:2049            0.0.0.0:*               LISTEN      -                   \ntcp        0      0 0.0.0.0:33867           0.0.0.0:*               LISTEN      -                   \nudp        0      0 0.0.0.0:60147           0.0.0.0:*                           -                   \ntcp 0.0.0.0:21 0.0.0.0:* 750/vsftpd\ntcp 0.0.0.0:22 0.0.0.0:* /usr\ntcp6 :::22 :::* /usr\nudp 0.0.0.0:69 0.0.0.0:* 933/in\nudp6 :::69 :::* 933/in\ntcp6 :::80 :::* 939/apache2\ntcp 0.0.0.0:111 0.0.0.0:* 1/init\ntcp6 :::111 :::* 1/init\nudp 0.0.0.0:111 0.0.0.0:* 1/init\nudp6 :::111 :::* 1/init\ntcp6 :::443 :::* 939/apache2\ntcp 127.0.0.1:631 0.0.0.0:* 616848/cupsd\ntcp6 ::1:631 :::* 616848/cupsd\nudp 127.0.0.1:670 0.0.0.0:* 918/rpc\ntcp 0.0.0.0:3306 0.0.0.0:* 877/mariadbd\ntcp6 :::3306 :::* 877/mariadbd\nudp 0.0.0.0:5353 0.0.0.0:* 634/avahi-daemon\nudp6 :::5353 :::* 634/avahi-daemon\ntcp6 :::6556 :::* 737/cmk-agent-ctl\ntcp 127.0.0.1:9000 0.0.0.0:* 741/php-fpm\ntcp 0.0.0.0:20048 0.0.0.0:* 914/rpc\ntcp6 :::20048 :::* 914/rpc\nudp 0.0.0.0:20048 0.0.0.0:* 914/rpc\nudp6 :::20048 :::* 914/rpc\ntcp6 :::34917 :::* 918/rpc\nudp6 :::49583 :::* 634/avahi-daemon\ntcp 0.0.0.0:56155 0.0.0.0:* 918/rpc\nudp 0.0.0.0:57896 0.0.0.0:* 634/avahi-daemon\nudp6 :::58526 :::* 918/rpc\nudp 0.0.0.0:59184 0.0.0.0:* 918/rpc",
+    "timestamp": "2026-05-23T22:05:44.294+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.5.2",
+        "10.5.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC7.2",
+        "CC7.3",
+        "PI1.4",
+        "PI1.5",
+        "CC7.1",
+        "CC8.1"
+      ],
+      "description": "Log file rotated.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "591",
+      "nist_800_53": [
+        "AU.9"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "II_5.1.f",
+        "IV_35.7.d"
+      ]
+    },
+    "location": "logcollector",
+    "decoder": {
+      "name": "ossec"
+    },
+    "id": "1779573612.14939276",
+    "full_log": "ossec: File rotated (inode changed): '/var/log/apache2/error.log'.",
+    "timestamp": "2026-05-23T22:00:12.285+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779543898.9775901",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-23T13:44:58.419+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779543898.9775515",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-23T13:44:58.408+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T10:32:43",
+      "inode_before": 3932482,
+      "size_after": "3652",
+      "gid_after": "7",
+      "md5_before": "2523210db3ef8e8e9fedce64c0c28286",
+      "sha256_before": "5bd1706c93e448d72885cacc1e92b18175b8a72812f30e26933118b041d5a4cc",
+      "mtime_before": "2026-05-22T22:00:33",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf",
+      "sha1_after": "38550103d6b2c466c4c802f5bb0a1ef87887759f",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "3b6c17077d08415a216cc24a1dd96b9e",
+      "sha1_before": "009b8525ea8c8e77464434f197b8748d8a1c7990",
+      "sha256_after": "cfcf3dc495a7be2a8cdb43cefc49a03c444edb914e8c32ee81dc573847c9e429",
+      "inode_after": 3932274
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 4,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779543713.9758301",
+    "full_log": "File '/etc/cups/printers.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779487233', now it is '1779532363'\nOld inode was: '3932482', now it is '3932274'\nOld md5sum was: '2523210db3ef8e8e9fedce64c0c28286'\nNew md5sum is : '3b6c17077d08415a216cc24a1dd96b9e'\nOld sha1sum was: '009b8525ea8c8e77464434f197b8748d8a1c7990'\nNew sha1sum is : '38550103d6b2c466c4c802f5bb0a1ef87887759f'\nOld sha256sum was: '5bd1706c93e448d72885cacc1e92b18175b8a72812f30e26933118b041d5a4cc'\nNew sha256sum is : 'cfcf3dc495a7be2a8cdb43cefc49a03c444edb914e8c32ee81dc573847c9e429'\n",
+    "timestamp": "2026-05-23T13:41:53.264+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "129",
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T04:26:58",
+      "inode_before": 3932475,
+      "size_after": "4536",
+      "gid_after": "7",
+      "md5_before": "b56745d6c3fb11b3d03a4e80e0df6c62",
+      "sha256_before": "7cd32e8434df94afb0e2ea68fd36986d9f8dc37a66c1e83ed6575549cf57c209",
+      "mtime_before": "2026-05-22T22:00:01",
+      "mode": "scheduled",
+      "path": "/etc/cups/printers.conf.O",
+      "sha1_after": "05cdd30469b60066daa34a24fe949a99fedfa7cd",
+      "changed_attributes": [
+        "size",
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-------",
+      "event": "modified",
+      "md5_after": "517f8c473be43076bc18217aaab1d6a0",
+      "sha1_before": "b09dd8db187f79d2e918bb88fe70704d3bfe2326",
+      "sha256_after": "12fc170f0b561af824d44555240cbcf82c7fef1a39d1d6256c2188174584f6ee",
+      "inode_after": 3933292
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 3,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779543713.9757007",
+    "full_log": "File '/etc/cups/printers.conf.O' modified\nMode: scheduled\nChanged attributes: size,inode,mtime,md5,sha1,sha256\nSize changed from '129' to '4536'\nOld modification time was: '1779487201', now it is '1779510418'\nOld inode was: '3932475', now it is '3933292'\nOld md5sum was: 'b56745d6c3fb11b3d03a4e80e0df6c62'\nNew md5sum is : '517f8c473be43076bc18217aaab1d6a0'\nOld sha1sum was: 'b09dd8db187f79d2e918bb88fe70704d3bfe2326'\nNew sha1sum is : '05cdd30469b60066daa34a24fe949a99fedfa7cd'\nOld sha256sum was: '7cd32e8434df94afb0e2ea68fd36986d9f8dc37a66c1e83ed6575549cf57c209'\nNew sha256sum is : '12fc170f0b561af824d44555240cbcf82c7fef1a39d1d6256c2188174584f6ee'\n",
+    "timestamp": "2026-05-23T13:41:53.262+0000"
+  },
+  {
+    "syscheck": {
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T10:32:43",
+      "inode_before": 3932274,
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "53eeae97e1e8dcbfb14fae70ee76c9ba",
+      "sha256_before": "e0cef31df17f1e5a3325ec46fdae02f573ea4d1a3c0ed4918efc7bc2557f6b1c",
+      "mtime_before": "2026-05-22T22:00:33",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf",
+      "sha1_after": "8321c03da5fcac7831189347022809f637f1bd29",
+      "changed_attributes": [
+        "inode",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "38a556c3c8d187bde69f93d5fe3e263d",
+      "sha1_before": "4c813fb7e087b4a16f3bb6daa2591f11cd0151ab",
+      "sha256_after": "4ea4382bf07ec88b4ad1925b61175c761490abb4939dc04cb6ffc34950c3c6b8",
+      "inode_after": 3932278
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 1,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779543713.9754506",
+    "full_log": "File '/etc/cups/subscriptions.conf' modified\nMode: scheduled\nChanged attributes: inode,mtime,md5,sha1,sha256\nOld modification time was: '1779487233', now it is '1779532363'\nOld inode was: '3932274', now it is '3932278'\nOld md5sum was: '53eeae97e1e8dcbfb14fae70ee76c9ba'\nNew md5sum is : '38a556c3c8d187bde69f93d5fe3e263d'\nOld sha1sum was: '4c813fb7e087b4a16f3bb6daa2591f11cd0151ab'\nNew sha1sum is : '8321c03da5fcac7831189347022809f637f1bd29'\nOld sha256sum was: 'e0cef31df17f1e5a3325ec46fdae02f573ea4d1a3c0ed4918efc7bc2557f6b1c'\nNew sha256sum is : '4ea4382bf07ec88b4ad1925b61175c761490abb4939dc04cb6ffc34950c3c6b8'\n",
+    "timestamp": "2026-05-23T13:41:53.260+0000"
+  },
+  {
+    "syscheck": {
+      "size_before": "92",
+      "uname_after": "root",
+      "mtime_after": "2026-05-23T10:00:33",
+      "size_after": "386",
+      "gid_after": "7",
+      "md5_before": "e6614ec9e0ae97f85e18e1620973a4b4",
+      "sha256_before": "338a2ed36be9e046dd4e53982dbd3179f9e99e64cf30c35fa0ad50d0bd39bb66",
+      "mtime_before": "2026-05-22T22:00:01",
+      "mode": "scheduled",
+      "path": "/etc/cups/subscriptions.conf.O",
+      "sha1_after": "7dad859f8227cae4e9f202340d0be3cc0cc331f1",
+      "changed_attributes": [
+        "size",
+        "mtime",
+        "md5",
+        "sha1",
+        "sha256"
+      ],
+      "gname_after": "lp",
+      "uid_after": "0",
+      "perm_after": "rw-r-----",
+      "event": "modified",
+      "md5_after": "9443168ff7b808529aa6d3045fc19720",
+      "sha1_before": "075ff1e9486cd58287e0586045ad17cf8694eec2",
+      "sha256_after": "e5a90cb3723e78f34a6d3340ba0bf453d7960fbf2163a0a6af8a59705e3d9512",
+      "inode_after": 3932476
+    },
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.32",
+      "name": "Fog-server",
+      "id": "041"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "rule": {
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "11.5"
+      ],
+      "hipaa": [
+        "164.312.c.1",
+        "164.312.c.2"
+      ],
+      "tsc": [
+        "PI1.4",
+        "PI1.5",
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Integrity checksum changed.",
+      "groups": [
+        "ossec",
+        "syscheck",
+        "syscheck_entry_modified",
+        "syscheck_file"
+      ],
+      "nist_800_53": [
+        "SI.7"
+      ],
+      "gdpr": [
+        "II_5.1.f"
+      ],
+      "firedtimes": 2,
+      "mitre": {
+        "technique": [
+          "Stored Data Manipulation"
+        ],
+        "id": [
+          "T1565.001"
+        ],
+        "tactic": [
+          "Impact"
+        ]
+      },
+      "id": "550",
+      "gpg13": [
+        "4.11"
+      ]
+    },
+    "location": "syscheck",
+    "decoder": {
+      "name": "syscheck_integrity_changed"
+    },
+    "id": "1779543713.9755763",
+    "full_log": "File '/etc/cups/subscriptions.conf.O' modified\nMode: scheduled\nChanged attributes: size,mtime,md5,sha1,sha256\nSize changed from '92' to '386'\nOld modification time was: '1779487201', now it is '1779530433'\nOld md5sum was: 'e6614ec9e0ae97f85e18e1620973a4b4'\nNew md5sum is : '9443168ff7b808529aa6d3045fc19720'\nOld sha1sum was: '075ff1e9486cd58287e0586045ad17cf8694eec2'\nNew sha1sum is : '7dad859f8227cae4e9f202340d0be3cc0cc331f1'\nOld sha256sum was: '338a2ed36be9e046dd4e53982dbd3179f9e99e64cf30c35fa0ad50d0bd39bb66'\nNew sha256sum is : 'e5a90cb3723e78f34a6d3340ba0bf453d7960fbf2163a0a6af8a59705e3d9512'\n",
+    "timestamp": "2026-05-23T13:41:53.260+0000"
+  }
+]

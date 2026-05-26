@@ -1,0 +1,4634 @@
+[
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T11:11:20Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T11:11:20Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T11:11:20.9531058Z",
+          "eventRecordID": "237527",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 28,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793881.23406229",
+    "timestamp": "2026-05-26T11:11:21.129+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:58:25Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:58:25Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:58:25.9329062Z",
+          "eventRecordID": "237525",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 153,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779793106.22807554",
+    "timestamp": "2026-05-26T10:58:26.096+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:51:48Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:51:48Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:51:48.6048537Z",
+          "eventRecordID": "237523",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 137,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792708.22679313",
+    "timestamp": "2026-05-26T10:51:48.775+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param5": "Neustart des Diensts",
+          "binary": "74006100630074006900630061006C0072006D006D000000",
+          "param3": "12000",
+          "param4": "1",
+          "param1": "TacticalRMM Agent Service",
+          "param2": "1"
+        },
+        "system": {
+          "eventID": "7031",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Dienst \"TacticalRMM Agent Service\" wurde unerwartet beendet. Dies ist bereits 1 Mal vorgekommen. Folgende Korrekturmaßnahmen werden in 12000 Millisekunden durchgeführt: Neustart des Diensts.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:50:10.4813058Z",
+          "eventRecordID": "183078",
+          "threadID": "8436",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "ERROR",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 5,
+      "description": "TacticalRMM Agent Service terminated unexpectedly",
+      "groups": [
+        "windows",
+        "windows_system"
+      ],
+      "id": "61107"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792611.22588768",
+    "timestamp": "2026-05-26T10:50:11.631+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:41:20Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:41:20Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:41:20.4537566Z",
+          "eventRecordID": "237521",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 108,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779792080.22313294",
+    "timestamp": "2026-05-26T10:41:20.619+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:34:54Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:34:54Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:34:54.3567164Z",
+          "eventRecordID": "237519",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 88,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779791694.22178431",
+    "timestamp": "2026-05-26T10:34:54.519+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0x1bd7a24",
+          "targetUserName": "KS_01_003$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x1BD7A24\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:14:28.2824595Z",
+          "eventRecordID": "2309546",
+          "threadID": "10852",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12545",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 10,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779790468.21601775",
+    "timestamp": "2026-05-26T10:14:28.742+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "::1",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0x1bd7a24",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{ab6ffec5-40e5-a4e3-1dd7-af7611be4629}",
+          "targetUserName": "KS_01_003$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "ipPort": "0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0x1BD7A24\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{ab6ffec5-40e5-a4e3-1dd7-af7611be4629}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t::1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:14:28.2819461Z",
+          "eventRecordID": "2309545",
+          "threadID": "10852",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 10,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779790468.21594171",
+    "timestamp": "2026-05-26T10:14:28.727+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0x1bd7681",
+          "targetUserName": "KS_01_003$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x1BD7681\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:14:28.2789434Z",
+          "eventRecordID": "2309543",
+          "threadID": "11468",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12545",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 9,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779790468.21591738",
+    "timestamp": "2026-05-26T10:14:28.715+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "::1",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0x1bd7681",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{ab6ffec5-40e5-a4e3-1dd7-af7611be4629}",
+          "targetUserName": "KS_01_003$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "ipPort": "0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0x1BD7681\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{ab6ffec5-40e5-a4e3-1dd7-af7611be4629}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t::1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T10:14:27.5397188Z",
+          "eventRecordID": "2309542",
+          "threadID": "11468",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 9,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779790468.21584134",
+    "timestamp": "2026-05-26T10:14:28.691+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T10:11:22Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T10:11:22Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T10:11:22.4675074Z",
+          "eventRecordID": "237517",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 38,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779790282.21477028",
+    "timestamp": "2026-05-26T10:11:22.605+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T09:58:25Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T09:58:25Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:58:25.9525550Z",
+          "eventRecordID": "237515",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 150,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789506.21223731",
+    "timestamp": "2026-05-26T09:58:26.094+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER37E2.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER386F.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER38FD.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER3911.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER3960.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_3b8deff1-d624-4850-a9b1-de7bc6e1c214, 0, 4f1e430b-c906-4b1a-9680-c93cf674f747, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER37E2.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER386F.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER38FD.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER3911.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER3960.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_3b8deff1-d624-4850-a9b1-de7bc6e1c214\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 4f1e430b-c906-4b1a-9680-c93cf674f747\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:45.2870092Z",
+          "eventRecordID": "237513",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 26,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789225.21054962",
+    "timestamp": "2026-05-26T09:53:45.429+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 2b68, 01dcecf588edca6d, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 4f1e430b-c906-4b1a-9680-c93cf674f747"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x2b68\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecf588edca6d\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 4f1e430b-c906-4b1a-9680-c93cf674f747\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:42.4864058Z",
+          "eventRecordID": "237512",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 18,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789222.21051968",
+    "timestamp": "2026-05-26T09:53:42.629+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF626.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF694.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF77F.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF791.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF7B1.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_66f6a79b-632a-4d7e-af3f-49e8d11af338, 0, c199aca4-58f9-4aa1-8581-b891da5c4114, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF626.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF694.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF77F.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF791.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF7B1.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_66f6a79b-632a-4d7e-af3f-49e8d11af338\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: c199aca4-58f9-4aa1-8581-b891da5c4114\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:28.1734542Z",
+          "eventRecordID": "237511",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 25,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789208.21046946",
+    "timestamp": "2026-05-26T09:53:28.318+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, d40, 01dcecf57ee4f923, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, c199aca4-58f9-4aa1-8581-b891da5c4114"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0xd40\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecf57ee4f923\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: c199aca4-58f9-4aa1-8581-b891da5c4114\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:25.6749017Z",
+          "eventRecordID": "237510",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 17,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789205.21043956",
+    "timestamp": "2026-05-26T09:53:25.814+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T09:53:16Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T09:53:16Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:16.4174990Z",
+          "eventRecordID": "237509",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 139,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789196.21042330",
+    "timestamp": "2026-05-26T09:53:16.562+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB563.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB5D2.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB67F.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB68E.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB6AF.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_0760932e-f66c-4a0d-a779-c46531a7d207, 0, eb802856-d46b-4418-8d7a-28a71bfede19, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB563.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB5D2.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB67F.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB68E.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB6AF.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_0760932e-f66c-4a0d-a779-c46531a7d207\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: eb802856-d46b-4418-8d7a-28a71bfede19\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:11.6888632Z",
+          "eventRecordID": "237508",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 24,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789191.21037308",
+    "timestamp": "2026-05-26T09:53:11.837+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 275c, 01dcecf57501c2f4, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, eb802856-d46b-4418-8d7a-28a71bfede19"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x275c\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecf57501c2f4\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: eb802856-d46b-4418-8d7a-28a71bfede19\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:53:09.0845748Z",
+          "eventRecordID": "237507",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 16,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789189.21034314",
+    "timestamp": "2026-05-26T09:53:09.225+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER7175.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER71D4.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER7290.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER72AD.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER72ED.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_bc4464e1-5586-4d29-9b6c-c33fb47ac39b, 0, 75da0925-b4a4-4c1e-9ebe-d6d5ffdad810, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER7175.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER71D4.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER7290.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER72AD.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER72ED.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_bc4464e1-5586-4d29-9b6c-c33fb47ac39b\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 75da0925-b4a4-4c1e-9ebe-d6d5ffdad810\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:52:54.1962190Z",
+          "eventRecordID": "237506",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 23,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789174.21027654",
+    "timestamp": "2026-05-26T09:52:54.372+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 23e0, 01dcecf56a9ac11e, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 75da0925-b4a4-4c1e-9ebe-d6d5ffdad810"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x23e0\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecf56a9ac11e\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 75da0925-b4a4-4c1e-9ebe-d6d5ffdad810\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:52:51.6815391Z",
+          "eventRecordID": "237505",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 15,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779789171.21023025",
+    "timestamp": "2026-05-26T09:52:51.866+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T09:41:21Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T09:41:21Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:41:21.2835920Z",
+          "eventRecordID": "237503",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 106,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779788481.20713799",
+    "timestamp": "2026-05-26T09:41:21.423+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Manuell starten",
+          "param4": "BITS",
+          "param1": "Background Intelligent Transfer Service",
+          "param2": "Automatisch starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Background Intelligent Transfer Service\" wurde von Automatisch starten in Manuell starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:35:52.7731839Z",
+          "eventRecordID": "183073",
+          "threadID": "11780",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 12,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779788153.20571924",
+    "timestamp": "2026-05-26T09:35:53.913+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Automatisch starten",
+          "param4": "BITS",
+          "param1": "Background Intelligent Transfer Service",
+          "param2": "Manuell starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Background Intelligent Transfer Service\" wurde von Manuell starten in Automatisch starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T09:33:47.9915828Z",
+          "eventRecordID": "183072",
+          "threadID": "13252",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 11,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779788029.20511540",
+    "timestamp": "2026-05-26T09:33:49.160+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:51:51Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:51:51Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:51:51.5976297Z",
+          "eventRecordID": "237501",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 177,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779785511.19466580",
+    "timestamp": "2026-05-26T08:51:51.699+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param5": "Neustart des Diensts",
+          "binary": "74006100630074006900630061006C0072006D006D000000",
+          "param3": "12000",
+          "param4": "1",
+          "param1": "TacticalRMM Agent Service",
+          "param2": "1"
+        },
+        "system": {
+          "eventID": "7031",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Dienst \"TacticalRMM Agent Service\" wurde unerwartet beendet. Dies ist bereits 1 Mal vorgekommen. Folgende Korrekturmaßnahmen werden in 12000 Millisekunden durchgeführt: Neustart des Diensts.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:50:10.6368937Z",
+          "eventRecordID": "183069",
+          "threadID": "13140",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "ERROR",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 133,
+      "mail": false,
+      "level": 5,
+      "description": "TacticalRMM Agent Service terminated unexpectedly",
+      "groups": [
+        "windows",
+        "windows_system"
+      ],
+      "id": "61107"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779785411.19432359",
+    "timestamp": "2026-05-26T08:50:11.662+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "binary": "2D20436F64653A2020434F525356434330303030303737342D2043616C6C3A2020434F525356434330303030303735362D205049443A202030303030393539322D205449443A202030303031333332382D20434D443A2020433A5C57494E444F57535C73797374656D33325C76737376632E6578652020202D20557365723A204E616D653A204E542D4155544F524954C4545C53595354454D2C205349443A532D312D352D313820"
+        },
+        "system": {
+          "eventID": "8224",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der VSS-Dienst wird aufgrund eines Leerlaufzeitlimits heruntergefahren. \"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:45:54.6626108Z",
+          "eventRecordID": "237499",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "VSS"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 5,
+      "description": "The VSS service is shutting down due to idle timeout.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60702"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779785154.19308984",
+    "timestamp": "2026-05-26T08:45:54.673+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:44:54Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:44:54Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:44:54.8142394Z",
+          "eventRecordID": "237498",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 155,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779785094.19291579",
+    "timestamp": "2026-05-26T08:44:54.767+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:42:13Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:42:13Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:42:13.3279335Z",
+          "eventRecordID": "237494",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 146,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784933.19204336",
+    "timestamp": "2026-05-26T08:42:13.286+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "C:\\\\WINDOWS\\\\system32\\\\srtasks.exe ExecuteScheduledSPPCreation, Geplanter Prüfpunkt",
+          "binary": "0000000067020000590200000000000022CE28677C6DDA79E28C1C000000000000000000"
+        },
+        "system": {
+          "eventID": "8194",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Wiederherstellungspunkt wurde erfolgreich erstellt (Prozess = C:\\WINDOWS\\system32\\srtasks.exe ExecuteScheduledSPPCreation; Beschreibung = Geplanter Prüfpunkt).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:42:01.4075838Z",
+          "eventRecordID": "237489",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "System Restore"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 3,
+      "description": "Restore point successfully created.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60718"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784922.19200446",
+    "timestamp": "2026-05-26T08:42:02.396+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Manuell starten",
+          "param4": "BITS",
+          "param1": "Background Intelligent Transfer Service",
+          "param2": "Automatisch starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Background Intelligent Transfer Service\" wurde von Automatisch starten in Manuell starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:41:52.7721483Z",
+          "eventRecordID": "183062",
+          "threadID": "7852",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 31,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784913.19194900",
+    "timestamp": "2026-05-26T08:41:53.700+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9100,D,50, DS_Token_DB:, 1, C:\\\\WINDOWS\\\\system32\\\\config\\\\systemprofile\\\\AppData\\\\Local\\\\DataSharing\\\\Storage\\\\DSTokenDB2.dat, 0,  [1] 0.000004 +J(0) [2] 0.000847 -0.000564 (1) WT +J(0) +M(C:0K, Fs:17, WS:4K # 12K, PF:4K # 0K, P:4K) [3] 0.012885 -0.002918 (6) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:10, WS:36K # 0K, PF:32K # 0K, P:32K) [4] 0.004839 +J(0) [5] - [6] - [7] - [8] 0.000656 -0.000475 (2) CM -0.000364 (2) WT +J(CM:2, PgRf:2, Rd:4/2, Dy:0/0, Lg:54/1) +M(C:8K, Fs:5, WS:20K # 0K, PF:32K # 0K, P:32K) [9] 0.003690 -0.003356 (3) CM -0.003207 (3) WT +J(CM:3, PgRf:23, Rd:0/3, Dy:0/0, Lg:0/0) +M(C:0K, Fs:27, WS:100K # 96K, PF:196K # 204K, P:196K) [10] 0.000662 -0.000527 (3) CM -0.000433 (3) WT +J(CM:3, PgRf:40, Rd:0/3, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:4K # 0K, PF:68K # 60K, P:68K) [11] 0.000188 -0.000157 (1) CM -0.000128 (1) WT +J(CM:1, PgRf:1, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K) [12] 0.000235 -0.000161 (1) CM -0.000132 (1) WT +J(CM:1, PgRf:42, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:8, WS:32K # 32K, PF:52K # 52K, P:52K) [13] 0.000001 +J(0) [14] 0.0 +J(0) [15] 0.000184 -0.000161 (1) CM -0.000132 (1) WT +J(CM:1, PgRf:1, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K)., 1 0, lgposAttach = 00000059:000D:0268, dbv = 1568.110.240"
+        },
+        "system": {
+          "eventID": "326",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9100,D,50) DS_Token_DB: The database engine attached a database (1, C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\DataSharing\\Storage\\DSTokenDB2.dat). (Time=0 seconds) \r\n \r\nSaved Cache: 1 0 \r\nAdditional Data: lgposAttach = 00000059:000D:0268,\ndbv = 1568.110.240 \r\n \r\nInternal Timing Sequence: \n[1] 0.000004 +J(0)\n[2] 0.000847 -0.000564 (1) WT +J(0) +M(C:0K, Fs:17, WS:4K # 12K, PF:4K # 0K, P:4K)\n[3] 0.012885 -0.002918 (6) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:10, WS:36K # 0K, PF:32K # 0K, P:32K)\n[4] 0.004839 +J(0)\n[5] -\n[6] -\n[7] -\n[8] 0.000656 -0.000475 (2) CM -0.000364 (2) WT +J(CM:2, PgRf:2, Rd:4/2, Dy:0/0, Lg:54/1) +M(C:8K, Fs:5, WS:20K # 0K, PF:32K # 0K, P:32K)\n[9] 0.003690 -0.003356 (3) CM -0.003207 (3) WT +J(CM:3, PgRf:23, Rd:0/3, Dy:0/0, Lg:0/0) +M(C:0K, Fs:27, WS:100K # 96K, PF:196K # 204K, P:196K)\n[10] 0.000662 -0.000527 (3) CM -0.000433 (3) WT +J(CM:3, PgRf:40, Rd:0/3, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:4K # 0K, PF:68K # 60K, P:68K)\n[11] 0.000188 -0.000157 (1) CM -0.000128 (1) WT +J(CM:1, PgRf:1, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K)\n[12] 0.000235 -0.000161 (1) CM -0.000132 (1) WT +J(CM:1, PgRf:42, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:8, WS:32K # 32K, PF:52K # 52K, P:52K)\n[13] 0.000001 +J(0)\n[14] 0.0 +J(0)\n[15] 0.000184 -0.000161 (1) CM -0.000132 (1) WT +J(CM:1, PgRf:1, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:41:22.3328286Z",
+          "eventRecordID": "237487",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine attached a database.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60798"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784882.19159944",
+    "timestamp": "2026-05-26T08:41:22.427+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9100,U,98, DS_Token_DB:"
+        },
+        "system": {
+          "eventID": "302",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9100,U,98) DS_Token_DB: Das Datenbankmodul hat erfolgreich die Schritte zur Wiederherstellung abgeschlossen.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:41:22.2859631Z",
+          "eventRecordID": "237485",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "3",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine has completed recovery steps.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60809"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784882.19158624",
+    "timestamp": "2026-05-26T08:41:22.395+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9100,R,98, DS_Token_DB:, C:\\\\WINDOWS\\\\system32\\\\config\\\\systemprofile\\\\AppData\\\\Local\\\\DataSharing\\\\Storage\\\\DSS.log,  [1] 0.018253 -0.003676 (9) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:40560/28) +M(C:0K, Fs:117, WS:256K # 260K, PF:164K # 168K, P:164K)., AttachDB, 3"
+        },
+        "system": {
+          "eventID": "301",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9100,R,98) DS_Token_DB: The database engine has finished replaying logfile C:\\WINDOWS\\system32\\config\\systemprofile\\AppData\\Local\\DataSharing\\Storage\\DSS.log. \r\n \r\nProcessing Stats: \n[1] 0.018253 -0.003676 (9) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:40560/28) +M(C:0K, Fs:117, WS:256K # 260K, PF:164K # 168K, P:164K). \r\nLog record of type 'AttachDB ' was seen most frequently (3 times)\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:41:22.2547192Z",
+          "eventRecordID": "237484",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "3",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 6,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is replaying log file C:\\Winnt\\system32\\wins\\j50.log.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60808"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784882.19156210",
+    "timestamp": "2026-05-26T08:41:22.379+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9100,P,98, DS_Token_DB:, 0, 10, 00, 19045, 0000"
+        },
+        "system": {
+          "eventID": "102",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9100,P,98) DS_Token_DB: Das Datenbankmodul (10.00.19045.0000) startet eine neue Instanz (0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:41:22.2234738Z",
+          "eventRecordID": "237482",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is starting a new instance.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60805"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784882.19153604",
+    "timestamp": "2026-05-26T08:41:22.373+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "svchost, 9100,R,98, DS_Token_DB:"
+        },
+        "system": {
+          "eventID": "300",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"svchost (9100,R,98) DS_Token_DB: Das Datenbankmodul initiiert Schritte zur Wiederherstellung.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:41:22.2390959Z",
+          "eventRecordID": "237483",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "3",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is initiating recovery steps.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60807"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784882.19154938",
+    "timestamp": "2026-05-26T08:41:22.373+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:38:18Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:38:18Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:38:18.4924331Z",
+          "eventRecordID": "237477",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 130,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784700.19081785",
+    "timestamp": "2026-05-26T08:38:20.628+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:37:42Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:37:42Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:37:42.7401540Z",
+          "eventRecordID": "237475",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 127,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784665.19049239",
+    "timestamp": "2026-05-26T08:37:45.690+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:37:01Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:37:01Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:37:01.5772010Z",
+          "eventRecordID": "237473",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 122,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784625.19022733",
+    "timestamp": "2026-05-26T08:37:05.447+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:36:07Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:36:07Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:36:07.1399327Z",
+          "eventRecordID": "237471",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 119,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784572.19009170",
+    "timestamp": "2026-05-26T08:36:12.247+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERD75.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER1D35.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER1E20.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER1E36.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER1EC3.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_14f8b6bd-2f2c-43a1-a525-fc936c12fbf1, 0, 138b6ce7-a81f-479b-9bfe-611524d7e567, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERD75.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER1D35.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER1E20.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER1E36.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER1EC3.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_14f8b6bd-2f2c-43a1-a525-fc936c12fbf1\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 138b6ce7-a81f-479b-9bfe-611524d7e567\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:52.8726806Z",
+          "eventRecordID": "237466",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 10,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784499.18892520",
+    "timestamp": "2026-05-26T08:34:59.650+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:34:45Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:34:45Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:50.9746373Z",
+          "eventRecordID": "237465",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 114,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784497.18888865",
+    "timestamp": "2026-05-26T08:34:57.797+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 674, 01dcecea81a86a28, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 138b6ce7-a81f-479b-9bfe-611524d7e567"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x674\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecea81a86a28\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 138b6ce7-a81f-479b-9bfe-611524d7e567\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:46.2702837Z",
+          "eventRecordID": "237464",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 5,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784493.18882057",
+    "timestamp": "2026-05-26T08:34:53.148+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERCD01.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERCDBD.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERCEB8.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERCEDB.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERCF1B.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_99e048af-2867-42a5-90ed-65d68926ce42, 0, 41aebf48-8001-4ac7-8861-91a587116cd5, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERCD01.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERCDBD.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERCEB8.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERCEDB.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERCF1B.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_99e048af-2867-42a5-90ed-65d68926ce42\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 41aebf48-8001-4ac7-8861-91a587116cd5\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:33.0308459Z",
+          "eventRecordID": "237463",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 9,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784479.18876483",
+    "timestamp": "2026-05-26T08:34:39.943+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 2af8, 01dcecea78108513, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 41aebf48-8001-4ac7-8861-91a587116cd5"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x2af8\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecea78108513\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 41aebf48-8001-4ac7-8861-91a587116cd5\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:29.7482556Z",
+          "eventRecordID": "237462",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784476.18871460",
+    "timestamp": "2026-05-26T08:34:36.626+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB0FD.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB17B.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB218.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB22A.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERB259.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_0ca7efc2-0b86-4d48-9d3d-f3482fa57837, 0, 966d4795-6505-4102-8ad2-950517234ba8, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB0FD.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB17B.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB218.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB22A.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERB259.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_0ca7efc2-0b86-4d48-9d3d-f3482fa57837\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 966d4795-6505-4102-8ad2-950517234ba8\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:24.8095411Z",
+          "eventRecordID": "237461",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 8,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784471.18865886",
+    "timestamp": "2026-05-26T08:34:31.683+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "bucketId": "9bb9e63b2587cba81c70da90c0740d3d341911fb3e541c24d2f8ad73b65e3193",
+          "deviceAttributes": "BaseBoardManufacturer:Gigabyte Technology Co., Ltd.;FirmwareManufacturer:Award Software International, Inc.;FirmwareVersion:F8;OEMModelNumber:H61M-S2V-B3;OEMModelBaseBoard:H61M-S2V-B3;OEMModelSystemFamily:;OEMManufacturerName:Gigabyte Technology Co., Ltd.;OEMModelSKU:;OSArchitecture:amd64;",
+          "updateType": "0",
+          "hResult": "0"
+        },
+        "system": {
+          "eventID": "1801",
+          "keywords": "0x8000000000000000",
+          "providerGuid": "{7d5387b0-cbe0-11da-a94d-0800200c9a66}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Die Zertifizierungsstelle/Schlüssel für den sicheren Start müssen aktualisiert werden. Diese Gerätesignaturinformationen sind hier enthalten.\r\nDeviceAttributes: BaseBoardManufacturer:Gigabyte Technology Co., Ltd.;FirmwareManufacturer:Award Software International, Inc.;FirmwareVersion:F8;OEMModelNumber:H61M-S2V-B3;OEMModelBaseBoard:H61M-S2V-B3;OEMModelSystemFamily:;OEMManufacturerName:Gigabyte Technology Co., Ltd.;OEMModelSKU:;OSArchitecture:amd64;\r\nBucketId: 9bb9e63b2587cba81c70da90c0740d3d341911fb3e541c24d2f8ad73b65e3193\r\nBucketConfidenceLevel: \r\nUpdateType: 0\r\nHResult: Der Vorgang wurde erfolgreich beendet.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:23.3101804Z",
+          "eventRecordID": "183031",
+          "threadID": "6208",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "8772",
+          "severityValue": "ERROR",
+          "providerName": "Microsoft-Windows-TPM-WMI"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 7,
+      "mail": false,
+      "level": 5,
+      "description": "Windows System error event",
+      "groups": [
+        "windows",
+        "windows_system",
+        "system_error"
+      ],
+      "id": "61102",
+      "gpg13": [
+        "4.3"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784471.18862593",
+    "timestamp": "2026-05-26T08:34:31.183+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 37bc, 01dcecea73b0e3d0, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 966d4795-6505-4102-8ad2-950517234ba8"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x37bc\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecea73b0e3d0\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 966d4795-6505-4102-8ad2-950517234ba8\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:22.5930809Z",
+          "eventRecordID": "237460",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784469.18859599",
+    "timestamp": "2026-05-26T08:34:29.500+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER6DE9.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER6E57.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER6EF4.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER6F04.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WER6F34.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_534e4135-13a5-4bb9-a3d3-1deb68a6dc33, 0, 70eec10b-7cad-4e21-b604-a4f9f648b726, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER6DE9.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER6E57.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER6EF4.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER6F04.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WER6F34.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_534e4135-13a5-4bb9-a3d3-1deb68a6dc33\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 70eec10b-7cad-4e21-b604-a4f9f648b726\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:07.9509813Z",
+          "eventRecordID": "237459",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 7,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784454.18794716",
+    "timestamp": "2026-05-26T08:34:14.829+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 3598, 01dcecea698f0f8b, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 70eec10b-7cad-4e21-b604-a4f9f648b726"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x3598\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecea698f0f8b\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 70eec10b-7cad-4e21-b604-a4f9f648b726\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:34:05.4299247Z",
+          "eventRecordID": "237458",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784452.18766640",
+    "timestamp": "2026-05-26T08:34:12.329+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "1971109447500670815, 4, APPCRASH, Nicht verfügbar, 0, AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369,   \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF5EA.tmp.dmp  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERF80E.tmp.WERInternalMetadata.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERFA41.tmp.xml  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERFAAD.tmp.csv  \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\Temp\\\\WERFAEC.tmp.txt, \\\\\\\\?\\\\C:\\\\ProgramData\\\\Microsoft\\\\Windows\\\\WER\\\\ReportArchive\\\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_9595e745-a71c-4250-a2eb-7f73ea37c06a, 0, 95737588-d258-450c-b90e-ec3bdcbc1408, 268435456, e2bf68422031c6161b5ac9995fb1a75f, 0"
+        },
+        "system": {
+          "eventID": "1001",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Fehlerbucket 1971109447500670815, Typ 4\r\nEreignisname: APPCRASH\r\nAntwort: Nicht verfügbar\r\nCAB-Datei-ID: 0\r\n\r\nProblemsignatur:\r\nP1: AcroCEF.exe\r\nP2: 26.1.21563.0\r\nP3: 6a04e5da\r\nP4: KERNELBASE.dll\r\nP5: 10.0.19041.6280\r\nP6: 56511854\r\nP7: c06d007e\r\nP8: 0000000000025369\r\nP9: \r\nP10: \r\n\r\nAngefügte Dateien:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF5EA.tmp.dmp\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERF80E.tmp.WERInternalMetadata.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERFA41.tmp.xml\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERFAAD.tmp.csv\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\Temp\\WERFAEC.tmp.txt\r\n\r\nDiese Dateien befinden sich möglicherweise hier:\r\n\\\\?\\C:\\ProgramData\\Microsoft\\Windows\\WER\\ReportArchive\\AppCrash_AcroCEF.exe_3d89c923afbacf27ccc2fa66c28762ff355de7c0_b371bd89_9595e745-a71c-4250-a2eb-7f73ea37c06a\r\n\r\nAnalysesymbol: \r\nEs wird erneut nach einer Lösung gesucht: 0\r\nBerichts-ID: 95737588-d258-450c-b90e-ec3bdcbc1408\r\nBerichtstatus: 268435456\r\nBucket mit Hash: e2bf68422031c6161b5ac9995fb1a75f\r\nCAB-Datei-Guid: 0\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:33:38.7006017Z",
+          "eventRecordID": "237457",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Windows Error Reporting"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 6,
+      "mail": false,
+      "level": 4,
+      "description": "Summary event of the report's signatures.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60608"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784425.18737987",
+    "timestamp": "2026-05-26T08:33:45.663+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "AcroCEF.exe, 26.1.21563.0, 6a04e5da, KERNELBASE.dll, 10.0.19041.6280, 56511854, c06d007e, 0000000000025369, 1010, 01dcecea569e3e1d, C:\\\\Program Files\\\\Adobe\\\\Acrobat DC\\\\Acrobat\\\\AcroCEF\\\\AcroCEF.exe, C:\\\\WINDOWS\\\\System32\\\\KERNELBASE.dll, 95737588-d258-450c-b90e-ec3bdcbc1408"
+        },
+        "system": {
+          "eventID": "1000",
+          "keywords": "0x80000000000000",
+          "level": "2",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Name der fehlerhaften Anwendung: AcroCEF.exe, Version: 26.1.21563.0, Zeitstempel: 0x6a04e5da\r\nName des fehlerhaften Moduls: KERNELBASE.dll, Version: 10.0.19041.6280, Zeitstempel: 0x56511854\r\nAusnahmecode: 0xc06d007e\r\nFehleroffset: 0x0000000000025369\r\nID des fehlerhaften Prozesses: 0x1010\r\nStartzeit der fehlerhaften Anwendung: 0x01dcecea569e3e1d\r\nPfad der fehlerhaften Anwendung: C:\\Program Files\\Adobe\\Acrobat DC\\Acrobat\\AcroCEF\\AcroCEF.exe\r\nPfad des fehlerhaften Moduls: C:\\WINDOWS\\System32\\KERNELBASE.dll\r\nBerichtskennung: 95737588-d258-450c-b90e-ec3bdcbc1408\r\nVollständiger Name des fehlerhaften Pakets: \r\nAnwendungs-ID, die relativ zum fehlerhaften Paket ist: \"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:33:34.6938777Z",
+          "eventRecordID": "237456",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "100",
+          "processID": "0",
+          "severityValue": "ERROR",
+          "providerName": "Application Error"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 9,
+      "description": "Windows application error event.",
+      "groups": [
+        "windows",
+        "windows_application",
+        "system_error"
+      ],
+      "id": "60602",
+      "gdpr": [
+        "IV_35.7.d"
+      ],
+      "gpg13": [
+        "4.3"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784424.18734993",
+    "timestamp": "2026-05-26T08:33:44.162+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "param3": "Automatisch starten",
+          "param4": "BITS",
+          "param1": "Background Intelligent Transfer Service",
+          "param2": "Manuell starten"
+        },
+        "system": {
+          "eventID": "7040",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "4",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Starttyp des Diensts \"Background Intelligent Transfer Service\" wurde von Manuell starten in Automatisch starten geändert.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:32:23.7536653Z",
+          "eventRecordID": "183029",
+          "threadID": "4056",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "INFORMATION",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 21,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.1",
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Service startup type was changed",
+      "groups": [
+        "windows",
+        "windows_system",
+        "policy_changed"
+      ],
+      "id": "61104",
+      "nist_800_53": [
+        "AU.6"
+      ],
+      "info": "This does not appear to be logged on Windows 2000",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784351.18715330",
+    "timestamp": "2026-05-26T08:32:31.374+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0x4fb840",
+          "targetUserName": "KSUSER",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "logonType": "7"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FB840\r\n\r\nAnmeldetyp:\t\t\t7\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:32:09.9169489Z",
+          "eventRecordID": "2308310",
+          "threadID": "864",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12545",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 16,
+      "mail": false,
+      "level": 3,
+      "description": "Non service account logged off.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67023"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18676867",
+    "timestamp": "2026-05-26T08:32:17.679+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0x4fba36",
+          "targetUserName": "KSUSER",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "logonType": "7"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FBA36\r\n\r\nAnmeldetyp:\t\t\t7\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:32:09.7022023Z",
+          "eventRecordID": "2308309",
+          "threadID": "860",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12545",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 17,
+      "mail": false,
+      "level": 3,
+      "description": "Non service account logged off.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67023"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18679306",
+    "timestamp": "2026-05-26T08:32:17.679+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x4fb840",
+          "subjectUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "subjectDomainName": "ARZW",
+          "privilegeList": "SeSecurityPrivilege     SeTakeOwnershipPrivilege     SeLoadDriverPrivilege     SeBackupPrivilege     SeRestorePrivilege     SeDebugPrivilege     SeSystemEnvironmentPrivilege     SeImpersonatePrivilege",
+          "subjectUserName": "KSUSER"
+        },
+        "system": {
+          "eventID": "4672",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Einer neuen Anmeldung wurden besondere Rechte zugewiesen.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FB840\r\n\r\nBerechtigungen:\t\tSeSecurityPrivilege\r\n\t\t\tSeTakeOwnershipPrivilege\r\n\t\t\tSeLoadDriverPrivilege\r\n\t\t\tSeBackupPrivilege\r\n\t\t\tSeRestorePrivilege\r\n\t\t\tSeDebugPrivilege\r\n\t\t\tSeSystemEnvironmentPrivilege\r\n\t\t\tSeImpersonatePrivilege\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:32:09.7020509Z",
+          "eventRecordID": "2308308",
+          "threadID": "7004",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12548",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 12,
+      "mail": false,
+      "level": 3,
+      "description": "Special privileges assigned to new logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "mitre": {
+        "technique": [
+          "Domain Policy Modification"
+        ],
+        "id": [
+          "T1484"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Privilege Escalation"
+        ]
+      },
+      "id": "67028"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18673996",
+    "timestamp": "2026-05-26T08:32:17.647+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0x4fb840",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "KS_01_003",
+          "targetLogonId": "0x4fba36",
+          "logonProcessName": "Negotiat",
+          "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+          "targetUserName": "KSUSER",
+          "keyLength": "0",
+          "elevatedToken": "%%1843",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x2dc",
+          "processName": "C:\\\\Windows\\\\System32\\\\lsass.exe",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "virtualAccount": "%%1843",
+          "logonType": "7",
+          "subjectUserName": "KS_01_003$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t7\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tNein\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FBA36\r\n\tVerknüpfte Anmelde-ID:\t\t0x4FB840\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x2dc\r\n\tProzessname:\t\tC:\\Windows\\System32\\lsass.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tKS_01_003\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tNegotiat\r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T08:32:09.7020445Z",
+          "eventRecordID": "2308307",
+          "threadID": "7004",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 20,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18666066",
+    "timestamp": "2026-05-26T08:32:17.632+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0x4fba36",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "KS_01_003",
+          "targetLogonId": "0x4fb840",
+          "logonProcessName": "Negotiat",
+          "logonGuid": "{0ed60ad4-1844-d315-2657-f7e90b69624f}",
+          "targetUserName": "KSUSER",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x2dc",
+          "processName": "C:\\\\Windows\\\\System32\\\\lsass.exe",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "virtualAccount": "%%1843",
+          "logonType": "7",
+          "subjectUserName": "KS_01_003$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t7\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FB840\r\n\tVerknüpfte Anmelde-ID:\t\t0x4FBA36\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{0ed60ad4-1844-d315-2657-f7e90b69624f}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x2dc\r\n\tProzessname:\t\tC:\\Windows\\System32\\lsass.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tKS_01_003\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tNegotiat\r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T08:32:09.7020245Z",
+          "eventRecordID": "2308306",
+          "threadID": "7004",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 19,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18658140",
+    "timestamp": "2026-05-26T08:32:17.616+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x4fb7b8",
+          "subjectUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "subjectDomainName": "ARZW",
+          "privilegeList": "SeSecurityPrivilege     SeTakeOwnershipPrivilege     SeLoadDriverPrivilege     SeBackupPrivilege     SeRestorePrivilege     SeDebugPrivilege     SeSystemEnvironmentPrivilege     SeImpersonatePrivilege",
+          "subjectUserName": "KSUSER"
+        },
+        "system": {
+          "eventID": "4672",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Einer neuen Anmeldung wurden besondere Rechte zugewiesen.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FB7B8\r\n\r\nBerechtigungen:\t\tSeSecurityPrivilege\r\n\t\t\tSeTakeOwnershipPrivilege\r\n\t\t\tSeLoadDriverPrivilege\r\n\t\t\tSeBackupPrivilege\r\n\t\t\tSeRestorePrivilege\r\n\t\t\tSeDebugPrivilege\r\n\t\t\tSeSystemEnvironmentPrivilege\r\n\t\t\tSeImpersonatePrivilege\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:32:09.5963617Z",
+          "eventRecordID": "2308304",
+          "threadID": "864",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12548",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 11,
+      "mail": false,
+      "level": 3,
+      "description": "Special privileges assigned to new logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "mitre": {
+        "technique": [
+          "Domain Policy Modification"
+        ],
+        "id": [
+          "T1484"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Privilege Escalation"
+        ]
+      },
+      "id": "67028"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18655271",
+    "timestamp": "2026-05-26T08:32:17.594+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0x4fb7b8",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "127.0.0.1",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "KS_01_003",
+          "targetLogonId": "0x4fb7dd",
+          "logonProcessName": "User32",
+          "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+          "targetUserName": "KSUSER",
+          "keyLength": "0",
+          "elevatedToken": "%%1843",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x744",
+          "processName": "C:\\\\Windows\\\\System32\\\\svchost.exe",
+          "ipPort": "0",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "virtualAccount": "%%1843",
+          "logonType": "11",
+          "subjectUserName": "KS_01_003$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t11\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tNein\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FB7DD\r\n\tVerknüpfte Anmelde-ID:\t\t0x4FB7B8\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x744\r\n\tProzessname:\t\tC:\\Windows\\System32\\svchost.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tKS_01_003\r\n\tQuellnetzwerkadresse:\t127.0.0.1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tUser32 \r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T08:32:09.5963564Z",
+          "eventRecordID": "2308303",
+          "threadID": "864",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 18,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18647225",
+    "timestamp": "2026-05-26T08:32:17.538+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x3e7",
+          "subjectDomainName": "ARZW",
+          "targetLinkedLogonId": "0x4fb7dd",
+          "impersonationLevel": "%%1833",
+          "ipAddress": "127.0.0.1",
+          "authenticationPackageName": "Negotiate",
+          "workstationName": "KS_01_003",
+          "targetLogonId": "0x4fb7b8",
+          "logonProcessName": "User32",
+          "logonGuid": "{00000000-0000-0000-0000-000000000000}",
+          "targetUserName": "KSUSER",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-5-18",
+          "processId": "0x744",
+          "processName": "C:\\\\Windows\\\\System32\\\\svchost.exe",
+          "ipPort": "0",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-21-228770904-35461013-1130905197-2637",
+          "virtualAccount": "%%1843",
+          "logonType": "11",
+          "subjectUserName": "KS_01_003$"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x3E7\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t11\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-21-228770904-35461013-1130905197-2637\r\n\tKontoname:\t\tKSUSER\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0x4FB7B8\r\n\tVerknüpfte Anmelde-ID:\t\t0x4FB7DD\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{00000000-0000-0000-0000-000000000000}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x744\r\n\tProzessname:\t\tC:\\Windows\\System32\\svchost.exe\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\tKS_01_003\r\n\tQuellnetzwerkadresse:\t127.0.0.1\r\n\tQuellport:\t\t0\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tUser32 \r\n\tAuthentifizierungspaket:\tNegotiate\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T08:32:09.5963384Z",
+          "eventRecordID": "2308302",
+          "threadID": "864",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 17,
+      "mail": false,
+      "level": 3,
+      "description": "Non network or service local logon.",
+      "groups": [
+        "windows",
+        " WEF"
+      ],
+      "id": "67022"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784337.18639183",
+    "timestamp": "2026-05-26T08:32:17.523+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:32:03Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:32:03Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:32:03.3027821Z",
+          "eventRecordID": "237446",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 108,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784330.18637005",
+    "timestamp": "2026-05-26T08:32:10.183+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "binary": "67007500700064006100740065000000",
+          "param1": "Google Update-Dienst (gupdate)",
+          "param2": "%%1053"
+        },
+        "system": {
+          "eventID": "7000",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Der Dienst \"Google Update-Dienst (gupdate)\" wurde aufgrund folgenden Fehlers nicht gestartet: \r\nDer Dienst antwortete nicht rechtzeitig auf die Start- oder Steuerungsanforderung.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:31:32.4794444Z",
+          "eventRecordID": "183022",
+          "threadID": "7556",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "ERROR",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 4,
+      "mail": false,
+      "level": 5,
+      "description": "Windows System error event",
+      "groups": [
+        "windows",
+        "windows_system",
+        "system_error"
+      ],
+      "id": "61102",
+      "gpg13": [
+        "4.3"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784300.18628777",
+    "timestamp": "2026-05-26T08:31:40.404+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "binary": "67007500700064006100740065000000",
+          "param1": "120000",
+          "param2": "Google Update-Dienst (gupdate)"
+        },
+        "system": {
+          "eventID": "7009",
+          "eventSourceName": "Service Control Manager",
+          "keywords": "0x8080000000000000",
+          "providerGuid": "{555908d1-a6d7-4695-8e1e-26931d2012f4}",
+          "level": "2",
+          "channel": "System",
+          "opcode": "0",
+          "message": "\"Das Zeitlimit (120000 ms) wurde beim Verbindungsversuch mit dem Dienst Google Update-Dienst (gupdate) erreicht.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:31:32.4794444Z",
+          "eventRecordID": "183021",
+          "threadID": "7556",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "700",
+          "severityValue": "ERROR",
+          "providerName": "Service Control Manager"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 3,
+      "mail": false,
+      "level": 5,
+      "description": "Windows System error event",
+      "groups": [
+        "windows",
+        "windows_system",
+        "system_error"
+      ],
+      "id": "61102",
+      "gpg13": [
+        "4.3"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784300.18627067",
+    "timestamp": "2026-05-26T08:31:40.364+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "2126-05-02T08:30:57Z, RulesEngine"
+        },
+        "system": {
+          "eventID": "16384",
+          "eventSourceName": "Software Protection Platform Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{E23B33B0-C8C9-472C-A5F9-F2BDFEA0F156}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Der Softwareschutzdienst wurde erfolgreich für den erneuten Start bei 2126-05-02T08:30:57Z geplant. Grund: RulesEngine.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:30:57.1912664Z",
+          "eventRecordID": "237437",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "0",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Security-SPP"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 105,
+      "mail": false,
+      "level": 3,
+      "description": "Software protection service scheduled successfully.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60642"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784264.18584718",
+    "timestamp": "2026-05-26T08:31:04.063+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0xd7c90",
+          "targetUserName": "KS_01_003$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xD7C90\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:29:43.2589006Z",
+          "eventRecordID": "2308252",
+          "threadID": "856",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12545",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 22,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784191.18501218",
+    "timestamp": "2026-05-26T08:29:51.155+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0xd7c90",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{56de393c-a7e3-c16d-6b88-8b7235de2af0}",
+          "targetUserName": "KS_01_003$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0xD7C90\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{56de393c-a7e3-c16d-6b88-8b7235de2af0}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T08:29:43.2374013Z",
+          "eventRecordID": "2308251",
+          "threadID": "844",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 20,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784191.18493714",
+    "timestamp": "2026-05-26T08:29:51.115+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "targetLogonId": "0xcc9f2",
+          "targetUserName": "KS_01_003$",
+          "targetDomainName": "ARZW",
+          "targetUserSid": "S-1-5-18",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4634",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde abgemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW\r\n\tAnmelde-ID:\t\t0xCC9F2\r\n\r\nAnmeldetyp:\t\t\t3\r\n\r\nDieses Ereignis wird generiert, wenn eine Anmeldesitzung zerstört wird. Es kann anhand des Wertes der Anmelde-ID positiv mit einem Anmeldeereignis korreliert werden. Anmelde-IDs sind nur zwischen Neustarts auf demselben Computer eindeutig.\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:29:41.6012156Z",
+          "eventRecordID": "2308248",
+          "threadID": "844",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12545",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 21,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows User Logoff",
+      "groups": [
+        "windows",
+        "windows_security"
+      ],
+      "id": "60137",
+      "nist_800_53": [
+        "AU.14",
+        "AC.7"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784189.18489264",
+    "timestamp": "2026-05-26T08:29:49.016+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "subjectLogonId": "0x0",
+          "targetLinkedLogonId": "0x0",
+          "impersonationLevel": "%%1833",
+          "authenticationPackageName": "Kerberos",
+          "targetLogonId": "0xcc9f2",
+          "logonProcessName": "Kerberos",
+          "logonGuid": "{ffc3f08c-5c8d-d814-5914-6785530b65bf}",
+          "targetUserName": "KS_01_003$",
+          "keyLength": "0",
+          "elevatedToken": "%%1842",
+          "subjectUserSid": "S-1-0-0",
+          "processId": "0x0",
+          "targetDomainName": "ARZW.LOCAL",
+          "targetUserSid": "S-1-5-18",
+          "virtualAccount": "%%1843",
+          "logonType": "3"
+        },
+        "system": {
+          "eventID": "4624",
+          "keywords": "0x8020000000000000",
+          "providerGuid": "{54849625-5478-4994-a5ba-3e3b0328c30d}",
+          "level": "0",
+          "channel": "Security",
+          "opcode": "0",
+          "message": "\"Ein Konto wurde erfolgreich angemeldet.\r\n\r\nAntragsteller:\r\n\tSicherheits-ID:\t\tS-1-0-0\r\n\tKontoname:\t\t-\r\n\tKontodomäne:\t\t-\r\n\tAnmelde-ID:\t\t0x0\r\n\r\nAnmeldeinformationen:\r\n\tAnmeldetyp:\t\t3\r\n\tEingeschränkter Administratormodus:\t-\r\n\tVirtuelles Konto:\t\tNein\r\n\tToken mit erhöhten Rechten:\t\tJa\r\n\r\nIdentitätswechselebene:\t\tIdentitätswechsel\r\n\r\nNeue Anmeldung:\r\n\tSicherheits-ID:\t\tS-1-5-18\r\n\tKontoname:\t\tKS_01_003$\r\n\tKontodomäne:\t\tARZW.LOCAL\r\n\tAnmelde-ID:\t\t0xCC9F2\r\n\tVerknüpfte Anmelde-ID:\t\t0x0\r\n\tNetzwerk-Kontoname:\t-\r\n\tNetzwerk-Kontodomäne:\t-\r\n\tAnmelde-GUID:\t\t{ffc3f08c-5c8d-d814-5914-6785530b65bf}\r\n\r\nProzessinformationen:\r\n\tProzess-ID:\t\t0x0\r\n\tProzessname:\t\t-\r\n\r\nNetzwerkinformationen:\r\n\tArbeitsstationsname:\t-\r\n\tQuellnetzwerkadresse:\t-\r\n\tQuellport:\t\t-\r\n\r\nDetaillierte Authentifizierungsinformationen:\r\n\tAnmeldeprozess:\t\tKerberos\r\n\tAuthentifizierungspaket:\tKerberos\r\n\tÜbertragene Dienste:\t-\r\n\tPaketname (nur NTLM):\t-\r\n\tSchlüssellänge:\t\t0\r\n\r\nDieses Ereignis wird beim Erstellen einer Anmeldesitzung generiert. Es wird auf dem Computer generiert, auf den zugegriffen wurde.\r\n\r\nDie Antragstellerfelder geben das Konto auf dem lokalen System an, von dem die Anmeldung angefordert wurde. Dies ist meistens ein Dienst wie der Serverdienst oder ein lokaler Prozess wie \"Winlogon.exe\" oder \"Services.exe\".\r\n\r\nDas Anmeldetypfeld gibt den jeweiligen Anmeldetyp an. Die häufigsten Typen sind 2 (interaktiv) und 3 (Netzwerk).\r\n\r\nDie Felder für die neue Anmeldung geben das Konto an, für das die neue Anmeldung erstellt wurde, d. h. das angemeldete Konto.\r\n\r\nDie Netzwerkfelder geben die Quelle einer Remoteanmeldeanforderung an. Der Arbeitsstationsname ist nicht immer verfügbar und kann in manchen Fällen leer bleiben.\r\n\r\nDas Feld für die Identitätswechselebene gibt an, in welchem Umfang ein Prozess in der Anmeldesitzung einen Identitätswechsel vornehmen kann.\r\n\r\nDie Felder für die Authentifizierungsinformationen enthalten detaillierte Informationen zu dieser speziellen Anmeldeanforderung.\r\n\t- Die Anmelde-GUID ist ein eindeutiger Bezeichner, der verwendet werden kann, um dieses Ereignis mit einem KDC-Ereignis zu korrelieren.\r\n\t- Die übertragenen Dienste geben an, welche Zwischendienste an der Anmeldeanforderung beteiligt waren.\r\n\t- Der Paketname gibt das in den NTLM-Protokollen verwendete Unterprotokoll an.\r\n\t- Die Schlüssellänge gibt die Länge des generierten Sitzungsschlüssels an. Wenn kein Sitzungsschlüssel angefordert wurde, ist dieser Wert 0.\"",
+          "version": "2",
+          "systemTime": "2026-05-26T08:29:41.5865474Z",
+          "eventRecordID": "2308247",
+          "threadID": "844",
+          "computer": "KS_01_003.arzw.local",
+          "task": "12544",
+          "processID": "732",
+          "severityValue": "AUDIT_SUCCESS",
+          "providerName": "Microsoft-Windows-Security-Auditing"
+        }
+      }
+    },
+    "rule": {
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.2.5"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC6.8",
+        "CC7.2",
+        "CC7.3"
+      ],
+      "description": "Windows Logon Success",
+      "groups": [
+        "windows",
+        "windows_security",
+        "authentication_success"
+      ],
+      "nist_800_53": [
+        "AU.14",
+        "AC.9"
+      ],
+      "gdpr": [
+        "IV_32.2"
+      ],
+      "firedtimes": 19,
+      "mitre": {
+        "technique": [
+          "Valid Accounts"
+        ],
+        "id": [
+          "T1078"
+        ],
+        "tactic": [
+          "Defense Evasion",
+          "Persistence",
+          "Privilege Escalation",
+          "Initial Access"
+        ]
+      },
+      "id": "60106",
+      "gpg13": [
+        "7.1",
+        "7.2"
+      ]
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784188.18481760",
+    "timestamp": "2026-05-26T08:29:48.976+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "extraInfo": " "
+        },
+        "system": {
+          "eventID": "1003",
+          "eventSourceName": "Windows Search Service",
+          "keywords": "0x80000000000000",
+          "providerGuid": "{CA4E628D-8567-4896-AB6B-835B221F373F}",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"Windows Search wurde gestartet.\n\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:29:32.3206027Z",
+          "eventRecordID": "237431",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "Microsoft-Windows-Search"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "description": "The Windows search service started.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60668"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784180.18478765",
+    "timestamp": "2026-05-26T08:29:40.047+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "SearchIndexer, 7940,D,50, Windows:, 1, C:\\\\ProgramData\\\\Microsoft\\\\Search\\\\Data\\\\Applications\\\\Windows\\\\Windows.edb, 0,  [1] 0.000004 +J(0) +M(C:0K, Fs:1, WS:4K # 0K, PF:0K # 0K, P:0K) [2] 0.004333 -0.000439 (1) WT +J(0) +M(C:0K, Fs:26, WS:40K # 0K, PF:32K # 0K, P:32K) [3] 0.014768 -0.006460 (8) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:52, WS:168K # 0K, PF:176K # 0K, P:176K) [4] 0.000122 +J(0) +M(C:0K, Fs:1, WS:4K # 0K, PF:0K # 0K, P:0K) [5] - [6] - [7] - [8] 0.001816 -0.001455 (2) CM +J(CM:2, PgRf:2, Rd:14/2, Dy:0/0, Lg:54/1) +M(C:0K, Fs:47, WS:188K # 0K, PF:680K # 0K, P:680K) [9] 0.023548 -0.000406 (5) CM -0.022867 (1) WT +J(CM:5, PgRf:23, Rd:0/5, Dy:0/0, Lg:0/0) +M(C:0K, Fs:73, WS:288K # 40K, PF:260K # 184K, P:260K) [10] 0.002086 -0.001983 (1) CM +J(CM:1, PgRf:40, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:9, WS:36K # 36K, PF:96K # 96K, P:96K) [11] 0.000015 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K) [12] 0.000040 +J(CM:0, PgRf:42, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:3, WS:12K # 12K, PF:0K # 0K, P:0K) [13] 0.000001 +J(0) [14] 0.0 +J(0) [15] 0.000006 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0)., 0 0, lgposAttach = 00001EAF:0013:0268, dbv = 1568.110.240"
+        },
+        "system": {
+          "eventID": "326",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"SearchIndexer (7940,D,50) Windows: The database engine attached a database (1, C:\\ProgramData\\Microsoft\\Search\\Data\\Applications\\Windows\\Windows.edb). (Time=0 seconds) \r\n \r\nSaved Cache: 0 0 \r\nAdditional Data: lgposAttach = 00001EAF:0013:0268,\ndbv = 1568.110.240 \r\n \r\nInternal Timing Sequence: \n[1] 0.000004 +J(0) +M(C:0K, Fs:1, WS:4K # 0K, PF:0K # 0K, P:0K)\n[2] 0.004333 -0.000439 (1) WT +J(0) +M(C:0K, Fs:26, WS:40K # 0K, PF:32K # 0K, P:32K)\n[3] 0.014768 -0.006460 (8) WT +J(CM:0, PgRf:0, Rd:0/0, Dy:0/0, Lg:3480/2) +M(C:0K, Fs:52, WS:168K # 0K, PF:176K # 0K, P:176K)\n[4] 0.000122 +J(0) +M(C:0K, Fs:1, WS:4K # 0K, PF:0K # 0K, P:0K)\n[5] -\n[6] -\n[7] -\n[8] 0.001816 -0.001455 (2) CM +J(CM:2, PgRf:2, Rd:14/2, Dy:0/0, Lg:54/1) +M(C:0K, Fs:47, WS:188K # 0K, PF:680K # 0K, P:680K)\n[9] 0.023548 -0.000406 (5) CM -0.022867 (1) WT +J(CM:5, PgRf:23, Rd:0/5, Dy:0/0, Lg:0/0) +M(C:0K, Fs:73, WS:288K # 40K, PF:260K # 184K, P:260K)\n[10] 0.002086 -0.001983 (1) CM +J(CM:1, PgRf:40, Rd:0/1, Dy:0/0, Lg:0/0) +M(C:0K, Fs:9, WS:36K # 36K, PF:96K # 96K, P:96K)\n[11] 0.000015 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:2, WS:8K # 8K, PF:0K # 0K, P:0K)\n[12] 0.000040 +J(CM:0, PgRf:42, Rd:0/0, Dy:0/0, Lg:0/0) +M(C:0K, Fs:3, WS:12K # 12K, PF:0K # 0K, P:0K)\n[13] 0.000001 +J(0)\n[14] 0.0 +J(0)\n[15] 0.000006 +J(CM:0, PgRf:1, Rd:0/0, Dy:0/0, Lg:0/0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:29:31.9924896Z",
+          "eventRecordID": "237430",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine attached a database.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60798"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784178.18472589",
+    "timestamp": "2026-05-26T08:29:38.864+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "win": {
+        "eventdata": {
+          "data": "SearchIndexer, 7940,P,98, Windows:, 0, 10, 00, 19045, 0000"
+        },
+        "system": {
+          "eventID": "102",
+          "keywords": "0x80000000000000",
+          "level": "4",
+          "channel": "Application",
+          "opcode": "0",
+          "message": "\"SearchIndexer (7940,P,98) Windows: Das Datenbankmodul (10.00.19045.0000) startet eine neue Instanz (0).\"",
+          "version": "0",
+          "systemTime": "2026-05-26T08:29:31.8987407Z",
+          "eventRecordID": "237428",
+          "threadID": "0",
+          "computer": "KS_01_003.arzw.local",
+          "task": "1",
+          "processID": "0",
+          "severityValue": "INFORMATION",
+          "providerName": "ESENT"
+        }
+      }
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 3,
+      "description": "The database engine is starting a new instance.",
+      "groups": [
+        "windows",
+        "windows_application"
+      ],
+      "id": "60805"
+    },
+    "location": "EventChannel",
+    "decoder": {
+      "name": "windows_eventchannel"
+    },
+    "id": "1779784178.18471247",
+    "timestamp": "2026-05-26T08:29:38.832+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.4.216",
+      "name": "KS_01_003",
+      "id": "015"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "extra_data": "KS_01_003->any"
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 3,
+      "pci_dss": [
+        "10.6.1",
+        "10.2.6"
+      ],
+      "hipaa": [
+        "164.312.b"
+      ],
+      "tsc": [
+        "CC7.2",
+        "CC7.3",
+        "CC6.8"
+      ],
+      "description": "Wazuh agent started.",
+      "groups": [
+        "ossec"
+      ],
+      "id": "503",
+      "nist_800_53": [
+        "AU.6",
+        "AU.14",
+        "AU.5"
+      ],
+      "gpg13": [
+        "10.1"
+      ],
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "wazuh-agent",
+    "decoder": {
+      "parent": "ossec",
+      "name": "ossec"
+    },
+    "id": "1779784175.18470917",
+    "full_log": "ossec: Agent started: 'KS_01_003->any'.",
+    "timestamp": "2026-05-26T08:29:35.015+0000"
+  }
+]

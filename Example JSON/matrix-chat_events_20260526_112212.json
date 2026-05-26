@@ -1,0 +1,494 @@
+[
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779779885.15485630",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-26T07:18:05.726+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779779885.15485242",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-26T07:18:05.714+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779736660.11975791",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T19:17:40.871+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779736660.11975403",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T19:17:40.859+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779693436.4392972",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T07:17:16.140+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779693436.4392585",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-25T07:17:16.128+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779650212.12179518",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T19:16:52.266+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779650212.12179130",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T19:16:52.255+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779606988.4521733",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T07:16:28.530+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779606988.4521346",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-24T07:16:28.519+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/usr/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 2,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779563764.13634831",
+    "full_log": "Trojaned version of file '/usr/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-23T19:16:04.712+0000"
+  },
+  {
+    "input": {
+      "type": "log"
+    },
+    "agent": {
+      "ip": "172.21.5.59",
+      "name": "matrix-chat",
+      "id": "084"
+    },
+    "manager": {
+      "name": "wazuh.manager"
+    },
+    "data": {
+      "file": "/bin/diff",
+      "title": "Trojaned version of file detected."
+    },
+    "rule": {
+      "firedtimes": 1,
+      "mail": false,
+      "level": 7,
+      "pci_dss": [
+        "10.6.1"
+      ],
+      "description": "Host-based anomaly detection event (rootcheck).",
+      "groups": [
+        "ossec",
+        "rootcheck"
+      ],
+      "id": "510",
+      "gdpr": [
+        "IV_35.7.d"
+      ]
+    },
+    "location": "rootcheck",
+    "decoder": {
+      "name": "rootcheck"
+    },
+    "id": "1779563764.13634443",
+    "full_log": "Trojaned version of file '/bin/diff' detected. Signature used: 'bash|^/bin/sh|file\\.h|proc\\.h|/dev/[^n]|^/bin/.*sh' (Generic).",
+    "timestamp": "2026-05-23T19:16:04.700+0000"
+  }
+]
