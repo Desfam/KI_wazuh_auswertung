@@ -15,6 +15,27 @@ from fastapi import APIRouter, Query
 from db.database import get_active_connection
 from services.wazuh_indexer import fetch_alerts
 
+# ── Knowledge / Evidence / Playbook enrichment (optional — graceful fallback) ─
+try:
+    from knowledge.event_knowledge_resolver import resolve_event_knowledge as _resolve_knowledge
+    from knowledge.investigation_playbooks import get_playbooks_for_event_knowledge as _resolve_playbooks
+    from services.event_evidence_extractor import extract_event_evidence, build_evidence_summary
+    _ENRICHMENT_AVAILABLE = True
+except ImportError:
+    _ENRICHMENT_AVAILABLE = False
+
+    def _resolve_knowledge(event: Any) -> dict:  # type: ignore[misc]
+        return {}
+
+    def _resolve_playbooks(k: Any, e: Any = None) -> list:  # type: ignore[misc]
+        return []
+
+    def extract_event_evidence(e: Any) -> dict:  # type: ignore[misc]
+        return {}
+
+    def build_evidence_summary(e: Any) -> dict:  # type: ignore[misc]
+        return {}
+
 router = APIRouter(prefix="/event-map", tags=["event-map"])
 
 # ─── Known Windows Event ID names ─────────────────────────────────────────────
@@ -109,6 +130,25 @@ GENERAL_ACTIONS: dict[str, list[str]] = {
 }
 
 SEV_RANK: dict[str, int] = {"info": 0, "low": 1, "medium": 2, "high": 3, "critical": 4}
+
+# ─── Raw preview helper ───────────────────────────────────────────────────────
+
+def _raw_preview(hit: dict[str, Any]) -> dict[str, Any]:
+    """Return a safe, trimmed raw event preview for the Investigation Workbench."""
+    full_log = hit.get("full_log") or hit.get("message") or ""
+    if len(full_log) > 1000:
+        full_log = full_log[:1000] + "\u2026"
+    return {
+        "agent": hit.get("agent"),
+        "rule": hit.get("rule"),
+        "data": hit.get("data"),
+        "syscheck": hit.get("syscheck") or None,
+        "decoder": hit.get("decoder"),
+        "location": hit.get("location"),
+        "full_log": full_log or None,
+        "timestamp": hit.get("timestamp") or hit.get("@timestamp"),
+    }
+
 
 # ─── Extraction helpers ────────────────────────────────────────────────────────
 
@@ -286,6 +326,8 @@ def get_live_clusters(
                 "mitreIds": set(),
                 "firstSeen": ex["timestamp"],
                 "lastSeen": ex["timestamp"],
+                "_raw_first": hit,
+                "_raw_highest_sev": hit,
             }
 
         b = buckets[key]
@@ -323,6 +365,12 @@ def get_live_clusters(
             if not b["lastSeen"] or ts > b["lastSeen"]:
                 b["lastSeen"] = ts
 
+        # Track highest-severity representative event
+        if SEV_RANK.get(ex["severity"], 0) >= SEV_RANK.get(
+            _safe((b.get("_raw_highest_sev") or {}).get("rule", {}) or {}).get("level") or "info", 0  # type: ignore[arg-type]
+        ):
+            b["_raw_highest_sev"] = hit
+
     result = []
     for b in buckets.values():
         host_counts = sorted(b["_hostCounts"].items(), key=lambda x: -x[1])
@@ -330,22 +378,79 @@ def get_live_clusters(
         primary_eid = eids[0] if eids else None
         sev = b["severity"]
 
-        explanation = SHORT_EXPLANATIONS.get(primary_eid or "", "")
+        # ── Knowledge / Evidence / Playbook enrichment ────────────────────────
+        raw_event: dict[str, Any] | None = b.get("_raw_first")
+        knowledge: dict[str, Any] = {}
+        evidence_smry: dict[str, Any] = {}
+        cluster_playbooks: list[dict[str, Any]] = []
+        raw_preview: dict[str, Any] | None = None
+
+        if raw_event:
+            raw_preview = _raw_preview(raw_event)
+            if _ENRICHMENT_AVAILABLE:
+                try:
+                    knowledge = _resolve_knowledge(raw_event) or {}  # type: ignore[call-arg]
+                except Exception:
+                    knowledge = {}
+                if knowledge:
+                    try:
+                        cluster_playbooks = _resolve_playbooks(knowledge, raw_event) or []  # type: ignore[call-arg]
+                    except Exception:
+                        cluster_playbooks = []
+                try:
+                    ev = extract_event_evidence(raw_event)  # type: ignore[call-arg]
+                    evidence_smry = build_evidence_summary(ev)  # type: ignore[call-arg]
+                except Exception:
+                    evidence_smry = {}
+
+        # ── Title: prefer knowledge title ─────────────────────────────────────
+        kb_title: str = knowledge.get("title") or ""
+        display_title = b["title"]
+        if kb_title and kb_title not in ("Unknown Event", "Wazuh Event", ""):
+            display_title = kb_title
+
+        # ── Short explanation: prefer knowledge summary ────────────────────────
+        explanation: str = SHORT_EXPLANATIONS.get(primary_eid or "", "")
+        if not explanation and knowledge:
+            explanation = knowledge.get("summary") or ""
         if not explanation:
             n_hosts = len(host_counts)
             if sev in ("critical", "high"):
-                explanation = f"{b['title']} was detected on {n_hosts} host(s). This severity level requires prompt investigation."
+                explanation = (
+                    f"{display_title} was detected on {n_hosts} host(s). "
+                    "This severity level requires prompt investigation."
+                )
             else:
-                explanation = f"{b['title']} was detected on {n_hosts} host(s)."
+                explanation = f"{display_title} was detected on {n_hosts} host(s)."
 
-        actions = list(RECOMMENDED_ACTIONS.get(primary_eid or "", []))
-        if not actions:
-            actions = list(GENERAL_ACTIONS.get(sev, GENERAL_ACTIONS["info"]))
+        # ── Recommended actions: prefer playbook checks ────────────────────────
+        if cluster_playbooks:
+            actions: list[str] = (cluster_playbooks[0].get("recommended_checks") or [])[:6]
+        else:
+            actions = list(RECOMMENDED_ACTIONS.get(primary_eid or "", []))
+            if not actions:
+                actions = list(GENERAL_ACTIONS.get(sev, GENERAL_ACTIONS["info"]))
+
+        # ── Slim playbook payload (top 5) ──────────────────────────────────────
+        slim_playbooks = [
+            {
+                "playbook_id": p.get("playbook_id"),
+                "title": p.get("title"),
+                "description": p.get("description"),
+                "recommended_checks": (p.get("recommended_checks") or [])[:5],
+                "recommended_readonly_scripts": p.get("recommended_readonly_scripts") or [],
+                "dangerous_actions": p.get("dangerous_actions") or [],
+                "blocked_actions_reason": p.get("blocked_actions_reason"),
+                "escalation_conditions": p.get("escalation_conditions") or [],
+                "false_positive_notes": p.get("false_positive_notes") or [],
+            }
+            for p in cluster_playbooks[:5]
+        ]
 
         result.append({
             "id": b["id"],
             "kind": b["kind"],
-            "title": b["title"],
+            "title": display_title,
             "severity": sev,
             "alertCount": b["alertCount"],
             "affectedHostCount": len(host_counts),
@@ -378,6 +483,11 @@ def get_live_clusters(
             "lastSeen": b["lastSeen"],
             "shortExplanation": explanation,
             "recommendedActions": actions,
+            # ── New enrichment fields ─────────────────────────────────────────
+            "knowledge": knowledge or None,
+            "evidence_summary": evidence_smry,
+            "playbooks": slim_playbooks,
+            "rawPreview": raw_preview,
         })
 
     result.sort(key=lambda x: (-SEV_RANK.get(x["severity"], 0), -x["alertCount"]))

@@ -1,5 +1,5 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { CheckSquare, Cpu, Crosshair, Database, GitBranch, LayoutDashboard, MessageSquare, Network, Search, Server, Settings, Shield } from 'lucide-react';
+import { CheckSquare, Cpu, Crosshair, Database, GitBranch, LayoutDashboard, MessageSquare, Network, ScrollText, Search, Server, Settings, Shield, ShieldCheck } from 'lucide-react';
 const EventConstellationView = lazy(() => import('./components/visual/EventConstellationView'));
 import { ChatPage } from './pages/ChatPage';
 import { HostsPage } from './pages/HostsPage';
@@ -11,6 +11,8 @@ import FleetOverviewPage from './pages/FleetOverviewPage';
 import { BaselinePage } from './pages/BaselinePage';
 import { UnifiedHostsPage } from './pages/UnifiedHostsPage';
 import { ServerPage } from './pages/ServerPage';
+import { ScriptLibraryPage } from './pages/ScriptLibraryPage';
+import { TrustCenterPage } from './pages/TrustCenterPage';
 import { FluidWaves } from './components/FluidWaves';
 import { AppStartOverlay, type PreflightCheck } from './components/AppStartOverlay';
 import { SettingsModal } from './components/SettingsModal';
@@ -71,6 +73,8 @@ const TAB_LABELS: Record<string, string> = {
   fullscan: 'Full Scan',
   baseline: 'Baseline',
   server: 'Server',
+  scripts: 'Script Library',
+  trust: 'Trust Center',
   constellation: 'Event Map',
 };
 
@@ -79,7 +83,7 @@ function fmtClock(): string {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'unified-hosts' | 'snipen' | 'fullscan' | 'baseline' | 'server' | 'constellation'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'unified-hosts' | 'snipen' | 'fullscan' | 'baseline' | 'server' | 'scripts' | 'trust' | 'constellation'>('dashboard');
   const [overviewHost, setOverviewHost] = useState<string | null>(null);
   const [constellationHost, setConstellationHost] = useState<string | null>(null);
   const [clockStr, setClockStr] = useState(fmtClock);
@@ -516,8 +520,10 @@ function App() {
             { id: 'fullscan' as const, label: 'Full Scan', icon: Cpu, badge: null },
             { id: 'baseline' as const, label: 'Baseline', icon: Database, badge: null },
             { id: 'unified-hosts' as const, label: 'Unified Hosts', icon: Network, badge: null },
-            { id: 'constellation' as const, label: 'Event Map', icon: GitBranch, badge: null },
-            { id: 'server' as const, label: 'Server', icon: Shield, badge: null },
+            { id: 'constellation' as const, label: 'Event Map',      icon: GitBranch,   badge: null },
+            { id: 'scripts' as const,       label: 'Script Library', icon: ScrollText,   badge: null },
+            { id: 'trust' as const,         label: 'Trust Center',   icon: ShieldCheck,  badge: null },
+            { id: 'server' as const,        label: 'Server',         icon: Shield,       badge: null },
             { id: 'chat' as const, label: 'Chat', icon: MessageSquare, badge: null },
           ]).map(({ id, label, icon: Icon, badge }) => {
             const active = activeTab === id || (id === 'hosts' && activeTab === 'host-overview');
@@ -737,6 +743,16 @@ function App() {
           {activeTab === 'unified-hosts' && (
             <ErrorBoundary label="UnifiedHosts">
               <UnifiedHostsPage active />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'scripts' && (
+            <ErrorBoundary label="Scripts">
+              <ScriptLibraryPage />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'trust' && (
+            <ErrorBoundary label="Trust">
+              <TrustCenterPage />
             </ErrorBoundary>
           )}
           {activeTab === 'constellation' && (

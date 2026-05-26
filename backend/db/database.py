@@ -203,7 +203,55 @@ def init_db() -> None:
             )
             """
         )
+        # ── Script Library ────────────────────────────────────────────────────
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS script_library (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                script_id TEXT NOT NULL UNIQUE,
+                name TEXT NOT NULL,
+                description TEXT,
+                platform TEXT NOT NULL DEFAULT 'both',
+                category TEXT NOT NULL DEFAULT 'triage',
+                executor TEXT NOT NULL DEFAULT 'powershell',
+                script_body TEXT,
+                parameters_json TEXT,
+                requires_admin INTEGER NOT NULL DEFAULT 0,
+                risk_level TEXT NOT NULL DEFAULT 'low',
+                dangerous INTEGER NOT NULL DEFAULT 0,
+                enabled INTEGER NOT NULL DEFAULT 1,
+                readonly INTEGER NOT NULL DEFAULT 1,
+                created_at TEXT NOT NULL,
+                updated_at TEXT NOT NULL
+            )
+            """
+        )
+        # ── Audit Log ─────────────────────────────────────────────────────────
+        cursor.execute(
+            """
+            CREATE TABLE IF NOT EXISTS action_audit_log (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                timestamp TEXT NOT NULL,
+                user TEXT,
+                action_type TEXT NOT NULL,
+                action_id TEXT,
+                source_page TEXT,
+                source_event_id TEXT,
+                source_rule_id TEXT,
+                host TEXT,
+                unified_host_id INTEGER,
+                wazuh_agent_id TEXT,
+                tactical_agent_id TEXT,
+                action_policy TEXT,
+                policy_reason TEXT,
+                status TEXT NOT NULL DEFAULT 'logged',
+                details_json TEXT,
+                result_json TEXT
+            )
+            """
+        )
         ensure_connection_columns(connection)
+        _seed_script_library(connection)
 
 
 def ensure_connection_columns(connection: sqlite3.Connection) -> None:
@@ -1026,3 +1074,338 @@ def list_host_conflicts(unified_host_id: int) -> list[dict[str, Any]]:
             (unified_host_id,),
         ).fetchall()
     return rows_to_dicts(rows)
+
+
+# ── Script Library DB functions ───────────────────────────────────────────────
+
+def list_scripts(
+    platform: str | None = None,
+    category: str | None = None,
+    dangerous: bool | None = None,
+    enabled: bool | None = None,
+    search: str | None = None,
+) -> list[dict[str, Any]]:
+    clauses: list[str] = []
+    params: list[Any] = []
+    if platform:
+        clauses.append("(platform = ? OR platform = 'both')")
+        params.append(platform)
+    if category:
+        clauses.append("category = ?")
+        params.append(category)
+    if dangerous is not None:
+        clauses.append("dangerous = ?")
+        params.append(1 if dangerous else 0)
+    if enabled is not None:
+        clauses.append("enabled = ?")
+        params.append(1 if enabled else 0)
+    if search:
+        clauses.append("(name LIKE ? OR description LIKE ? OR script_id LIKE ?)")
+        like = f"%{search}%"
+        params.extend([like, like, like])
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"SELECT * FROM script_library {where} ORDER BY category, name", params
+        ).fetchall()
+    return rows_to_dicts(rows)
+
+
+def get_script(script_id: str) -> dict[str, Any] | None:
+    with get_connection() as conn:
+        row = conn.execute(
+            "SELECT * FROM script_library WHERE script_id = ?", (script_id,)
+        ).fetchone()
+    return row_to_dict(row)
+
+
+def create_script(payload: dict[str, Any]) -> str:
+    now = utc_now_iso()
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO script_library (
+                script_id, name, description, platform, category, executor,
+                script_body, parameters_json, requires_admin, risk_level,
+                dangerous, enabled, readonly, created_at, updated_at
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                payload["script_id"],
+                payload["name"],
+                payload.get("description"),
+                payload.get("platform", "both"),
+                payload.get("category", "triage"),
+                payload.get("executor", "powershell"),
+                payload.get("script_body"),
+                json.dumps(payload["parameters_json"]) if payload.get("parameters_json") else None,
+                1 if payload.get("requires_admin") else 0,
+                payload.get("risk_level", "low"),
+                1 if payload.get("dangerous") else 0,
+                1 if payload.get("enabled", True) else 0,
+                1 if payload.get("readonly", True) else 0,
+                now,
+                now,
+            ),
+        )
+    return payload["script_id"]
+
+
+def update_script(script_id: str, payload: dict[str, Any]) -> None:
+    now = utc_now_iso()
+    allowed = {
+        "name", "description", "platform", "category", "executor",
+        "script_body", "parameters_json", "requires_admin", "risk_level",
+        "dangerous", "enabled", "readonly",
+    }
+    updates = {k: v for k, v in payload.items() if k in allowed}
+    if not updates:
+        return
+    set_clause = ", ".join(f"{k} = ?" for k in updates)
+    values = list(updates.values()) + [now, script_id]
+    with get_connection() as conn:
+        conn.execute(
+            f"UPDATE script_library SET {set_clause}, updated_at = ? WHERE script_id = ?",
+            values,
+        )
+
+
+def delete_script(script_id: str) -> None:
+    with get_connection() as conn:
+        conn.execute("DELETE FROM script_library WHERE script_id = ?", (script_id,))
+
+
+# ── Audit Log DB functions ────────────────────────────────────────────────────
+
+def create_audit_entry(payload: dict[str, Any]) -> int:
+    now = utc_now_iso()
+    details = payload.get("details_json")
+    if details and not isinstance(details, str):
+        details = json.dumps(details)
+    result = payload.get("result_json")
+    if result and not isinstance(result, str):
+        result = json.dumps(result)
+    with get_connection() as conn:
+        cursor = conn.execute(
+            """
+            INSERT INTO action_audit_log (
+                timestamp, user, action_type, action_id, source_page,
+                source_event_id, source_rule_id, host, unified_host_id,
+                wazuh_agent_id, tactical_agent_id, action_policy, policy_reason,
+                status, details_json, result_json
+            ) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)
+            """,
+            (
+                now,
+                payload.get("user"),
+                payload.get("action_type", "unknown"),
+                payload.get("action_id"),
+                payload.get("source_page"),
+                payload.get("source_event_id"),
+                payload.get("source_rule_id"),
+                payload.get("host"),
+                payload.get("unified_host_id"),
+                payload.get("wazuh_agent_id"),
+                payload.get("tactical_agent_id"),
+                payload.get("action_policy"),
+                payload.get("policy_reason"),
+                payload.get("status", "logged"),
+                details,
+                result,
+            ),
+        )
+        return cursor.lastrowid or 0
+
+
+def list_audit_entries(
+    action_type: str | None = None,
+    host: str | None = None,
+    limit: int = 100,
+) -> list[dict[str, Any]]:
+    clauses: list[str] = []
+    params: list[Any] = []
+    if action_type:
+        clauses.append("action_type = ?")
+        params.append(action_type)
+    if host:
+        clauses.append("host = ?")
+        params.append(host)
+    where = f"WHERE {' AND '.join(clauses)}" if clauses else ""
+    params.append(limit)
+    with get_connection() as conn:
+        rows = conn.execute(
+            f"SELECT * FROM action_audit_log {where} ORDER BY timestamp DESC LIMIT ?",
+            params,
+        ).fetchall()
+    return rows_to_dicts(rows)
+
+
+# ── Script Library seed ───────────────────────────────────────────────────────
+
+_SEED_SCRIPTS: list[dict[str, Any]] = [
+    # Windows read-only triage scripts
+    {"script_id": "collect_windows_event_context", "name": "Collect Windows Event Context",
+     "description": "Collect recent Windows Security events around the alert timestamp.", "platform": "windows",
+     "category": "triage", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_processes", "name": "Collect Windows Processes",
+     "description": "List all running processes with parent PID, user and command line.", "platform": "windows",
+     "category": "triage", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_services", "name": "Collect Windows Services",
+     "description": "List all installed and running Windows services with binary paths.", "platform": "windows",
+     "category": "triage", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_scheduled_tasks", "name": "Collect Windows Scheduled Tasks",
+     "description": "List all scheduled tasks with executable paths and triggers.", "platform": "windows",
+     "category": "persistence", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_local_admins", "name": "Collect Windows Local Admins",
+     "description": "List members of the local Administrators group.", "platform": "windows",
+     "category": "users", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_defender_status", "name": "Collect Windows Defender Status",
+     "description": "Check Windows Defender real-time protection and signature status.", "platform": "windows",
+     "category": "triage", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_network_connections", "name": "Collect Windows Network Connections",
+     "description": "List all active TCP/UDP connections with process names.", "platform": "windows",
+     "category": "network", "executor": "powershell", "risk_level": "low"},
+    {"script_id": "collect_windows_firewall_rules", "name": "Collect Windows Firewall Rules",
+     "description": "List all enabled Windows Firewall rules (inbound and outbound).", "platform": "windows",
+     "category": "firewall", "executor": "powershell", "risk_level": "low"},
+    # Linux read-only triage scripts
+    {"script_id": "collect_linux_auth_context", "name": "Collect Linux Auth Context",
+     "description": "Show recent auth.log / secure entries around the alert timestamp.", "platform": "linux",
+     "category": "triage", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_recent_logins", "name": "Collect Linux Recent Logins",
+     "description": "Show recent logins via last, lastb and who.", "platform": "linux",
+     "category": "users", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_sudo_activity", "name": "Collect Linux Sudo Activity",
+     "description": "Show recent sudo commands from auth.log.", "platform": "linux",
+     "category": "users", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_processes", "name": "Collect Linux Processes",
+     "description": "List all running processes with user, PID, parent and command.", "platform": "linux",
+     "category": "triage", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_services", "name": "Collect Linux Services",
+     "description": "List all systemd services and their state.", "platform": "linux",
+     "category": "triage", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_cron_jobs", "name": "Collect Linux Cron Jobs",
+     "description": "List all user and system crontabs.", "platform": "linux",
+     "category": "persistence", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_systemd_units", "name": "Collect Linux Systemd Units",
+     "description": "List all enabled systemd units including timers.", "platform": "linux",
+     "category": "persistence", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_listening_ports", "name": "Collect Linux Listening Ports",
+     "description": "List all listening TCP/UDP ports with process names.", "platform": "linux",
+     "category": "network", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_package_history", "name": "Collect Linux Package History",
+     "description": "Show recent package install/remove history (dpkg/rpm).", "platform": "linux",
+     "category": "triage", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_sensitive_files", "name": "Collect Linux Sensitive File Hashes",
+     "description": "Hash key sensitive files (/etc/passwd, /etc/shadow, sudoers, SSH keys).", "platform": "linux",
+     "category": "fim", "executor": "bash", "risk_level": "low"},
+    {"script_id": "collect_linux_firewall_status", "name": "Collect Linux Firewall Status",
+     "description": "Show UFW / iptables / nftables active rules.", "platform": "linux",
+     "category": "firewall", "executor": "bash", "risk_level": "low"},
+    # Network / cross-platform
+    {"script_id": "check_dns_resolution", "name": "Check DNS Resolution",
+     "description": "Resolve a hostname and check against known-bad lists (read-only).", "platform": "network",
+     "category": "network", "executor": "python", "risk_level": "low"},
+    {"script_id": "check_ip_reputation_placeholder", "name": "Check IP Reputation (Placeholder)",
+     "description": "Placeholder: query IP reputation feeds for a given IP.", "platform": "network",
+     "category": "network", "executor": "python", "risk_level": "low"},
+    {"script_id": "check_open_ports_readonly", "name": "Check Open Ports (Read-only)",
+     "description": "Passive TCP port scan against a known baseline (read-only).", "platform": "network",
+     "category": "network", "executor": "python", "risk_level": "low"},
+    {"script_id": "check_tls_certificate", "name": "Check TLS Certificate",
+     "description": "Retrieve and display TLS certificate chain for a given host:port.", "platform": "network",
+     "category": "network", "executor": "python", "risk_level": "low"},
+]
+
+
+def _seed_script_library(conn: sqlite3.Connection) -> None:
+    """Insert seed scripts if the table is empty."""
+    count = conn.execute("SELECT COUNT(*) FROM script_library").fetchone()[0]
+    if count > 0:
+        return
+    now = utc_now_iso()
+    for s in _SEED_SCRIPTS:
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO script_library (
+                script_id, name, description, platform, category, executor,
+                script_body, parameters_json, requires_admin, risk_level,
+                dangerous, enabled, readonly, created_at, updated_at
+            ) VALUES (?,?,?,?,?,?,NULL,NULL,0,?,0,1,1,?,?)
+            """,
+            (
+                s["script_id"], s["name"], s.get("description"),
+                s.get("platform", "both"), s.get("category", "triage"),
+                s.get("executor", "powershell"), s.get("risk_level", "low"),
+                now, now,
+            ),
+        )
+
+
+# ── Runner scripts (always ensure, regardless of seed count) ──────────────────
+
+_RUNNER_SCRIPT_BODY = '''\
+"""
+Fetch Wazuh Events — Local Runner Script
+=========================================
+This script runs on the SOC backend server.
+It queries the active Wazuh Indexer connection and saves
+the results to <project_root>/Example JSON/.
+
+Parameters:
+  hours       — lookback window (default 72)
+  limit       — max events to fetch (default 1000, max 5000)
+  host_filter — optional agent hostname filter (wildcard)
+
+Execution is handled by the backend runner endpoint:
+  POST /runner/fetch-wazuh-events
+"""
+# This is a metadata-only entry. Execution is handled server-side.
+# Body shown for documentation purposes only.
+pass
+'''
+
+_RUNNER_SCRIPT_PARAMS = json.dumps([
+    {"name": "hours",       "type": "integer", "default": 72,   "min": 1,  "max": 8760,
+     "description": "Lookback window in hours"},
+    {"name": "limit",       "type": "integer", "default": 1000, "min": 1,  "max": 100000,
+     "description": "Maximum number of events to fetch"},
+    {"name": "host_filter", "type": "string",  "default": None,
+     "description": "Optional: filter by agent hostname (wildcard, leave blank for all)"},
+])
+
+
+def ensure_runner_scripts() -> None:
+    """Insert or update the local runner scripts into the script library.
+
+    Called at server startup (regardless of total script count).
+    Uses INSERT OR IGNORE so it is idempotent on subsequent restarts.
+    """
+    now = utc_now_iso()
+    with get_connection() as conn:
+        conn.execute(
+            """
+            INSERT OR IGNORE INTO script_library (
+                script_id, name, description, platform, category, executor,
+                script_body, parameters_json,
+                requires_admin, risk_level, dangerous, enabled, readonly,
+                created_at, updated_at
+            ) VALUES (?,?,?,?,?,?,?,?,0,'low',0,1,1,?,?)
+            """,
+            (
+                "fetch_wazuh_events",
+                "Fetch Wazuh Events",
+                (
+                    "Pull raw alert events from the active Wazuh Indexer connection "
+                    "and save them as a JSON file in the Example JSON folder. "
+                    "Choose lookback window, event limit and optional host filter."
+                ),
+                "both",
+                "data_collection",
+                "local_runner",
+                _RUNNER_SCRIPT_BODY,
+                _RUNNER_SCRIPT_PARAMS,
+                now, now,
+            ),
+        )
+

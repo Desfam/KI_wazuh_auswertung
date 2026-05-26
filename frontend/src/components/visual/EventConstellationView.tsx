@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useState, type CSSProperties, type ReactNode } from 'react';
-import type { ConstellationEventRaw } from '../../services/api';
-import { getConstellationEvents } from '../../services/api';
+import type { ConstellationEventRaw, LiveEventCluster } from '../../services/api';
+import { getConstellationEvents, getLiveEventClusters } from '../../services/api';
+import { ALL_MOCK_CLUSTERS } from '../../services/mockClusters';
 import WatchDogsEventRadar, { type RadarEventCluster, type RadarMode } from './WatchDogsEventRadar';
 import HostImpactMap from './HostImpactMap';
 import EventTimelineMap from './EventTimelineMap';
@@ -813,6 +814,7 @@ export interface EventConstellationViewProps {
 
 export default function EventConstellationView({ initialHost, onNavigate }: EventConstellationViewProps) {
   const [events, setEvents] = useState<RawEvent[]>([]);
+  const [enrichedClusters, setEnrichedClusters] = useState<LiveEventCluster[]>([]);
   const [mode, setMode] = useState<ViewMode>('live');
   const [selected, setSelected] = useState<EventCluster | null>(null);
   const [selectedRadarCluster, setSelectedRadarCluster] = useState<RadarEventCluster | null>(null);
@@ -834,19 +836,28 @@ export default function EventConstellationView({ initialHost, onNavigate }: Even
 
       if (demo) {
         setEvents(demoEvents());
+        setEnrichedClusters(ALL_MOCK_CLUSTERS);
         setIsDemo(true);
         setLoading(false);
         return;
       }
 
       try {
-        const data = await getConstellationEvents({
-          host: appliedHost || undefined,
-          lookbackHours: lookback,
-          limit: 1000,
-        });
+        const [data, liveData] = await Promise.all([
+          getConstellationEvents({
+            host: appliedHost || undefined,
+            lookbackHours: lookback,
+            limit: 1000,
+          }),
+          getLiveEventClusters({
+            lookbackHours: lookback,
+            host: appliedHost || undefined,
+            limit: 50,
+          }).catch(() => [] as LiveEventCluster[]),
+        ]);
 
         setEvents(data as RawEvent[]);
+        setEnrichedClusters(liveData);
         setIsDemo(false);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Backend error');
@@ -868,6 +879,40 @@ export default function EventConstellationView({ initialHost, onNavigate }: Even
   }, [events, enabledSeverity]);
 
   const clusters = useMemo(() => buildClusters(filteredEvents, 28), [filteredEvents]);
+
+  // ── Enriched cluster lookup (keyed by id, eventId, ruleId) ─────────────────
+  const enrichedClusterMap = useMemo(() => {
+    const m = new Map<string, LiveEventCluster>();
+    for (const c of enrichedClusters) {
+      m.set(c.id, c);
+      for (const eid of (c.eventIds ?? [])) {
+        m.set(`eid:${eid}`, c);
+        m.set(`event:${eid}`, c);
+      }
+      for (const rid of (c.ruleIds ?? [])) {
+        m.set(`rule:${rid}`, c);
+      }
+    }
+    return m;
+  }, [enrichedClusters]);
+
+  const findEnrichedCluster = useCallback(
+    (cluster: RadarEventCluster | null): LiveEventCluster | null => {
+      if (!cluster) return null;
+      const direct = enrichedClusterMap.get(cluster.id);
+      if (direct) return direct;
+      for (const eid of cluster.eventIds) {
+        const m = enrichedClusterMap.get(`eid:${eid}`) ?? enrichedClusterMap.get(`event:${eid}`);
+        if (m) return m;
+      }
+      for (const rid of cluster.ruleIds) {
+        const m = enrichedClusterMap.get(`rule:${rid}`);
+        if (m) return m;
+      }
+      return null;
+    },
+    [enrichedClusterMap],
+  );
 
   const severityCounts = useMemo(() => {
     const counts: Record<Severity, number> = {
@@ -976,6 +1021,7 @@ export default function EventConstellationView({ initialHost, onNavigate }: Even
                 <WatchDogsEventRadar
                   events={filteredEvents}
                   selectedCluster={selectedRadarCluster}
+                  enrichedCluster={findEnrichedCluster(selectedRadarCluster)}
                   onSelectCluster={(cluster) => {
                     setSelectedRadarCluster(cluster);
                     if (cluster) {

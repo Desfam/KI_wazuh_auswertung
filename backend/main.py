@@ -19,13 +19,19 @@ from api.routes_integrations_tactical import router as tactical_router
 from api.routes_unified_hosts import router as unified_hosts_router
 from api.routes_constellation import router as constellation_router
 from api.routes_event_map import router as event_map_router
-from db.database import init_db, ensure_default_connection
+from api.routes_scripts import router as scripts_router
+from api.routes_timeline import router as timeline_router
+from api.routes_audit import router as audit_router
+from api.routes_validation import router as validation_router
+from api.routes_runner import router as runner_router
+from db.database import init_db, ensure_default_connection, ensure_runner_scripts
 from services.app_config import sync_config_connection_to_db
 
 
 init_db()
 ensure_default_connection()
 sync_config_connection_to_db()
+ensure_runner_scripts()
 
 
 app = FastAPI(
@@ -60,6 +66,11 @@ app.include_router(tactical_router)
 app.include_router(unified_hosts_router)
 app.include_router(constellation_router)
 app.include_router(event_map_router)
+app.include_router(scripts_router)
+app.include_router(timeline_router)
+app.include_router(audit_router)
+app.include_router(validation_router)
+app.include_router(runner_router)
 
 
 @app.get("/")

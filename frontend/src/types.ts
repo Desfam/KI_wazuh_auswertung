@@ -580,3 +580,184 @@ export type TacticalSyncResult = {
   errors: string[];
   duration_ms: number;
 };
+
+// ── Normalised Action Policy ──────────────────────────────────────────────────
+
+export type NormalisedActionPolicy = {
+  policy: 'blocked' | 'review_required' | 'allowed';
+  reason: string;
+  dangerous_actions_enabled: boolean;
+  read_only_actions_enabled: boolean;
+};
+
+// ── Unified Host Resolver result ──────────────────────────────────────────────
+
+export type ResolvedUnifiedHost = {
+  host: UnifiedHost | null;
+  conflicts: HostConflict[];
+  action_policy: NormalisedActionPolicy;
+};
+
+// ── Event Map knowledge / evidence enrichment types ───────────────────────────
+
+export type ClusterKnowledge = {
+  key: string;
+  title: string;
+  category: string;
+  default_severity: string;
+  summary: string;
+  knowledge_level: string;
+  platform: string;
+};
+
+export type ClusterEvidenceSummary = {
+  top_user?: string;
+  top_source_ip?: string;
+  top_process?: string;
+  file_path?: string;
+  file_action?: string;
+  service_name?: string;
+  command_line?: string;
+  sensitive_path?: string;
+  sensitive_reason?: string;
+  logon_type?: string;
+  status?: string;
+  sub_status?: string;
+};
+
+export type ClusterPlaybook = {
+  playbook_id: string;
+  title: string;
+  description: string;
+  recommended_checks: string[];
+  recommended_readonly_scripts: string[];
+  dangerous_actions: string[];
+  blocked_actions_reason?: string | null;
+  escalation_conditions: string[];
+  false_positive_notes: string[];
+};
+
+export type RawPreview = {
+  agent?: Record<string, unknown> | null;
+  rule?: Record<string, unknown> | null;
+  data?: Record<string, unknown> | null;
+  syscheck?: Record<string, unknown> | null;
+  decoder?: Record<string, unknown> | null;
+  location?: string | null;
+  full_log?: string | null;
+  timestamp?: string | null;
+};
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+
+export type TimelineItem = {
+  timestamp: string;
+  host?: string | null;
+  agent_id?: string | null;
+  severity: 'critical' | 'high' | 'medium' | 'low' | 'info';
+  rule_id?: string | null;
+  rule_description?: string | null;
+  event_id?: string | null;
+  category?: string | null;
+  title: string;
+  user?: string | null;
+  source_ip?: string | null;
+  process?: string | null;
+  file_path?: string | null;
+  command_line?: string | null;
+  mitre_tactic?: string | null;
+  knowledge_key?: string | null;
+  playbook_ids: string[];
+  raw_preview?: Record<string, unknown> | null;
+};
+
+// ── Script Library ────────────────────────────────────────────────────────────
+
+export type ScriptEntry = {
+  id: number;
+  script_id: string;
+  name: string;
+  description?: string | null;
+  platform: 'windows' | 'linux' | 'both' | 'network';
+  category: string;
+  executor: string;
+  script_body?: string | null;
+  parameters_json?: string | null;
+  requires_admin: number;
+  risk_level: string;
+  dangerous: number;
+  enabled: number;
+  readonly: number;
+  created_at: string;
+  updated_at: string;
+};
+
+// ── Audit Log ─────────────────────────────────────────────────────────────────
+
+export type AuditEntry = {
+  id: number;
+  timestamp: string;
+  user?: string | null;
+  action_type: string;
+  action_id?: string | null;
+  source_page?: string | null;
+  source_event_id?: string | null;
+  source_rule_id?: string | null;
+  host?: string | null;
+  unified_host_id?: number | null;
+  wazuh_agent_id?: string | null;
+  tactical_agent_id?: string | null;
+  action_policy?: string | null;
+  policy_reason?: string | null;
+  status: string;
+  details_json?: string | null;
+  result_json?: string | null;
+};
+
+// ── Trust Center / Validation ─────────────────────────────────────────────────
+
+export type ValidationTestStatus = 'pass' | 'fail' | 'warning';
+
+export type ValidationTest = {
+  id: string;
+  name: string;
+  category: string;
+  status: ValidationTestStatus;
+  message: string;
+  details?: Record<string, unknown>;
+};
+
+export type ValidationSummary = {
+  total_tests: number;
+  passed: number;
+  failed: number;
+  warnings: number;
+};
+
+export type ValidationKnowledgeStatus = {
+  windows_entries: number;
+  linux_entries: number;
+  playbooks: number;
+  scripts: number;
+  unknown_events_24h: number;
+  fallback_usage_24h: number;
+};
+
+export type ValidationApiHealth = {
+  backend: string;
+  wazuh_indexer: string;
+  wazuh_manager: string;
+  tactical_rmm: string;
+  scripts: string;
+  timeline: string;
+  audit: string;
+};
+
+export type ValidationStatus = {
+  timestamp: string;
+  summary: ValidationSummary;
+  knowledge: ValidationKnowledgeStatus;
+  tests: ValidationTest[];
+  api_health: ValidationApiHealth;
+};
+

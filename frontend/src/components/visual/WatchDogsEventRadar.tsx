@@ -1,5 +1,13 @@
-import { useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
-import type { ConstellationEventRaw } from '../../services/api';
+import { useCallback, useEffect, useMemo, useRef, useState, type CSSProperties } from 'react';
+import {
+  type ConstellationEventRaw,
+  type LiveEventCluster,
+  resolveUnifiedHost,
+  getTimelineEvents,
+  getScripts,
+  logAuditAction,
+} from '../../services/api';
+import type { ResolvedUnifiedHost, TimelineItem, ScriptEntry } from '../../types';
 import { getEventKnowledge, getEventSummary, CATEGORY_LABELS } from '../../services/eventKnowledge';
 import { getLinuxEventKnowledge } from '../../services/linuxEventKnowledge';
 import {
@@ -10,6 +18,7 @@ import {
 import {
   resolvePlaybooks,
   type InvestigationPlaybook,
+  type PlaybookPlatform,
   SCRIPT_LABELS,
 } from '../../services/investigationPlaybooks';
 
@@ -93,6 +102,8 @@ type Props = {
   onNavigate?: (tab: 'hosts' | 'snipen', host?: string) => void;
   mode?: RadarMode;
   onModeChange?: (mode: RadarMode) => void;
+  /** Enriched cluster from /event-map/live — provides backend knowledge/evidence/playbooks */
+  enrichedCluster?: LiveEventCluster | null;
 };
 
 const COLORS: Record<Severity, string> = {
@@ -1232,30 +1243,192 @@ function ActionBtn({
 // ─── Investigation Workbench (full left panel) ────────────────────────────────
 function InvestigationWorkbench({
   node,
+  enrichedCluster,
   onClose,
   onNavigate,
 }: {
   node: RadarNode;
+  enrichedCluster?: LiveEventCluster | null;
   onClose: () => void;
   onNavigate?: (tab: 'hosts' | 'snipen', host?: string) => void;
 }) {
   const [rawExpanded, setRawExpanded] = useState(false);
   const [checksExpanded, setChecksExpanded] = useState(false);
+  // Host resolution
+  const [resolvedHost, setResolvedHost] = useState<ResolvedUnifiedHost | null>(null);
+  const [hostLoading, setHostLoading] = useState(false);
+  const [hostError, setHostError] = useState<string | null>(null);
+  // Timeline
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+  const [timelineLoading, setTimelineLoading] = useState(false);
+  const [timelineError, setTimelineError] = useState<string | null>(null);
+  const [timelineOpen, setTimelineOpen] = useState(false);
+  // Script catalog
+  const [scripts, setScripts] = useState<ScriptEntry[]>([]);
+  const [scriptsLoading, setScriptsLoading] = useState(false);
+
   const color = COLORS[node.severity];
   const winKb    = getEventKnowledge(node.eventIds[0]);
   const linuxKey = getLinuxKeyFromTitle(node.title);
   const linuxKb  = linuxKey ? getLinuxEventKnowledge(linuxKey) : undefined;
 
-  const evidence = extractNodeEvidence(node);
-  const policy   = getActionPolicyForEvent(evidence);
+  // ── Backend enrichment (takes priority over frontend KB) ─────────────────────
+  const backendKb  = enrichedCluster?.knowledge    ?? null;
+  const backendEv  = enrichedCluster?.evidence_summary ?? null;
+  const backendPbs = enrichedCluster?.playbooks ?? null;
+
+  // Merge frontend evidence with backend fields (backend wins where present)
+  const frontendEvidence = extractNodeEvidence(node);
+  const evidence: EventEvidence = !backendEv ? frontendEvidence : {
+    ...frontendEvidence,
+    user:            backendEv.top_user         ?? frontendEvidence.user,
+    sourceIp:        backendEv.top_source_ip    ?? frontendEvidence.sourceIp,
+    process:         backendEv.top_process      ?? frontendEvidence.process,
+    filePath:        backendEv.file_path        ?? frontendEvidence.filePath,
+    fileAction:      (backendEv.file_action as typeof frontendEvidence.fileAction) ?? frontendEvidence.fileAction,
+    serviceName:     backendEv.service_name     ?? frontendEvidence.serviceName,
+    commandLine:     backendEv.command_line     ?? frontendEvidence.commandLine,
+    sensitivePath:   backendEv.sensitive_path   ? true : frontendEvidence.sensitivePath,
+    sensitiveReason: backendEv.sensitive_reason ?? frontendEvidence.sensitiveReason,
+    logonType:       backendEv.logon_type       ?? frontendEvidence.logonType,
+    status:          backendEv.status           ?? frontendEvidence.status,
+    subStatus:       backendEv.sub_status       ?? frontendEvidence.subStatus,
+  };
+
+  const policy = getActionPolicyForEvent(evidence);
 
   const topHost = node.hosts[0];
   const topUser = node.users[0];
   const topIp   = node.sourceIps[0];
 
-  const DISABLED_TOOLTIP = 'Disabled until host identity and action policy are confirmed.';
+  const DISABLED_TOOLTIP = 'Disabled until host identity, RBAC, audit logging and action policy are complete.';
+  const EXEC_TOOLTIP = 'Script execution is planned but disabled in this phase.';
 
-  const isLinux = !!linuxKb;
+  const isLinux = backendKb
+    ? backendKb.platform?.toLowerCase() === 'linux'
+    : !!linuxKb;
+
+  // ── Resolve unified host when cluster changes ──────────────────────────────
+  useEffect(() => {
+    if (!topHost) { setResolvedHost(null); setHostLoading(false); setHostError(null); return; }
+    setHostLoading(true);
+    setHostError(null);
+    setResolvedHost(null);
+    resolveUnifiedHost({ hostname: topHost.hostname, ip: topHost.ip ?? undefined })
+      .then((res) => {
+        setResolvedHost(res);
+        setHostLoading(false);
+        void logAuditAction({
+          action_type: 'host_resolved', source_page: 'event_map',
+          host: topHost.hostname,
+          unified_host_id: res.host?.id,
+          wazuh_agent_id: res.host?.wazuh_agent_id ?? undefined,
+          tactical_agent_id: res.host?.tactical_agent_id ?? undefined,
+          action_policy: res.action_policy.policy,
+          policy_reason: res.action_policy.reason,
+          details_json: { cluster_id: node.id, rule_ids: node.ruleIds.slice(0, 3), event_ids: node.eventIds.slice(0, 3) },
+        }).catch(() => {});
+      })
+      .catch((e: unknown) => {
+        setResolvedHost(null);
+        setHostLoading(false);
+        setHostError(e instanceof Error ? e.message : 'Failed to resolve host');
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node.id]);
+
+  // ── Load script catalog once ───────────────────────────────────────────────
+  useEffect(() => {
+    setScriptsLoading(true);
+    void getScripts({ enabled: true }).then((s) => { setScripts(s); setScriptsLoading(false); }).catch(() => setScriptsLoading(false));
+  }, []);
+
+  // ── Timeline helper ────────────────────────────────────────────────────────
+  const openTimeline = useCallback((filter: 'timeline' | 'host' | 'user' | 'ip' | 'related') => {
+    setTimelineOpen(true);
+    setTimelineLoading(true);
+    setTimelineError(null);
+
+    const params: Parameters<typeof getTimelineEvents>[0] = { limit: 200 };
+
+    // Use cluster firstSeen/lastSeen ±15 min as the search window when available
+    if (node.firstSeen) {
+      const from = new Date(node.firstSeen);
+      const to   = new Date(node.lastSeen ?? node.firstSeen);
+      from.setMinutes(from.getMinutes() - 15);
+      to.setMinutes(to.getMinutes() + 15);
+      params.from_time = from.toISOString();
+      params.to_time   = to.toISOString();
+    } else {
+      params.minutes_before = 15;
+      params.minutes_after  = 15;
+    }
+
+    // Apply filter-specific params
+    if (filter === 'timeline') {
+      params.host = topHost?.hostname;
+      if (node.eventIds[0]) params.event_id = node.eventIds[0];
+      if (node.ruleIds[0])  params.rule_id  = node.ruleIds[0];
+    } else if (filter === 'host') {
+      params.host = topHost?.hostname;
+    } else if (filter === 'user') {
+      params.user = evidence.user ?? topUser?.name;
+    } else if (filter === 'ip') {
+      params.source_ip = evidence.sourceIp ?? topIp?.name;
+    } else if (filter === 'related') {
+      if (node.eventIds[0]) params.event_id = node.eventIds[0];
+      if (node.ruleIds[0])  params.rule_id  = node.ruleIds[0];
+    }
+
+    void getTimelineEvents(params)
+      .then((items) => {
+        setTimelineItems(items);
+        setTimelineLoading(false);
+        void logAuditAction({
+          action_type: 'timeline_opened', source_page: 'event_map',
+          host: topHost?.hostname,
+          unified_host_id: resolvedHost?.host?.id,
+          wazuh_agent_id: resolvedHost?.host?.wazuh_agent_id ?? undefined,
+          tactical_agent_id: resolvedHost?.host?.tactical_agent_id ?? undefined,
+          action_policy: resolvedHost?.action_policy.policy ?? policy.policy,
+          policy_reason: resolvedHost?.action_policy.reason ?? policy.reason,
+          details_json: {
+            filter,
+            cluster_id: node.id,
+            rule_ids: node.ruleIds.slice(0, 3),
+            event_ids: node.eventIds.slice(0, 3),
+            result_count: items.length,
+          } as Record<string, unknown>,
+        }).catch(() => {});
+      })
+      .catch((e: unknown) => {
+        setTimelineItems([]);
+        setTimelineLoading(false);
+        setTimelineError(e instanceof Error ? e.message : 'Failed to load timeline');
+      });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [node.id, node.firstSeen, node.lastSeen, topHost?.hostname, topUser?.name, topIp?.name, evidence.user, evidence.sourceIp]);
+
+  // ── Script lookup helper ───────────────────────────────────────────────────
+  const scriptForId = (sid: string) => scripts.find((s) => s.script_id === sid);
+
+  // ── Audit payload builder ─────────────────────────────────────────────────
+  const buildAudit = (action_type: string, extra?: Record<string, unknown>) => ({
+    action_type,
+    source_page: 'event_map',
+    host: topHost?.hostname,
+    unified_host_id: resolvedHost?.host?.id,
+    wazuh_agent_id: resolvedHost?.host?.wazuh_agent_id ?? undefined,
+    tactical_agent_id: resolvedHost?.host?.tactical_agent_id ?? undefined,
+    action_policy: resolvedHost?.action_policy.policy ?? policy.policy,
+    policy_reason: resolvedHost?.action_policy.reason ?? policy.reason,
+    details_json: {
+      cluster_id: node.id,
+      rule_ids: node.ruleIds.slice(0, 3),
+      event_ids: node.eventIds.slice(0, 3),
+      ...extra,
+    } as Record<string, unknown>,
+  });
 
   // ── Title fallback: prefer meaningful KB title, then rule desc, then "Event <id>" ──
   const isGenericTitle = (t: string) =>
@@ -1283,12 +1456,13 @@ function InvestigationWorkbench({
 
   const chips: string[] = [
     isLinux ? 'Linux' : 'Windows',
-    ...(winKb ? [CATEGORY_LABELS[winKb.category]] : []),
-    ...(linuxKb ? [linuxKb.category] : []),
+    backendKb ? backendKb.category : null,
+    ...(winKb && !backendKb ? [CATEGORY_LABELS[winKb.category]] : []),
+    ...(linuxKb && !backendKb ? [linuxKb.category] : []),
     ...node.mitreTactics.slice(0, 2),
     ...node.eventIds.slice(0, 2).map((id) => `Event ${id}`),
     ...node.ruleIds.slice(0, 1).map((id) => `Rule ${id}`),
-  ].filter(Boolean);
+  ].filter((x): x is string => Boolean(x));
 
   const allChecks: string[] =
     winKb?.recommendedChecks ??
@@ -1303,9 +1477,9 @@ function InvestigationWorkbench({
 
   const CHECKS_VISIBLE = 5;
 
-  // ── Resolve matching playbooks ──
+  // ── Resolve matching playbooks (backend > frontend) ───────────────────────
   const [showAllPlaybooks, setShowAllPlaybooks] = useState(false);
-  const matchedPlaybooks: InvestigationPlaybook[] = resolvePlaybooks({
+  const frontendPlaybooks: InvestigationPlaybook[] = resolvePlaybooks({
     eventIds:   node.eventIds,
     linuxKeys:  linuxKey ? [linuxKey] : [],
     categories: [
@@ -1314,6 +1488,29 @@ function InvestigationWorkbench({
     ],
     platform: isLinux ? 'linux' : 'windows',
   });
+  const matchedPlaybooks: InvestigationPlaybook[] = backendPbs?.length
+    ? backendPbs.map((pb) => ({
+        playbook_id: pb.playbook_id,
+        title: pb.title,
+        category: '',
+        platform: 'both' as PlaybookPlatform,
+        severity_scope: [],
+        description: pb.description ?? '',
+        trigger_conditions: [],
+        related_event_ids: [],
+        related_event_keys: [],
+        related_categories: [],
+        related_mitre_techniques: [],
+        recommended_checks: pb.recommended_checks,
+        recommended_readonly_scripts: pb.recommended_readonly_scripts,
+        dangerous_actions: pb.dangerous_actions,
+        blocked_actions_reason: pb.blocked_actions_reason ?? 'Dangerous actions disabled in Phase 1.',
+        false_positive_notes: pb.false_positive_notes,
+        baseline_notes: [],
+        escalation_conditions: pb.escalation_conditions,
+        references: [],
+      }))
+    : frontendPlaybooks;
   const primaryPlaybook  = matchedPlaybooks[0] ?? null;
   const otherPlaybooks   = matchedPlaybooks.slice(1);
 
@@ -1326,6 +1523,22 @@ function InvestigationWorkbench({
     },
     null, 2,
   );
+
+  // ── Status chip helpers ────────────────────────────────────────────────────
+  const kbChipClass = backendKb ? 'ok' : (winKb || linuxKb) ? 'local' : 'missing';
+  const kbChipLabel = backendKb ? '⬡ Backend KB' : winKb ? '⬡ Win KB' : linuxKb ? '⬡ Linux KB' : '⬡ No KB';
+  const evChipClass = backendEv ? 'ok' : 'local';
+  const evChipLabel = backendEv ? '⬡ Backend Ev' : '⬡ Cluster Ev';
+  const pbChipClass = backendPbs?.length ? 'ok' : frontendPlaybooks.length > 0 ? 'local' : 'missing';
+  const pbChipLabel = backendPbs?.length ? '⬡ Backend PB' : frontendPlaybooks.length > 0 ? '⬡ Frontend PB' : '⬡ No PB';
+  const hostChipClass = hostLoading ? 'loading'
+    : hostError ? 'missing'
+    : resolvedHost?.host ? (resolvedHost.conflicts.length > 0 ? 'conflict' : 'ok')
+    : topHost ? 'missing' : 'loading';
+  const hostChipLabel = hostLoading ? '⬡ Resolving…'
+    : hostError ? '⬡ Host Error'
+    : resolvedHost?.host ? (resolvedHost.conflicts.length > 0 ? `⬡ Conflict (${resolvedHost.conflicts.length})` : '⬡ SSOT ✓')
+    : topHost ? '⬡ Not in SSOT' : '⬡ No Host';
 
   return (
     <div className="wd-workbench" style={{ '--event-color': color } as CSSProperties}>
@@ -1356,8 +1569,8 @@ function InvestigationWorkbench({
           {(node.firstSeen ?? node.lastSeen) && (
             <span>{formatTime(node.firstSeen)} → {formatTime(node.lastSeen)}</span>
           )}
-          {(winKb ?? linuxKb) && (
-            <span className="wd-wb-kb-badge">{isLinux ? 'Linux KB' : 'Windows KB'} · Deep</span>
+          {(backendKb ?? winKb ?? linuxKb) && (
+            <span className="wd-wb-kb-badge">{backendKb ? 'Backend KB' : isLinux ? 'Linux KB' : 'Windows KB'} · Deep</span>
           )}
         </div>
         <div className="wd-wb-chips">
@@ -1367,6 +1580,14 @@ function InvestigationWorkbench({
           {topUser && <span className="wd-wb-chip">👤 {topUser.name}</span>}
           {topIp && <span className="wd-wb-chip ip-chip">{topIp.name}</span>}
         </div>
+        {/* Data-source status bar */}
+        <div className="wd-wb-status-chips">
+          <span className={`wd-wb-status-chip ${kbChipClass}`}>{kbChipLabel}</span>
+          <span className={`wd-wb-status-chip ${evChipClass}`}>{evChipLabel}</span>
+          <span className={`wd-wb-status-chip ${pbChipClass}`}>{pbChipLabel}</span>
+          <span className={`wd-wb-status-chip ${hostChipClass}`}>{hostChipLabel}</span>
+          {scriptsLoading && <span className="wd-wb-status-chip loading">⬡ Scripts…</span>}
+        </div>
       </div>
 
       <div className="wd-wb-scroll">
@@ -1374,13 +1595,16 @@ function InvestigationWorkbench({
         {/* ── 2. QUICK VERDICT ── */}
         <section className="wd-wb-section">
           <div className="wd-wb-section-label">QUICK VERDICT</div>
+          {!backendKb && !winKb && !linuxKb && (
+            <p className="wd-wb-empty-note">No backend knowledge available — using cluster fallback.</p>
+          )}
           <p className="wd-wb-summary-text">
-            {winKb?.summary ?? linuxKb?.summary ?? node.explanation}
+            {backendKb?.summary ?? winKb?.summary ?? linuxKb?.summary ?? node.explanation}
           </p>
           {(winKb?.whyItMatters ?? linuxKb?.whatTriggersIt?.join('. ')) && (
             <p className="wd-wb-why">{winKb?.whyItMatters ?? linuxKb?.whatTriggersIt?.join('. ')}</p>
           )}
-          {(winKb ?? linuxKb) && (
+          {(backendKb ?? winKb ?? linuxKb) && (
             <div className="wd-wb-causes-grid">
               <div>
                 <div className="wd-wb-cause-label benign">Wahrscheinlich:</div>
@@ -1446,11 +1670,11 @@ function InvestigationWorkbench({
         <section className="wd-wb-section">
           <div className="wd-wb-section-label">CORRELATION</div>
           <div className="wd-wb-btn-group">
-            <ActionBtn label="±15 min Timeline" onClick={() => onNavigate?.('snipen', topHost?.hostname)} />
-            <ActionBtn label="Same Host"        onClick={() => onNavigate?.('snipen', topHost?.hostname)} />
-            <ActionBtn label="Same User"        disabled tooltip="Filter by user – coming soon" />
-            <ActionBtn label="Same Source IP"   disabled tooltip="Filter by source IP – coming soon" />
-            <ActionBtn label="Related Events"   disabled tooltip="Related event correlation – coming soon" />
+            <ActionBtn label="±15 min Timeline" onClick={() => openTimeline('timeline')} />
+            <ActionBtn label="Same Host"        onClick={() => openTimeline('host')} disabled={!topHost} tooltip={!topHost ? 'No host in cluster' : undefined} />
+            <ActionBtn label="Same User"        onClick={() => openTimeline('user')} disabled={!topUser && !evidence.user} tooltip={(!topUser && !evidence.user) ? 'No user in cluster' : undefined} />
+            <ActionBtn label="Same Source IP"   onClick={() => openTimeline('ip')} disabled={!topIp && !evidence.sourceIp} tooltip={(!topIp && !evidence.sourceIp) ? 'No source IP in cluster' : undefined} />
+            <ActionBtn label="Related Events"   onClick={() => openTimeline('related')} disabled={!node.eventIds[0] && !node.ruleIds[0]} tooltip={(!node.eventIds[0] && !node.ruleIds[0]) ? 'No event/rule IDs' : undefined} />
             <ActionBtn label="MITRE Chain"      disabled tooltip="MITRE ATT&CK chain – coming soon" />
           </div>
         </section>
@@ -1496,33 +1720,61 @@ function InvestigationWorkbench({
           </div>
         </section>
 
-        {/* ── 7. TACTICAL RMM ── */}
+        {/* ── 7. TACTICAL RMM / HOST IDENTITY ── */}
         <section className="wd-wb-section">
-          <div className="wd-wb-section-label">TACTICAL RMM</div>
+          <div className="wd-wb-section-label">TACTICAL RMM / HOST IDENTITY</div>
           <div className="wd-wb-rmm-status">
-            <div><span>Agent</span><b className="wd-wb-status-unknown">Not linked</b></div>
-            <div><span>Last check-in</span><b>–</b></div>
-            <div><span>Match confidence</span><b>–</b></div>
+            {hostLoading ? (
+              <div><span>Status</span><b style={{ color: '#7fa4b8' }}>Resolving…</b></div>
+            ) : hostError ? (
+              <div><span>Error</span><b style={{ color: '#ff5050' }}>{hostError}</b></div>
+            ) : resolvedHost?.host ? (
+              <>
+                <div><span>Display Name</span><b>{resolvedHost.host.display_name ?? resolvedHost.host.hostname_short ?? '–'}</b></div>
+                <div>
+                  <span>Identity Status</span>
+                  <b className={
+                    resolvedHost.host.identity_status === 'trusted'  ? undefined :
+                    resolvedHost.host.identity_status === 'likely'   ? 'wd-wb-status-review' :
+                    'wd-wb-status-unknown'
+                  }>{resolvedHost.host.identity_status?.toUpperCase() ?? '–'}</b>
+                </div>
+                <div><span>Match Score</span><b>{resolvedHost.host.match_score != null ? `${resolvedHost.host.match_score}%` : '–'}</b></div>
+                <div><span>Wazuh Status</span><b>{resolvedHost.host.wazuh_status ?? '–'}</b></div>
+                <div><span>Tactical Status</span><b>{resolvedHost.host.tactical_status ?? '–'}</b></div>
+                {resolvedHost.host.tactical_agent_id && (
+                  <div><span>Tactical Agent</span><b>{resolvedHost.host.tactical_agent_id}</b></div>
+                )}
+                <div><span>Last Seen (Tactical)</span><b>{resolvedHost.host.last_seen_tactical ? formatTime(resolvedHost.host.last_seen_tactical) : '–'}</b></div>
+                {resolvedHost.conflicts.length > 0 && (
+                  <div><span>Conflicts</span><b style={{ color: '#ff7a18' }}>{resolvedHost.conflicts.length} active</b></div>
+                )}
+              </>
+            ) : (
+              <div><span>Host SSOT</span><b className="wd-wb-status-unknown">Not resolved in SSOT</b></div>
+            )}
             <div>
               <span>Action Policy</span>
               <b className={
-                policy.policy === 'blocked'         ? 'wd-wb-status-blocked' :
-                policy.policy === 'review_required' ? 'wd-wb-status-review'  : undefined
+                (resolvedHost?.action_policy.policy ?? policy.policy) === 'blocked'         ? 'wd-wb-status-blocked' :
+                (resolvedHost?.action_policy.policy ?? policy.policy) === 'review_required' ? 'wd-wb-status-review' : undefined
               }>
-                {policy.policy === 'blocked'         ? 'BLOCKED'          :
-                 policy.policy === 'review_required' ? 'REVIEW REQUIRED'  : 'ALLOWED'}
+                {(resolvedHost?.action_policy.policy ?? policy.policy) === 'blocked'         ? 'BLOCKED' :
+                 (resolvedHost?.action_policy.policy ?? policy.policy) === 'review_required' ? 'REVIEW REQUIRED' : 'ALLOWED'}
               </b>
             </div>
           </div>
-          <p className="wd-wb-rmm-reason">{policy.reason}</p>
+          {!hostLoading && !hostError && !resolvedHost?.host && topHost && (
+            <p className="wd-wb-empty-note">Host not resolved in SSOT — no CMDB entry found for {topHost.hostname}.</p>
+          )}
+          <p className="wd-wb-rmm-reason">{resolvedHost?.action_policy.reason ?? policy.reason}</p>
 
           {/* Tactical RMM */}
           <div className="wd-wb-btn-label">Tactical RMM</div>
           <div className="wd-wb-btn-group" style={{ marginBottom: '10px' }}>
             <ActionBtn label="Open Tactical"  disabled tooltip="Tactical RMM – coming soon" />
-            <ActionBtn label="Sync Agent"     disabled tooltip="Tactical RMM – coming soon" />
-            <ActionBtn label="Match Host"     disabled tooltip="Tactical RMM – coming soon" />
-            <ActionBtn label="Patch Status"   disabled tooltip="Tactical RMM – coming soon" />
+            <ActionBtn label="Match Host" onClick={() => { void logAuditAction(buildAudit('host_match_requested')).catch(() => {}); }} tooltip={resolvedHost?.host ? `Matched: ${resolvedHost.host.display_name ?? resolvedHost.host.hostname_short}` : 'No SSOT match found'} />
+            <ActionBtn label="Patch Status"   disabled tooltip="Patch status – coming soon" />
           </div>
 
           {/* Triage Scripts */}
@@ -1592,9 +1844,25 @@ function InvestigationWorkbench({
               <ActionBtn label="Check Local Admins" disabled tooltip={DISABLED_TOOLTIP} />
             )}
           </div>
+
+          {/* ⛔ Dangerous actions — Phase 1: all disabled */}
+          <div className="wd-wb-btn-label" style={{ color: '#c97040', marginTop: '8px' }}>Dangerous Actions (Phase 2 — disabled)</div>
+          <div className="wd-wb-btn-group">
+            <ActionBtn label="Restart Service"  disabled tooltip={DISABLED_TOOLTIP} variant="danger" />
+            <ActionBtn label="Kill Process"     disabled tooltip={DISABLED_TOOLTIP} variant="danger" />
+            <ActionBtn label="Isolate Host"     disabled tooltip={DISABLED_TOOLTIP} variant="danger" />
+            <ActionBtn label="Delete File"      disabled tooltip={DISABLED_TOOLTIP} variant="danger" />
+            <ActionBtn label="Modify Firewall"  disabled tooltip={DISABLED_TOOLTIP} variant="danger" />
+          </div>
         </section>
 
         {/* ── 8b. SUGGESTED PLAYBOOK ── */}
+        {!primaryPlaybook && (
+          <section className="wd-wb-section">
+            <div className="wd-wb-section-label">SUGGESTED PLAYBOOK</div>
+            <p className="wd-wb-empty-note">No playbook matched for this event type yet.</p>
+          </section>
+        )}
         {primaryPlaybook && (
           <section className="wd-wb-section wd-wb-playbook-section">
             <div className="wd-wb-section-label">
@@ -1646,20 +1914,43 @@ function InvestigationWorkbench({
                 </div>
               )}
 
-              {/* Read-only scripts (disabled in Phase 1) */}
-              {primaryPlaybook.recommended_readonly_scripts.length > 0 && (
+              {/* Read-only scripts matched from catalog */}
+              {primaryPlaybook.recommended_readonly_scripts.length > 0 ? (
                 <div className="wd-wb-playbook-why">
                   <span className="wd-wb-playbook-label">Suggested read-only scripts</span>
                   <div className="wd-wb-btn-group" style={{ marginTop: '5px' }}>
-                    {primaryPlaybook.recommended_readonly_scripts.map((sid) => (
-                      <ActionBtn
-                        key={sid}
-                        label={SCRIPT_LABELS[sid] ?? sid}
-                        disabled
-                        tooltip="Script execution is planned but disabled in this phase."
-                      />
-                    ))}
+                    {primaryPlaybook.recommended_readonly_scripts.map((sid) => {
+                      const catalog = scriptForId(sid);
+                      const isMissing = !catalog && !SCRIPT_LABELS[sid];
+                      const label = catalog?.name ?? SCRIPT_LABELS[sid] ?? sid;
+                      const tip = catalog
+                        ? `${catalog.platform.toUpperCase()} · ${catalog.category} · Risk: ${catalog.risk_level} — ${EXEC_TOOLTIP}`
+                        : isMissing
+                        ? `Script template "${sid}" not found in catalog. Add it in the Script Library.`
+                        : EXEC_TOOLTIP;
+                      return (
+                        <span key={sid} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px', flexWrap: 'nowrap' }}>
+                          <ActionBtn
+                            label={isMissing ? `⚠ ${label}` : label}
+                            disabled
+                            tooltip={tip}
+                            onClick={() => {
+                              void logAuditAction(buildAudit('script_suggested_clicked', { script_id: sid, playbook_id: primaryPlaybook.playbook_id })).catch(() => {});
+                            }}
+                          />
+                          {isMissing && (
+                            <span className="wd-wb-status-chip missing" title={`"${sid}" not found in script catalog`}>
+                              MISSING
+                            </span>
+                          )}
+                        </span>
+                      );
+                    })}
                   </div>
+                </div>
+              ) : (
+                <div className="wd-wb-playbook-why">
+                  <p className="wd-wb-empty-note" style={{ marginBottom: 0 }}>No read-only scripts linked to this playbook.</p>
                 </div>
               )}
 
@@ -1774,9 +2065,9 @@ function InvestigationWorkbench({
           {/* Disposition */}
           <div className="wd-wb-btn-label">Disposition</div>
           <div className="wd-wb-btn-group" style={{ marginBottom: '10px' }}>
-            <ActionBtn label="Reviewed"        disabled tooltip="Case management – coming soon" />
-            <ActionBtn label="False Positive"  disabled tooltip="Case management – coming soon" />
-            <ActionBtn label="Add to Baseline" disabled tooltip="Case management – coming soon" />
+            <ActionBtn label="Reviewed"        onClick={() => { void logAuditAction(buildAudit('baseline_added', { action_id: 'reviewed' })).catch(() => {}); }} tooltip="Mark as reviewed (audit logged)" />
+            <ActionBtn label="False Positive"  onClick={() => { void logAuditAction(buildAudit('false_positive_marked', { action_id: 'fp', playbook_id: primaryPlaybook?.playbook_id })).catch(() => {}); }} tooltip="Mark as false positive (audit logged)" />
+            <ActionBtn label="Add to Baseline" onClick={() => { void logAuditAction(buildAudit('baseline_added', { action_id: 'baseline', playbook_id: primaryPlaybook?.playbook_id })).catch(() => {}); }} tooltip="Add to baseline (audit logged)" />
           </div>
 
           {/* Escalation */}
@@ -1784,7 +2075,7 @@ function InvestigationWorkbench({
           <div className="wd-wb-btn-group">
             <ActionBtn label="Create Incident" disabled tooltip="Case management – coming soon" />
             <ActionBtn label="Escalate"        disabled tooltip="Case management – coming soon" />
-            <ActionBtn label="Export Finding"  disabled tooltip="Case management – coming soon" />
+            <ActionBtn label="Export Finding"  onClick={() => { void logAuditAction(buildAudit('report_exported', { action_id: 'export_finding' })).catch(() => {}); }} tooltip="Export finding (audit logged)" />
           </div>
         </section>
 
@@ -1806,6 +2097,40 @@ function InvestigationWorkbench({
         </section>
 
       </div>
+
+      {/* ── TIMELINE PANEL OVERLAY ── */}
+      {timelineOpen && (
+        <div className="wd-wb-timeline-panel">
+          <div className="wd-wb-timeline-header">
+            <span>TIMELINE · {topHost?.hostname ?? 'all hosts'}</span>
+            <button type="button" onClick={() => setTimelineOpen(false)}>×</button>
+          </div>
+          {timelineLoading ? (
+            <div className="wd-wb-timeline-empty">Loading…</div>
+          ) : timelineError ? (
+            <div className="wd-wb-timeline-empty" style={{ color: '#ff5050' }}>Error: {timelineError}</div>
+          ) : timelineItems.length === 0 ? (
+            <div className="wd-wb-timeline-empty">No related events found in this time window.</div>
+          ) : (
+            <div className="wd-wb-timeline-list">
+              {timelineItems.map((item, i) => (
+                <div key={i} className="wd-wb-timeline-item">
+                  <span className="wd-wb-timeline-ts">{formatTime(item.timestamp)}</span>
+                  <span className="wd-wb-timeline-sev" style={{ color: COLORS[item.severity as Severity] ?? '#7fa4b8' }}>●</span>
+                  <div className="wd-wb-timeline-body">
+                    <b>{item.title}</b>
+                    <span>
+                      {[item.host, item.user ? `👤 ${item.user}` : null, item.source_ip, item.process]
+                        .filter(Boolean).join(' · ')}
+                    </span>
+                    {item.rule_id && <small>Rule {item.rule_id}{item.event_id ? ` · Event ${item.event_id}` : ''}</small>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 }
@@ -1834,6 +2159,7 @@ export default function WatchDogsEventRadar({
   onNavigate,
   mode = 'investigation',
   onModeChange,
+  enrichedCluster,
 }: Props) {
   const wrapperRef = useRef<HTMLDivElement | null>(null);
   const backgroundCanvasRef = useRef<HTMLCanvasElement | null>(null);
@@ -2137,6 +2463,7 @@ export default function WatchDogsEventRadar({
       {mode === 'investigation' && selectedNode && (
         <InvestigationWorkbench
           node={selectedNode}
+          enrichedCluster={enrichedCluster}
           onClose={() => onSelectCluster?.(null)}
           onNavigate={onNavigate}
         />
@@ -2797,6 +3124,66 @@ export default function WatchDogsEventRadar({
           overflow-x: auto; overflow-y: auto; max-height: 200px;
           white-space: pre; scrollbar-width: thin; scrollbar-color: rgba(0,217,255,0.18) transparent;
         }
+        /* ── Data-source status chips ── */
+        .wd-wb-status-chips {
+          display: flex; flex-wrap: wrap; gap: 5px;
+          padding: 6px 14px 9px;
+          border-bottom: 1px solid rgba(0,217,255,0.10);
+        }
+        .wd-wb-status-chip {
+          font-size: 9.5px; font-weight: 800; padding: 2px 8px; border-radius: 10px;
+          border: 1px solid; white-space: nowrap; letter-spacing: 0.2px;
+        }
+        .wd-wb-status-chip.ok      { color: #4adf88; border-color: rgba(74,223,136,0.45); background: rgba(74,223,136,0.08); }
+        .wd-wb-status-chip.local   { color: #00d9ff; border-color: rgba(0,217,255,0.35);  background: rgba(0,217,255,0.06); }
+        .wd-wb-status-chip.missing { color: #7fa4b8; border-color: rgba(127,164,184,0.3); background: rgba(127,164,184,0.05); }
+        .wd-wb-status-chip.conflict { color: #ff7a18; border-color: rgba(255,122,24,0.45); background: rgba(255,122,24,0.08); }
+        .wd-wb-status-chip.loading { color: #5a7e92; border-color: rgba(90,126,146,0.3); background: transparent; animation: wd-pulse 1.4s ease-in-out infinite; }
+        @keyframes wd-pulse { 0%, 100% { opacity: 0.6; } 50% { opacity: 1; } }
+        /* ── Empty state note ── */
+        .wd-wb-empty-note {
+          font-size: 10.5px; color: #5a7e92; font-style: italic;
+          margin: 5px 0 8px; padding: 6px 10px;
+          border-radius: 5px; border: 1px dashed rgba(0,217,255,0.15);
+          background: rgba(0,217,255,0.03);
+        }
+        /* ── Timeline Panel ── */
+        .wd-wb-timeline-panel {
+          position: absolute; inset: 0; z-index: 30;
+          display: flex; flex-direction: column;
+          background: linear-gradient(180deg, rgba(3,12,22,0.98), rgba(2,8,16,0.98));
+          border-left: 2px solid rgba(0,217,255,0.45);
+        }
+        .wd-wb-timeline-header {
+          height: 42px; min-height: 42px;
+          display: flex; align-items: center; justify-content: space-between;
+          padding: 0 14px;
+          border-bottom: 1px solid rgba(0,217,255,0.22);
+          color: #00d9ff; font-size: 12px; font-weight: 900; letter-spacing: 0.4px;
+        }
+        .wd-wb-timeline-header button {
+          border: 0; background: transparent; color: #7fa4b8; font-size: 20px; cursor: pointer; line-height: 1;
+        }
+        .wd-wb-timeline-empty {
+          flex: 1; display: flex; align-items: center; justify-content: center;
+          color: #5a7e92; font-size: 12px;
+        }
+        .wd-wb-timeline-list {
+          flex: 1; overflow-y: auto; padding: 8px 0;
+          scrollbar-width: thin; scrollbar-color: rgba(0,217,255,0.18) transparent;
+        }
+        .wd-wb-timeline-item {
+          display: grid; grid-template-columns: 70px 14px 1fr;
+          gap: 6px; align-items: start;
+          padding: 7px 14px; border-bottom: 1px solid rgba(0,217,255,0.06);
+        }
+        .wd-wb-timeline-item:hover { background: rgba(0,217,255,0.04); }
+        .wd-wb-timeline-ts { color: #00d9ff; font-size: 10px; font-weight: 700; white-space: nowrap; }
+        .wd-wb-timeline-sev { font-size: 9px; margin-top: 2px; }
+        .wd-wb-timeline-body { display: flex; flex-direction: column; gap: 2px; }
+        .wd-wb-timeline-body b { color: #dff8ff; font-size: 11px; }
+        .wd-wb-timeline-body span { color: #7fa4b8; font-size: 10px; }
+        .wd-wb-timeline-body small { color: #4a6a7e; font-size: 9.5px; }
       `}</style>
     </div>
   );

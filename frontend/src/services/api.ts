@@ -1,4 +1,4 @@
-﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, Report, RunAnalysisPayload, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, UnifiedHost } from '../types';
+﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, AuditEntry, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, ClusterEvidenceSummary, ClusterKnowledge, ClusterPlaybook, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, NormalisedActionPolicy, RawPreview, Report, ResolvedUnifiedHost, RunAnalysisPayload, ScriptEntry, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, TimelineItem, UnifiedHost } from '../types';
 
 const isDesktopShell =
   window.location.protocol === 'tauri:' ||
@@ -413,6 +413,11 @@ export interface LiveEventCluster {
   lastSeen: string;
   shortExplanation: string;
   recommendedActions: string[];
+  // ── Enrichment fields (Phase 2+) ──────────────────────────────────────────
+  knowledge?: ClusterKnowledge | null;
+  evidence_summary?: ClusterEvidenceSummary;
+  playbooks?: ClusterPlaybook[];
+  rawPreview?: RawPreview | null;
 }
 
 export function getLiveEventClusters(params: {
@@ -424,4 +429,192 @@ export function getLiveEventClusters(params: {
   if (params.host) qs.set('host', params.host);
   if (params.limit != null) qs.set('limit', String(params.limit));
   return request<LiveEventCluster[]>(`/event-map/live?${qs.toString()}`);
+}
+
+// ── Unified Host Resolver ─────────────────────────────────────────────────────
+
+export function resolveUnifiedHost(params: {
+  hostname?: string;
+  agent_id?: string;
+  ip?: string;
+}): Promise<ResolvedUnifiedHost> {
+  const qs = new URLSearchParams();
+  if (params.hostname) qs.set('hostname', params.hostname);
+  if (params.agent_id) qs.set('agent_id', params.agent_id);
+  if (params.ip) qs.set('ip', params.ip);
+  return request<ResolvedUnifiedHost>(`/unified-hosts/resolve?${qs.toString()}`);
+}
+
+// ── Timeline ──────────────────────────────────────────────────────────────────
+
+export function getTimelineEvents(params: {
+  host?: string;
+  agent_id?: string;
+  user?: string;
+  source_ip?: string;
+  event_id?: string;
+  rule_id?: string;
+  from_time?: string;
+  to_time?: string;
+  minutes_before?: number;
+  minutes_after?: number;
+  limit?: number;
+}): Promise<TimelineItem[]> {
+  const qs = new URLSearchParams();
+  if (params.host) qs.set('host', params.host);
+  if (params.agent_id) qs.set('agent_id', params.agent_id);
+  if (params.user) qs.set('user', params.user);
+  if (params.source_ip) qs.set('source_ip', params.source_ip);
+  if (params.event_id) qs.set('event_id', params.event_id);
+  if (params.rule_id) qs.set('rule_id', params.rule_id);
+  if (params.from_time) qs.set('from_time', params.from_time);
+  if (params.to_time) qs.set('to_time', params.to_time);
+  if (params.minutes_before != null) qs.set('minutes_before', String(params.minutes_before));
+  if (params.minutes_after != null) qs.set('minutes_after', String(params.minutes_after));
+  if (params.limit != null) qs.set('limit', String(params.limit));
+  return request<TimelineItem[]>(`/timeline/events?${qs.toString()}`);
+}
+
+// ── Script Library ────────────────────────────────────────────────────────────
+
+export function getScripts(params?: {
+  platform?: string;
+  category?: string;
+  dangerous?: boolean;
+  enabled?: boolean;
+  search?: string;
+}): Promise<ScriptEntry[]> {
+  const qs = new URLSearchParams();
+  if (params?.platform) qs.set('platform', params.platform);
+  if (params?.category) qs.set('category', params.category);
+  if (params?.dangerous != null) qs.set('dangerous', String(params.dangerous));
+  if (params?.enabled != null) qs.set('enabled', String(params.enabled));
+  if (params?.search) qs.set('search', params.search);
+  const q = qs.toString();
+  return request<ScriptEntry[]>(`/scripts${q ? '?' + q : ''}`);
+}
+
+export function getScript(scriptId: string): Promise<ScriptEntry> {
+  return request<ScriptEntry>(`/scripts/${encodeURIComponent(scriptId)}`);
+}
+
+export function createScript(payload: Partial<ScriptEntry>): Promise<ScriptEntry> {
+  return request<ScriptEntry>('/scripts', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
+export function updateScript(scriptId: string, payload: Partial<ScriptEntry>): Promise<ScriptEntry> {
+  return request<ScriptEntry>(`/scripts/${encodeURIComponent(scriptId)}`, {
+    method: 'PUT',
+    body: JSON.stringify(payload)
+  });
+}
+
+export function deleteScript(scriptId: string): Promise<{ status: string; script_id: string }> {
+  return request(`/scripts/${encodeURIComponent(scriptId)}`, { method: 'DELETE' });
+}
+
+// ── Audit Log ─────────────────────────────────────────────────────────────────
+
+export function getAuditActions(params?: {
+  action_type?: string;
+  host?: string;
+  limit?: number;
+}): Promise<AuditEntry[]> {
+  const qs = new URLSearchParams();
+  if (params?.action_type) qs.set('action_type', params.action_type);
+  if (params?.host) qs.set('host', params.host);
+  if (params?.limit != null) qs.set('limit', String(params.limit));
+  const q = qs.toString();
+  return request<AuditEntry[]>(`/audit/actions${q ? '?' + q : ''}`);
+}
+
+export function logAuditAction(payload: {
+  action_type: string;
+  source_page?: string;
+  host?: string;
+  user?: string;
+  unified_host_id?: number;
+  wazuh_agent_id?: string;
+  tactical_agent_id?: string;
+  source_event_id?: string;
+  source_rule_id?: string;
+  action_policy?: string;
+  policy_reason?: string;
+  details_json?: Record<string, unknown>;
+}): Promise<{ status: string; id: number }> {
+  return request('/audit/actions', {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+}
+
+// ── Action Policy helper ──────────────────────────────────────────────────────
+
+export function getActionPolicyFromUnifiedHost(
+  host: { identity_status?: string; action_policy?: string } | null,
+  conflicts?: { conflict_type?: string; severity?: string; resolved?: number; is_active?: number }[]
+): NormalisedActionPolicy {
+  if (!host) {
+    return {
+      policy: 'blocked',
+      reason: 'Host not resolved in SSOT. Wazuh event host could not be mapped to a Unified Host.',
+      dangerous_actions_enabled: false,
+      read_only_actions_enabled: false,
+    };
+  }
+  const identity = host.identity_status ?? 'unknown';
+  const hasBlockingConflict = (conflicts ?? []).some(
+    c => !c.resolved && c.is_active && (c.severity === 'critical' || c.conflict_type === 'os_mismatch' || c.conflict_type === 'duplicate_ip')
+  );
+  if (hasBlockingConflict) {
+    return { policy: 'blocked', reason: 'Active critical conflict blocks action.', dangerous_actions_enabled: false, read_only_actions_enabled: false };
+  }
+  if (identity === 'unknown' || identity === 'uncertain') {
+    return { policy: 'blocked', reason: `Host identity is '${identity}'. Cannot confirm host before acting.`, dangerous_actions_enabled: false, read_only_actions_enabled: false };
+  }
+  if (identity === 'likely') {
+    return { policy: 'review_required', reason: "Host matched with 'likely' confidence. Manual review required.", dangerous_actions_enabled: false, read_only_actions_enabled: true };
+  }
+  if (identity === 'trusted') {
+    return { policy: 'review_required', reason: 'Host is trusted. Dangerous actions disabled in Phase 1.', dangerous_actions_enabled: false, read_only_actions_enabled: true };
+  }
+  const rawPolicy = host.action_policy ?? 'read_only';
+  if (rawPolicy === 'blocked') {
+    return { policy: 'blocked', reason: 'Host action policy is explicitly blocked.', dangerous_actions_enabled: false, read_only_actions_enabled: false };
+  }
+  return { policy: 'review_required', reason: 'Host is in read-only / review mode.', dangerous_actions_enabled: false, read_only_actions_enabled: true };
+}
+
+// ── Trust Center / Validation ─────────────────────────────────────────────────
+
+export function getValidationStatus(): Promise<import('../types').ValidationStatus> {
+  return request<import('../types').ValidationStatus>('/validation/status');
+}
+
+// ── Local Runner ──────────────────────────────────────────────────────────────
+
+export interface FetchWazuhEventsResult {
+  status: string;
+  events_fetched: number;
+  file_path: string;
+  file_size_kb: number;
+  agents: string[];
+  agent_count: number;
+  earliest: string | null;
+  latest: string | null;
+  parameters_used: { hours: number; limit: number; host_filter: string | null };
+}
+
+export function runFetchWazuhEvents(params: {
+  hours: number;
+  limit: number;
+  host_filter?: string | null;
+}): Promise<FetchWazuhEventsResult> {
+  return request<FetchWazuhEventsResult>('/runner/fetch-wazuh-events', {
+    method: 'POST',
+    body: JSON.stringify(params),
+  });
 }
