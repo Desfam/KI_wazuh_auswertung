@@ -20,11 +20,13 @@ from schemas.types import (
     SnipenRelatedRequest,
     SnipenRemediateRequest,
 )
+from services.snipen_explanation_adapter import (
+    explain_event_structured,
+    explain_event_with_context_structured,
+)
 from services.snipen_service import (
     ai_query_host,
     analyze_host,
-    explain_event,
-    explain_event_with_context,
     get_all_events,
     get_host_events,
     get_host_snipen_overview,
@@ -153,9 +155,8 @@ def snipen_analyze_host(
 
 @router.post("/event/explain")
 def snipen_explain_event(body: SnipenExplainRequest) -> SnipenExplainResult:
-    """Ask the AI to explain a single Wazuh event."""
-    conn = _get_active_connection_dict()
-    return explain_event(conn, body.event_raw)
+    """Return deterministic structured explanation for a single Wazuh event."""
+    return explain_event_structured(body.event_raw)
 
 
 @router.post("/event/remediate")
@@ -167,9 +168,9 @@ def snipen_remediate_event(body: SnipenRemediateRequest) -> SnipenExplainResult:
 
 @router.post("/event/explain-context")
 def snipen_explain_event_with_context(body: SnipenExplainContextRequest) -> SnipenExplainResult:
-    """Context-aware explain: fetches ±15-min surrounding events and enriches the AI analysis."""
+    """Return deterministic structured explanation enriched with ±15-min context."""
     conn = _get_active_connection_dict()
-    return explain_event_with_context(conn, body.event_raw)
+    return explain_event_with_context_structured(conn, body.event_raw)
 
 
 @router.post("/event/related")
@@ -180,7 +181,6 @@ def snipen_related_events(body: SnipenRelatedRequest) -> list[SnipenEvent]:
         return get_related_events(conn, body.event_raw, limit=body.limit, hours=body.hours)
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc
-
 
 
 @router.post("/host/{host}/ai-query")
