@@ -37,6 +37,7 @@ from typing import Any
 _EID_CATEGORY: dict[str, str] = {
     "1014": "network",
     "1102": "anti_forensics",
+    "36871": "system_health",
     "4624": "authentication",
     "4625": "authentication",
     "4634": "authentication",
@@ -92,6 +93,22 @@ def evaluate_unified_event(event: dict[str, Any]) -> dict[str, Any]:
     except Exception as exc:
         explanation = _fallback_explanation(event, str(exc))
 
+    # ── Step 2a: Event-specific conservative overrides ───────────────────────
+    # Some operational Windows System events need deterministic guardrails so
+    # Investigation does not present them as malware/attack indicators without
+    # supporting context.  Overrides may lower OR raise the risk, so they must run
+    # before the final risk merge below.
+    try:
+        from services.event_explanation_overrides import apply_event_explanation_overrides  # type: ignore[import]
+        explanation, final_eval = apply_event_explanation_overrides(
+            event=event,
+            explanation=explanation,
+            final_evaluation=final_eval,
+        )
+    except Exception:
+        # Explanation overrides are safety improvements, never request blockers.
+        pass
+
     # ── Step 2b: Merge deterministic risk into final_evaluation ──────────────
     # The explanation builder has deeper per-event context (process paths, cmdline,
     # service binary paths, etc.) than the generic decision engine.  If the
@@ -100,16 +117,17 @@ def evaluate_unified_event(event: dict[str, Any]) -> dict[str, Any]:
     expl_risk = explanation.get("risk_score")
     if expl_risk is not None and isinstance(final_eval, dict):
         ext_risk = float(final_eval.get("risk_score") or 0)
-        if float(expl_risk) > ext_risk:
+        if float(expl_risk) > ext_risk or explanation.get("explanation_source") == "schannel_36871_profile":
             final_eval = {**final_eval}  # don't mutate the original dict
             final_eval["risk_score"] = float(expl_risk)
             if explanation.get("severity"):
                 final_eval["severity"] = explanation["severity"]
             if explanation.get("verdict"):
                 final_eval["verdict"] = explanation["verdict"]
-            # Only adopt explanation confidence when it is more certain
-            if explanation.get("confidence") in ("high", "medium") and \
-                    final_eval.get("confidence") == "low":
+            # Only adopt explanation confidence when it is more certain or when
+            # a named deterministic override explicitly owns the evaluation.
+            if explanation.get("confidence") in ("high", "medium", "medium-high") and \
+                    (final_eval.get("confidence") == "low" or explanation.get("explanation_source") == "schannel_36871_profile"):
                 final_eval["confidence"] = explanation["confidence"]
             # Unknown/generic events: mark as needing manual review
             if explanation.get("explanation_source") == "fallback":
@@ -125,6 +143,8 @@ def evaluate_unified_event(event: dict[str, Any]) -> dict[str, Any]:
     kl = kb.get("knowledge_level", "unknown")
     if kl not in ("generic", "unknown", ""):
         matched_by.append(f"KB:{kb.get('key', '?')} [{kl}]")
+    if explanation.get("explanation_source") == "schannel_36871_profile":
+        matched_by.append("profile:windows_schannel_36871")
     if baseline_ctx.get("baseline_available"):
         matched_by.append("host_baseline")
     if not matched_by:
@@ -147,7 +167,7 @@ def evaluate_unified_event(event: dict[str, Any]) -> dict[str, Any]:
     }
 
     title    = explanation.get("title") or kb.get("title") or f"Event {event_id or '?'}"
-    category = _EID_CATEGORY.get(event_id or "", _detect_category(event, platform))
+    category = explanation.get("category") or _EID_CATEGORY.get(event_id or "", _detect_category(event, platform))
 
     return {
         "event_id":        event_id,
