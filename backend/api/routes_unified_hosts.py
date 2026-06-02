@@ -14,18 +14,27 @@ from fastapi import APIRouter, HTTPException, Query
 
 from db.database import get_unified_host, list_host_conflicts, list_unified_hosts
 from services.action_policy import get_action_policy_for_unified_host
+from services.host_explain import explain_host_trust
 
 router = APIRouter(prefix="/unified-hosts", tags=["unified-hosts"])
 
 
+def _enrich(host: dict[str, Any], conflicts: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    """Attach explanation fields to a unified host dict in-place."""
+    if conflicts is None:
+        conflicts = []
+    host.update(explain_host_trust(host, conflicts))
+    return host
+
+
 @router.get("")
 def get_all_unified_hosts() -> list[dict[str, Any]]:
-    """Return all unified hosts with their current status and match info."""
+    """Return all unified hosts with their current status, match info, and trust explanations."""
     hosts = list_unified_hosts()
-    # Attach conflict count per host
     for host in hosts:
         conflicts = list_host_conflicts(host["id"])
         host["conflict_count"] = len(conflicts)
+        _enrich(host, conflicts)
     return hosts
 
 
@@ -107,12 +116,13 @@ def resolve_unified_host(
 
 @router.get("/{host_id}")
 def get_single_unified_host(host_id: int) -> dict[str, Any]:
-    """Return a single unified host by ID."""
+    """Return a single unified host by ID with trust explanations."""
     host = get_unified_host(host_id)
     if not host:
         raise HTTPException(status_code=404, detail="Unified host not found")
     conflicts = list_host_conflicts(host_id)
     host["conflict_count"] = len(conflicts)
+    _enrich(host, conflicts)
     return host
 
 

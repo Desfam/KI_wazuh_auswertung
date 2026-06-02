@@ -2,11 +2,19 @@
 from __future__ import annotations
 
 import json
+import os
 import time
 import re
 from collections import Counter
 from datetime import datetime, timedelta, timezone
 from typing import Any
+
+
+def _basename_lower(path: str | None) -> str | None:
+    """Return lowercase basename of *path*, or None if path is empty."""
+    if not path:
+        return None
+    return os.path.basename(str(path)).lower() or None
 
 import httpx
 
@@ -741,6 +749,53 @@ def _time_range_filter(hours: int) -> dict[str, Any]:
             }
         }
     }
+
+
+# search_after pagination — used when limit > 10 000 to bypass max_result_window
+_SEARCH_AFTER_PAGE = 10_000
+
+
+def _search_all_pages(
+    client: "httpx.Client",
+    url: str,
+    query: dict[str, Any],
+    limit: int,
+) -> list[dict[str, Any]]:
+    """
+    Fetch up to `limit` documents via search_after pagination.
+    Uses a composite sort (timestamp desc + _doc desc) for a stable cursor.
+    Each page is 10 000 docs; stops when the index is exhausted or limit is hit.
+    """
+    sort: list[dict[str, Any]] = [
+        {"@timestamp": {"order": "desc"}},
+        {"_doc": {"order": "desc"}},
+    ]
+    all_hits: list[dict[str, Any]] = []
+    search_after: list | None = None
+
+    while len(all_hits) < limit:
+        remaining = limit - len(all_hits)
+        payload: dict[str, Any] = {
+            "size": min(_SEARCH_AFTER_PAGE, remaining),
+            "sort": sort,
+            "query": query,
+        }
+        if search_after is not None:
+            payload["search_after"] = search_after
+        resp = client.post(url, json=payload)
+        resp.raise_for_status()
+        hits = resp.json().get("hits", {}).get("hits", [])
+        if not hits:
+            break
+        all_hits.extend(hits)
+        if len(hits) < payload["size"]:
+            break  # last page
+        last_sort = hits[-1].get("sort")
+        if not last_sort:
+            break
+        search_after = last_sort
+
+    return all_hits
 
 
 def _fetch_agent_inventory(connection: dict[str, Any]) -> dict[str, dict[str, Any]]:
@@ -1817,31 +1872,90 @@ def get_host_events(
         )
 
     # ---
-    # Limit-Logik anpassen: Wenn limit > 10000, dann kein Limit (alle Events)
-    size_value = limit if limit <= 10000 else 1000000  # 1 Mio als Hardcap für Elasticsearch
-    payload: dict[str, Any] = {
-        "size": size_value,
-        "sort": [{"@timestamp": {"order": "desc"}}],
-        "query": {
-            "bool": {
-                "filter": must_filters,
-            }
-        },
-    }
+    # Use search_after pagination for large requests; plain single-request otherwise
+    es_query: dict[str, Any] = {"bool": {"filter": must_filters}}
     index = _index_pattern(connection)
+    base_url = f"{build_base_url(connection)}/{index}/_search"
     try:
         with httpx.Client(
             verify=build_verify(connection),
             timeout=45.0,
             auth=build_auth(connection),
         ) as client:
-            resp = client.post(
-                f"{build_base_url(connection)}/{index}/_search", json=payload
-            )
-            resp.raise_for_status()
-            hits = resp.json().get("hits", {}).get("hits", [])
+            if limit > _SEARCH_AFTER_PAGE:
+                hits = _search_all_pages(client, base_url, es_query, limit)
+            else:
+                payload: dict[str, Any] = {
+                    "size": limit,
+                    "sort": [{"@timestamp": {"order": "desc"}}],
+                    "query": es_query,
+                }
+                resp = client.post(base_url, json=payload)
+                resp.raise_for_status()
+                hits = resp.json().get("hits", {}).get("hits", [])
     except Exception as exc:
         raise RuntimeError(f"Indexer event fetch failed: {exc}") from exc
+
+    events: list[SnipenEvent] = []
+    for hit in hits:
+        raw = hit.get("_source", {})
+        doc_id = hit.get("_id")
+        smart = _normalize_smart(raw)
+        ev = SnipenEvent(doc_id=str(doc_id) if doc_id else None, raw=raw, smart=smart)
+        events.append(ev)
+    return events
+
+
+def get_all_events(
+    connection: dict[str, Any],
+    hours: int = 24,
+    limit: int = 500,
+    min_rule_level: int | None = None,
+    category_filter: str | None = None,
+) -> list[SnipenEvent]:
+    """
+    Fetch recent events across ALL hosts for the given time window.
+    Identical to get_host_events but without the agent.name filter.
+    """
+    must_filters: list[dict[str, Any]] = [
+        _time_range_filter(hours),
+    ]
+    if min_rule_level is not None and min_rule_level > 0:
+        must_filters.append({"range": {"rule.level": {"gte": min_rule_level}}})
+
+    category_group_map: dict[str, list[str]] = {
+        "auth": ["authentication_failed", "authentication_success", "logon", "login"],
+        "process": ["process_creation", "execution"],
+        "service": ["service_control"],
+        "registry": ["registry_event"],
+        "powershell": ["powershell"],
+        "network": ["network_traffic"],
+    }
+    if category_filter and category_filter in category_group_map:
+        must_filters.append({"terms": {"rule.groups": category_group_map[category_filter]}})
+
+    es_query: dict[str, Any] = {"bool": {"filter": must_filters}}
+    index = _index_pattern(connection)
+    base_url = f"{build_base_url(connection)}/{index}/_search"
+    try:
+        with httpx.Client(
+            verify=build_verify(connection),
+            timeout=60.0,
+            auth=build_auth(connection),
+        ) as client:
+            if limit > _SEARCH_AFTER_PAGE:
+                hits = _search_all_pages(client, base_url, es_query, limit)
+            else:
+                payload: dict[str, Any] = {
+                    "size": limit,
+                    "sort": [{"@timestamp": {"order": "desc"}}],
+                    "query": es_query,
+                }
+                resp = client.post(base_url, json=payload)
+                resp.raise_for_status()
+                hits = resp.json().get("hits", {}).get("hits", [])
+    except Exception as exc:
+        raise RuntimeError(f"Indexer all-events fetch failed: {exc}") from exc
 
     events: list[SnipenEvent] = []
     for hit in hits:
@@ -2022,7 +2136,10 @@ def _ensure_explain_quality(
             fallback_lines.append("Für die Bewertung sind Kontext, Baseline-Abweichungen und mögliche Angriffsschritte im zeitlichen Umfeld entscheidend.")
         summary = " ".join(fallback_lines)
 
-    why_suspicious = str(parsed.get("why_suspicious", "") or "").strip()
+    why_suspicious_raw = parsed.get("why_suspicious", "") or ""
+    if isinstance(why_suspicious_raw, list):
+        why_suspicious_raw = " ".join(str(x) for x in why_suspicious_raw if x)
+    why_suspicious = str(why_suspicious_raw).strip()
     if len(_split_sentences(why_suspicious)) < 2:
         if is_infra:
             why_suspicious = (
@@ -2037,9 +2154,12 @@ def _ensure_explain_quality(
                 f"Zusätzlich erhöhen Benutzerkontext ({smart.user or 'n/a'}) und CommandLine-Muster ({smart.command_line or 'n/a'}) das Risiko."
             )
 
-    against_it = parsed.get("against_it")
+    against_it_raw = parsed.get("against_it")
+    if isinstance(against_it_raw, list):
+        against_it_raw = " ".join(str(x) for x in against_it_raw if x)
+    against_it = str(against_it_raw).strip() if against_it_raw is not None else None
     if against_it is not None:
-        against_it = str(against_it).strip() or None
+        against_it = against_it or None
 
     suspicious_fields = [str(x) for x in parsed.get("suspicious_fields", []) if str(x).strip()]
     if len(suspicious_fields) < 3:
@@ -2760,7 +2880,49 @@ def explain_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> Snip
         profile_name=host_profile.name if host_profile else None,
         has_baseline_deviation=False,
         has_ti_match=bool(getattr(smart, "ti_matches", None)),
+        # ── Process context for 4688 analysis ────────────────────────────
+        command_line=getattr(smart, "command_line", None),
+        process_path=getattr(smart, "image_path", None) or getattr(smart, "process", None),
+        process_name=_basename_lower(getattr(smart, "image_path", None) or getattr(smart, "process", None)),
+        parent_process_name=_basename_lower(getattr(smart, "parent_process", None)),
     )
+
+    # ── 4688 known-benign process: deterministic path, no AI ───────────────
+    if smart.event_id == "4688":
+        try:
+            from services.event_explanation_builder import (  # type: ignore[import]
+                build_event_explanation, is_benign_4688, _is_appx_backgroundtask,
+            )
+            _pname   = _basename_lower(getattr(smart, "image_path", None) or getattr(smart, "process", None))
+            _ppath   = getattr(smart, "image_path", None) or getattr(smart, "process", None)
+            _cmdline = getattr(smart, "command_line", None)
+            _parent  = _basename_lower(getattr(smart, "parent_process", None))
+            if _is_appx_backgroundtask(_pname, _cmdline) or (
+                is_benign_4688(_pname, _ppath, _cmdline, _parent)
+                and decision.risk_score <= 3.0
+            ):
+                expl = build_event_explanation(event=event_raw)
+                return SnipenExplainResult(
+                    summary=expl["summary"],
+                    why_suspicious=(
+                        " ".join(expl["why_suspicious"]) if expl["why_suspicious"] else None
+                    ),
+                    against_it=(
+                        " ".join(expl["why_likely_benign"]) if expl["why_likely_benign"] else None
+                    ),
+                    severity=decision.severity,
+                    risk_score=decision.risk_score,
+                    confidence=decision.confidence,
+                    mitre_techniques=[],
+                    remediation=[],
+                    next_checks=expl["recommended_checks"],
+                    unusual_behavior=expl["not_enough_evidence"],
+                    deviations=expl["escalation_conditions"][:3],
+                    suspicious_fields=[],
+                    ran_ai=False,
+                )
+        except Exception:
+            pass  # fall through to AI path
 
     # No-AI path for system/noise events
     if not decision.should_run_ai:
@@ -2832,8 +2994,29 @@ def explain_event(connection: dict[str, Any], event_raw: dict[str, Any]) -> Snip
         if observable_fields else ""
     )
 
+    # Build benign-process guardrail for 4688 events from known-safe paths
+    benign_proc_guardrail = ""
+    if smart.event_id == "4688":
+        _proc_path_lower = (
+            getattr(smart, "image_path", None) or getattr(smart, "process", None) or ""
+        ).lower().replace("/", "\\")
+        if _proc_path_lower.startswith("c:\\windows\\system32") or \
+                _proc_path_lower.startswith("c:\\windows\\syswow64"):
+            benign_proc_guardrail = (
+                "BENIGN PROCESS GUARDRAIL (MANDATORY): This process is running from "
+                "C:\\Windows\\System32 or C:\\Windows\\SysWow64. "
+                "Unless a concrete suspicious indicator is present (encoded command, "
+                "unusual path, Office/browser spawning shell, explicit malware artefact), "
+                "you MUST NOT write 'may indicate malware', 'compromised', 'Angriff', "
+                "'bösartig', 'nicht natürlich'. "
+                "Describe this as normal system activity. Use language such as: "
+                "'currently looks like normal Windows background activity', "
+                "'requires correlation to assess risk', 'no strong malicious indicator found'.\n"
+            )
+
     prompt = (
         f"[SYSTEM CONTEXT]\n{platform_note}\n"
+        f"{benign_proc_guardrail}"
         "You are a senior SOC analyst. Explain this Wazuh security event in DETAIL and return valid JSON only. "
         "Language: German. Be concrete and technical, avoid generic phrases. "
         "Keys: summary (str, 5-8 full German sentences), "

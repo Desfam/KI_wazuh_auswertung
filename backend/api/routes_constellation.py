@@ -13,6 +13,7 @@ from fastapi import APIRouter, HTTPException, Query
 
 from db.database import get_active_connection
 from services.wazuh_indexer import fetch_alerts
+from services.wazuh_field_mapper import get_field as _wf_get
 
 router = APIRouter(prefix="/constellation", tags=["constellation"])
 
@@ -196,7 +197,9 @@ def _map_alert(hit: dict[str, Any], idx: int) -> dict[str, Any] | None:
     syscheck = hit.get("syscheck") or {}
 
     win = data.get("win") if isinstance(data.get("win"), dict) else {}
-    win_evtdata = win.get("eventdata") if isinstance(win.get("eventdata"), dict) else {}
+    # Handle both lowercase 'eventdata' and camelCase 'eventData'
+    win_evtdata_raw = win.get("eventdata") or win.get("eventData")
+    win_evtdata = win_evtdata_raw if isinstance(win_evtdata_raw, dict) else {}
     win_system = win.get("system") if isinstance(win.get("system"), dict) else {}
 
     agent_name = _first_non_empty(agent.get("name"), hit.get("agent_name"))
@@ -219,8 +222,8 @@ def _map_alert(hit: dict[str, Any], idx: int) -> dict[str, Any] | None:
     mitre_tactic, mitre_id = _extract_mitre(rule)
 
     event_id = _first_non_empty(
-        win_system.get("eventID"),
-        win_system.get("eventId"),
+        _wf_get(hit, "data.win.system.eventID"),
+        _wf_get(hit, "data.win.system.eventId"),
         data.get("eventid"),
         data.get("event_id"),
     )

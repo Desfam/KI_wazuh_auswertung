@@ -24,6 +24,9 @@ from api.routes_timeline import router as timeline_router
 from api.routes_audit import router as audit_router
 from api.routes_validation import router as validation_router
 from api.routes_runner import router as runner_router
+from api.routes_event_evaluation import router as event_evaluation_router
+from api.routes_wazuh_manager import router as wazuh_manager_router
+from api.routes_server import router as server_router
 from db.database import init_db, ensure_default_connection, ensure_runner_scripts
 from services.app_config import sync_config_connection_to_db
 
@@ -71,6 +74,9 @@ app.include_router(timeline_router)
 app.include_router(audit_router)
 app.include_router(validation_router)
 app.include_router(runner_router)
+app.include_router(event_evaluation_router)
+app.include_router(wazuh_manager_router)
+app.include_router(server_router)
 
 
 @app.get("/")

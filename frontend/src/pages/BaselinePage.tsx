@@ -189,6 +189,11 @@ export function BaselinePage({ active, onSwitchTab }: BaselinePageProps) {
   const [hostSearch, setHostSearch] = useState('');
   const [typeFilter, setTypeFilter] = useState<string | null>(null);
   const [knownSearch, setKnownSearch] = useState('');
+  // Baseline candidate modal
+  const [showBaselineModal, setShowBaselineModal] = useState(false);
+  const [baselineReason, setBaselineReason] = useState('');
+  const [baselineSubmitting, setBaselineSubmitting] = useState(false);
+  const [baselineError, setBaselineError] = useState<string | null>(null);
 
   async function loadHostData(host: string) {
     setLoadingDev(true);
@@ -229,13 +234,30 @@ export function BaselinePage({ active, onSwitchTab }: BaselinePageProps) {
 
   async function handleAcceptAsBaseline() {
     if (!selected) return;
+    // Open confirmation modal instead of acting immediately
+    setBaselineReason('');
+    setBaselineError(null);
+    setShowBaselineModal(true);
+  }
+
+  async function handleConfirmBaselineCandidate() {
+    if (!selected || !baselineReason.trim()) {
+      setBaselineError('Please provide a reason for accepting this deviation as baseline.');
+      return;
+    }
+    setBaselineSubmitting(true);
+    setBaselineError(null);
     try {
       await resolveDeviation(selected.id);
       setAcceptedIds((prev) => new Set([...prev, selected.id]));
       const remaining = deviations.filter((d) => d.id !== selected.id && !acceptedIds.has(d.id));
       setSelected(remaining.length > 0 ? remaining[0] : null);
+      setShowBaselineModal(false);
     } catch (e) {
+      setBaselineError('Failed to create baseline candidate. Please try again.');
       console.error('Failed to resolve deviation:', e);
+    } finally {
+      setBaselineSubmitting(false);
     }
   }
 
@@ -1003,7 +1025,7 @@ export function BaselinePage({ active, onSwitchTab }: BaselinePageProps) {
 
             <Sec title="Actions">
               <div className="flex flex-wrap gap-1.5">
-                <ActBtn icon={Check} label="Accept as baseline" tone="success" onClick={() => void handleAcceptAsBaseline()} />
+                <ActBtn icon={Check} label="Create Baseline Candidate" tone="success" onClick={() => void handleAcceptAsBaseline()} />
                 <ActBtn icon={Eye} label="Investigate" onClick={handleInvestigate} />
               </div>
             </Sec>
@@ -1014,6 +1036,60 @@ export function BaselinePage({ active, onSwitchTab }: BaselinePageProps) {
           </div>
         )}
       </aside>
+
+      {/* ── Baseline Candidate Confirmation Modal ─────────────────────────── */}
+      {showBaselineModal && selected && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60">
+          <div className="w-[440px] rounded-lg border border-border bg-[var(--panel)] shadow-2xl">
+            <div className="flex items-center gap-2 border-b border-border px-4 py-3">
+              <Shield className="h-4 w-4 text-warning" />
+              <p className="text-[13px] font-semibold text-foreground">Create Baseline Candidate</p>
+            </div>
+            <div className="px-4 py-3 space-y-3">
+              <div className="rounded p-2 text-[11.5px] border border-warning/30 bg-warning/8 text-warning/90">
+                <span className="font-semibold">Warning:</span> Accepting a deviation as baseline marks it as
+                expected behaviour for this host. This action is audited and requires a justification.
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground mb-1">Deviation</p>
+                <p className="text-[12px] font-mono text-foreground truncate">{selected.feature_key}</p>
+                <p className="text-[11px] text-muted-foreground mt-0.5">{selected.reason}</p>
+              </div>
+              <div>
+                <label className="text-[11px] text-muted-foreground block mb-1">
+                  Reason / Justification <span className="text-critical">*</span>
+                </label>
+                <textarea
+                  value={baselineReason}
+                  onChange={(e) => { setBaselineReason(e.target.value); setBaselineError(null); }}
+                  placeholder="e.g. Approved change after CAB review #2024-001, confirmed legitimate service"
+                  rows={3}
+                  className="w-full rounded-sm border border-border bg-[var(--bg)] text-[11.5px] font-mono px-2 py-1 outline-none focus:border-primary resize-none placeholder:text-muted-foreground/50"
+                />
+              </div>
+              {baselineError && (
+                <p className="text-[11px] text-critical">{baselineError}</p>
+              )}
+            </div>
+            <div className="flex justify-end gap-2 border-t border-border px-4 py-2.5">
+              <button
+                onClick={() => setShowBaselineModal(false)}
+                disabled={baselineSubmitting}
+                className="h-7 px-3 rounded-sm border border-border text-[11.5px] font-mono hover:bg-accent disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => void handleConfirmBaselineCandidate()}
+                disabled={baselineSubmitting || !baselineReason.trim()}
+                className="h-7 px-3 rounded-sm border border-success/50 bg-success/10 text-success text-[11.5px] font-mono hover:bg-success/20 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {baselineSubmitting ? 'Submitting…' : 'Confirm Baseline Candidate'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

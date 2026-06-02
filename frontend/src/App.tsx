@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from 'react';
-import { CheckSquare, Cpu, Crosshair, Database, GitBranch, LayoutDashboard, MessageSquare, Network, ScrollText, Search, Server, Settings, Shield, ShieldCheck } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { AppSidebar, CATEGORY_LABELS } from './components/AppSidebar';
 const EventConstellationView = lazy(() => import('./components/visual/EventConstellationView'));
 import { ChatPage } from './pages/ChatPage';
 import { HostsPage } from './pages/HostsPage';
@@ -13,6 +14,7 @@ import { UnifiedHostsPage } from './pages/UnifiedHostsPage';
 import { ServerPage } from './pages/ServerPage';
 import { ScriptLibraryPage } from './pages/ScriptLibraryPage';
 import { TrustCenterPage } from './pages/TrustCenterPage';
+import { WazuhIntegrationPage } from './pages/WazuhIntegrationPage';
 import { FluidWaves } from './components/FluidWaves';
 import { AppStartOverlay, type PreflightCheck } from './components/AppStartOverlay';
 import { SettingsModal } from './components/SettingsModal';
@@ -63,19 +65,20 @@ function isHealthy(status: { status: string; reachable?: boolean }): boolean {
 }
 
 const TAB_LABELS: Record<string, string> = {
-  dashboard: 'Dashboard',
-  chat: 'Chat',
-  tasks: 'Incidents',
-  hosts: 'Hosts',
-  'host-overview': 'Host Overview',
-  'unified-hosts': 'Unified Hosts',
-  snipen: 'Investigation',
-  fullscan: 'Full Scan',
-  baseline: 'Baseline',
-  server: 'Server',
-  scripts: 'Script Library',
-  trust: 'Trust Center',
-  constellation: 'Event Map',
+  dashboard:           'Dashboard',
+  chat:                'Chat',
+  tasks:               'Incidents',
+  hosts:               'Hosts',
+  'host-overview':     'Host Overview',
+  'unified-hosts':     'Unified Hosts',
+  snipen:              'Investigation',
+  fullscan:            'Full Scan',
+  baseline:            'Baseline',
+  server:              'Server Operations',
+  scripts:             'Script Library',
+  trust:               'Trust Center',
+  constellation:       'Event Map',
+  'wazuh-integration': 'Wazuh Integration',
 };
 
 function fmtClock(): string {
@@ -83,7 +86,7 @@ function fmtClock(): string {
 }
 
 function App() {
-  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'unified-hosts' | 'snipen' | 'fullscan' | 'baseline' | 'server' | 'scripts' | 'trust' | 'constellation'>('dashboard');
+  const [activeTab, setActiveTab] = useState<'chat' | 'tasks' | 'dashboard' | 'hosts' | 'host-overview' | 'unified-hosts' | 'snipen' | 'fullscan' | 'baseline' | 'server' | 'scripts' | 'trust' | 'constellation' | 'wazuh-integration'>('dashboard');
   const [overviewHost, setOverviewHost] = useState<string | null>(null);
   const [constellationHost, setConstellationHost] = useState<string | null>(null);
   const [clockStr, setClockStr] = useState(fmtClock);
@@ -498,94 +501,28 @@ function App() {
         />
       )}
 
-      {/* Dark background overlay removed — was z-0 and leaked visually into sidebar */}
-
-      {/* Sidebar – SOC design matching redesign */}
-      <aside className="w-[200px] shrink-0 border-r flex flex-col h-full overflow-y-auto" style={{ borderColor: 'var(--soc-border)', background: 'var(--soc-sidebar)' }}>
-        {/* Logo */}
-        <div className="h-10 px-3 flex items-center gap-2 border-b shrink-0" style={{ borderColor: 'var(--soc-border)' }}>
-          <div className="h-5 w-5 rounded-sm grid place-items-center" style={{ background: 'color-mix(in srgb, var(--soc-primary) 20%, transparent)', border: '1px solid color-mix(in srgb, var(--soc-primary) 40%, transparent)' }}>
-            <Shield size={12} style={{ color: 'var(--soc-primary)' }} />
-          </div>
-          <div className="text-[12px] font-semibold tracking-wide" style={{ color: 'var(--soc-foreground)' }}>SENTINEL/OPS</div>
-        </div>
-
-        {/* Nav */}
-        <nav className="flex-1 py-2">
-          {([
-            { id: 'dashboard' as const, label: 'Dashboard', icon: LayoutDashboard, badge: null as string | null },
-            { id: 'tasks' as const, label: 'Incidents', icon: CheckSquare, badge: generatedTasks.length > 0 ? String(generatedTasks.length) : null },
-            { id: 'hosts' as const, label: 'Hosts', icon: Server, badge: null },
-            { id: 'snipen' as const, label: 'Investigation', icon: Crosshair, badge: null },
-            { id: 'fullscan' as const, label: 'Full Scan', icon: Cpu, badge: null },
-            { id: 'baseline' as const, label: 'Baseline', icon: Database, badge: null },
-            { id: 'unified-hosts' as const, label: 'Unified Hosts', icon: Network, badge: null },
-            { id: 'constellation' as const, label: 'Event Map',      icon: GitBranch,   badge: null },
-            { id: 'scripts' as const,       label: 'Script Library', icon: ScrollText,   badge: null },
-            { id: 'trust' as const,         label: 'Trust Center',   icon: ShieldCheck,  badge: null },
-            { id: 'server' as const,        label: 'Server',         icon: Shield,       badge: null },
-            { id: 'chat' as const, label: 'Chat', icon: MessageSquare, badge: null },
-          ]).map(({ id, label, icon: Icon, badge }) => {
-            const active = activeTab === id || (id === 'hosts' && activeTab === 'host-overview');
-            return (
-              <button
-                key={id}
-                type="button"
-                onClick={() => setActiveTab(id)}
-                className="flex items-center gap-2 w-full h-8 mx-1 rounded-sm text-[12.5px] transition-colors"
-                style={{
-                  paddingLeft: '11px',
-                  paddingRight: '8px',
-                  color: active ? 'var(--soc-foreground)' : 'var(--soc-sidebar-fg)',
-                  background: active ? 'var(--soc-sidebar-accent)' : 'transparent',
-                  borderLeft: active ? '2px solid var(--soc-primary)' : '2px solid transparent',
-                  marginLeft: active ? '-1px' : undefined,
-                  width: active ? 'calc(100% - 7px)' : 'calc(100% - 8px)',
-                }}
-                onMouseEnter={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'var(--soc-sidebar-accent)'; }}
-                onMouseLeave={e => { if (!active) (e.currentTarget as HTMLElement).style.background = 'transparent'; }}
-              >
-                <Icon size={14} className="shrink-0" />
-                <span className="flex-1 text-left">{label}</span>
-                {badge && (
-                  <span className="text-[10px] font-mono px-1 rounded-sm" style={{ background: 'var(--soc-critical)', color: 'oklch(0.98 0 0)' }}>
-                    {badge}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </nav>
-
-        {/* Bottom info strip */}
-        <div className="border-t p-2 text-[10.5px] font-mono space-y-0.5" style={{ borderColor: 'var(--soc-border)', color: 'var(--soc-muted-fg)' }}>
-          <div className="flex justify-between">
-            <span>ai status</span>
-            <span style={{ color: aiStatus?.running ? 'var(--soc-success)' : chatBusy ? 'var(--soc-warning)' : 'var(--soc-critical)' }}>
-              {aiStatus?.running ? 'online' : chatBusy ? 'running' : 'offline'}
-            </span>
-          </div>
-          <div className="flex justify-between"><span>time</span><span>{clockStr}</span></div>
-          <button
-            type="button"
-            onClick={() => setSettingsOpen(true)}
-            className="w-full flex items-center gap-1.5 mt-1 h-6 px-2 rounded-sm border text-[11px] font-mono"
-            style={{ borderColor: 'var(--soc-border)', color: 'var(--soc-muted-fg)' }}
-            onMouseEnter={e => (e.currentTarget as HTMLElement).style.background = 'var(--soc-sidebar-accent)'}
-            onMouseLeave={e => (e.currentTarget as HTMLElement).style.background = 'transparent'}
-          >
-            <Settings size={11} />
-            <span>Settings</span>
-          </button>
-        </div>
-      </aside>
+      {/* ── Sidebar ────────────────────────────────────────────────────── */}
+      <AppSidebar
+        activeTab={activeTab}
+        onNavigate={tab => setActiveTab(tab)}
+        onSettingsOpen={() => setSettingsOpen(true)}
+        taskBadge={generatedTasks.length > 0 ? String(generatedTasks.length) : null}
+        aiOnline={aiStatus?.running ?? false}
+        clockStr={clockStr}
+      />
 
       {/* Main content */}
       <main className="relative z-10 flex flex-col flex-1 overflow-hidden">
         {/* SOC topbar matching redesign */}
         <header className="h-10 shrink-0 border-b flex items-center px-3 gap-3" style={{ borderColor: 'var(--soc-border)', background: 'var(--soc-panel)' }}>
-          <div className="flex items-baseline gap-2">
-            <div className="text-[12.5px] font-semibold tracking-wide">{TAB_LABELS[activeTab] ?? activeTab}</div>
+          <div className="flex items-baseline gap-1.5">
+            {CATEGORY_LABELS[activeTab] && (
+              <>
+                <span className="text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>{CATEGORY_LABELS[activeTab]}</span>
+                <span className="text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>/</span>
+              </>
+            )}
+            <span className="text-[12.5px] font-semibold tracking-wide">{TAB_LABELS[activeTab] ?? activeTab}</span>
           </div>
 
           <div className="ml-4 flex items-center gap-2 flex-1 max-w-[480px]">
@@ -753,6 +690,11 @@ function App() {
           {activeTab === 'trust' && (
             <ErrorBoundary label="Trust">
               <TrustCenterPage />
+            </ErrorBoundary>
+          )}
+          {activeTab === 'wazuh-integration' && (
+            <ErrorBoundary label="Wazuh Integration">
+              <WazuhIntegrationPage />
             </ErrorBoundary>
           )}
           {activeTab === 'constellation' && (

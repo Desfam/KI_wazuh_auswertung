@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useState } from 'react';
-import { AlertTriangle, CheckCircle, Network, RefreshCw, Shield, XCircle } from 'lucide-react';
+import { AlertTriangle, CheckCircle, ChevronDown, ChevronRight, Copy, Network, RefreshCw, Shield, XCircle } from 'lucide-react';
 import {
   getUnifiedHost,
   getUnifiedHostConflicts,
   getUnifiedHosts,
   getTacticalHealth,
   triggerTacticalSync,
+  syncWazuhAgents,
+  recomputePolicies,
 } from '../services/api';
-import type { ActionPolicy, HostConflict, IdentityStatus, TacticalSyncResult, UnifiedHost } from '../types';
+import type { ActionPolicy, HostConflict, IdentityStatus, TacticalSyncResult, UnifiedHost, WazuhSyncReport } from '../types';
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -72,6 +74,178 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
+// ── Wazuh Sync Report modal ─────────────────────────────────────────────────────
+
+interface SyncReportModalProps {
+  report: WazuhSyncReport;
+  onClose: () => void;
+}
+
+function WazuhSyncReportModal({ report, onClose }: SyncReportModalProps) {
+  const [showUnmatched, setShowUnmatched] = useState(false);
+  const [showConflicts, setShowConflicts] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    void navigator.clipboard.writeText(JSON.stringify(report, null, 2)).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  const mm = report.match_methods;
+  const methodRows = [
+    { label: 'Agent ID (exact)',  value: mm.agent_id,    color: 'var(--soc-success)' },
+    { label: 'Hostname match',    value: mm.hostname,    color: 'var(--soc-primary)' },
+    { label: 'FQDN match',        value: mm.fqdn,        color: 'oklch(0.75 0.18 40)' },
+    { label: 'IP match',          value: mm.ip,          color: 'var(--soc-warning)' },
+    { label: 'New (unmatched)',   value: mm.created_new, color: 'var(--soc-muted-fg)' },
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center"
+      style={{ background: 'rgba(0,0,0,0.75)' }}
+      onClick={onClose}
+    >
+      <div
+        className="rounded-lg w-[680px] max-h-[90vh] overflow-y-auto p-5 space-y-4 text-sm"
+        style={{ background: 'var(--soc-panel)', border: '1px solid var(--soc-border)', color: 'var(--soc-foreground)' }}
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="font-semibold text-base">Wazuh Sync Report</div>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCopy}
+              className="flex items-center gap-1 px-2 py-1 rounded text-[11px] font-mono"
+              style={{ background: 'var(--soc-sidebar-accent)', color: 'var(--soc-muted-fg)', border: '1px solid var(--soc-border)' }}
+            >
+              <Copy size={11} /> {copied ? 'Copied!' : 'Copy JSON'}
+            </button>
+            <button type="button" onClick={onClose} className="text-[11px] px-2 py-1 rounded" style={{ background: 'var(--soc-sidebar-accent)', color: 'var(--soc-muted-fg)' }}>
+              ✕
+            </button>
+          </div>
+        </div>
+
+        {/* Errors / Warnings */}
+        {report.errors.length > 0 && (
+          <div className="rounded p-2.5 space-y-1" style={{ background: 'oklch(0.25 0.05 20)', borderLeft: '3px solid var(--soc-critical)' }}>
+            {report.errors.map((e, i) => (
+              <div key={i} className="text-[11px] font-mono" style={{ color: 'var(--soc-critical)' }}>{e}</div>
+            ))}
+          </div>
+        )}
+        {report.warnings.length > 0 && (
+          <div className="rounded p-2.5 space-y-1" style={{ background: 'oklch(0.25 0.05 40)', borderLeft: '3px solid var(--soc-warning)' }}>
+            {report.warnings.map((w, i) => (
+              <div key={i} className="text-[11px] font-mono" style={{ color: 'var(--soc-warning)' }}>{w}</div>
+            ))}
+          </div>
+        )}
+
+        {/* Totals */}
+        <section>
+          <div className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--soc-muted-fg)' }}>Totals</div>
+          <div className="grid grid-cols-4 gap-2">
+            {[
+              { label: 'Wazuh agents',      value: report.agents_total,        color: 'var(--soc-foreground)' },
+              { label: 'Existing hosts',     value: report.unified_hosts_before,color: 'var(--soc-foreground)' },
+              { label: 'Matched',            value: report.matched,             color: 'var(--soc-success)' },
+              { label: 'Created new',        value: report.created,             color: 'var(--soc-primary)' },
+              { label: 'Updated',            value: report.updated,             color: 'oklch(0.75 0.18 40)' },
+              { label: 'Conflicts',          value: report.conflicts,           color: 'var(--soc-warning)' },
+              { label: 'Unmatched agents',   value: report.unmatched_agents,    color: 'var(--soc-muted-fg)' },
+              { label: 'Duration',           value: `${report.duration_ms}ms`,  color: 'var(--soc-muted-fg)' },
+            ].map(c => (
+              <div key={c.label} className="rounded p-2" style={{ background: 'var(--soc-sidebar-accent)' }}>
+                <div className="text-[10px] mb-1" style={{ color: 'var(--soc-muted-fg)' }}>{c.label}</div>
+                <div className="font-mono font-bold text-[13px]" style={{ color: c.color }}>{c.value}</div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Match methods */}
+        <section>
+          <div className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--soc-muted-fg)' }}>Match Method Breakdown</div>
+          <div className="rounded overflow-hidden" style={{ border: '1px solid var(--soc-border)' }}>
+            {methodRows.map((r, i) => (
+              <div key={r.label} className="flex items-center justify-between px-3 py-1.5" style={{ borderTop: i > 0 ? '1px solid var(--soc-border)' : undefined }}>
+                <span className="text-[11px]" style={{ color: 'var(--soc-muted-fg)' }}>{r.label}</span>
+                <span className="font-mono font-bold text-[12px]" style={{ color: r.value > 0 ? r.color : 'var(--soc-muted-fg)' }}>{r.value}</span>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        {/* Unmatched agents */}
+        {report.unmatched_items.length > 0 && (
+          <section>
+            <button
+              type="button"
+              className="flex items-center gap-1.5 w-full text-left text-[10px] font-semibold uppercase tracking-widest mb-2"
+              style={{ color: 'var(--soc-muted-fg)' }}
+              onClick={() => setShowUnmatched(v => !v)}
+            >
+              {showUnmatched ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+              Unmatched Agents ({report.unmatched_items.length})
+            </button>
+            {showUnmatched && (
+              <div className="rounded overflow-hidden" style={{ border: '1px solid var(--soc-border)' }}>
+                <div className="grid text-[10px] font-semibold px-3 py-1.5 grid-cols-4 gap-2" style={{ background: 'var(--soc-sidebar-accent)', color: 'var(--soc-muted-fg)' }}>
+                  <span>Agent ID</span><span>Name</span><span>IP</span><span>Status</span>
+                </div>
+                {report.unmatched_items.map((item, i) => (
+                  <div key={i} className="grid grid-cols-4 gap-2 px-3 py-1.5 font-mono text-[11px]" style={{ borderTop: '1px solid var(--soc-border)' }}>
+                    <span style={{ color: 'var(--soc-muted-fg)' }}>{item.agent_id}</span>
+                    <span>{item.agent_name}</span>
+                    <span style={{ color: 'var(--soc-muted-fg)' }}>{item.agent_ip || '—'}</span>
+                    <span style={{ color: statusDot(item.status) }}>{item.status}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+
+        {/* Conflicts */}
+        {report.conflict_items.length > 0 && (
+          <section>
+            <button
+              type="button"
+              className="flex items-center gap-1.5 w-full text-left text-[10px] font-semibold uppercase tracking-widest mb-2"
+              style={{ color: 'var(--soc-warning)' }}
+              onClick={() => setShowConflicts(v => !v)}
+            >
+              {showConflicts ? <ChevronDown size={11} /> : <ChevronRight size={11} />}
+              Conflicts ({report.conflict_items.length})
+            </button>
+            {showConflicts && (
+              <div className="space-y-2">
+                {report.conflict_items.map((ci, i) => (
+                  <div key={i} className="rounded p-2.5" style={{ background: 'var(--soc-sidebar-accent)', borderLeft: '3px solid var(--soc-warning)' }}>
+                    <div className="font-semibold text-[11px] mb-1">{ci.host_name}</div>
+                    <div className="text-[10px] mb-1.5" style={{ color: 'var(--soc-muted-fg)' }}>{ci.reason}</div>
+                    {ci.candidates.map((c, j) => (
+                      <div key={j} className="font-mono text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>
+                        #{c.agent_id} {c.agent_name} {c.agent_ip ? `(${c.agent_ip})` : ''} via {c.match_reason}
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
+          </section>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Host detail panel ───────────────────────────────────────────────────────────
 
 interface DetailPanelProps {
@@ -127,6 +301,59 @@ function HostDetailPanel({ host, conflicts, onClose }: DetailPanelProps) {
             </div>
           </div>
         </section>
+
+        {/* Trust Explanation */}
+        {(host.identity_reason || host.policy_reason) && (
+          <section>
+            <div className="text-[10px] font-semibold uppercase tracking-widest mb-2" style={{ color: 'var(--soc-muted-fg)' }}>Trust Explanation</div>
+            <div className="space-y-2">
+              {host.identity_reason && (
+                <div className="rounded p-2.5" style={{ background: 'var(--soc-sidebar-accent)', borderLeft: `3px solid ${identityColor(host.identity_status)}` }}>
+                  <div className="text-[10px] font-semibold mb-0.5" style={{ color: 'var(--soc-muted-fg)' }}>Identity Reason</div>
+                  <div className="text-[11px]">{host.identity_reason}</div>
+                </div>
+              )}
+              {host.policy_reason && (
+                <div className="rounded p-2.5" style={{ background: 'var(--soc-sidebar-accent)', borderLeft: `3px solid ${policyColor(host.action_policy)}` }}>
+                  <div className="text-[10px] font-semibold mb-0.5" style={{ color: 'var(--soc-muted-fg)' }}>Policy Reason</div>
+                  <div className="text-[11px]">{host.policy_reason}</div>
+                </div>
+              )}
+              {(host.match_evidence?.length ?? 0) > 0 && (
+                <div className="rounded p-2.5" style={{ background: 'var(--soc-sidebar-accent)' }}>
+                  <div className="text-[10px] font-semibold mb-1.5" style={{ color: 'var(--soc-muted-fg)' }}>Match Evidence</div>
+                  <ul className="space-y-0.5">
+                    {host.match_evidence!.map((e, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-[11px]">
+                        <span style={{ color: 'var(--soc-success)' }}>✓</span>
+                        <span>{e}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {(host.conflict_evidence?.length ?? 0) > 0 && (
+                <div className="rounded p-2.5" style={{ background: 'var(--soc-sidebar-accent)', borderLeft: '3px solid var(--soc-warning)' }}>
+                  <div className="text-[10px] font-semibold mb-1.5" style={{ color: 'var(--soc-warning)' }}>Conflict Evidence</div>
+                  <ul className="space-y-0.5">
+                    {host.conflict_evidence!.map((e, i) => (
+                      <li key={i} className="flex items-start gap-1.5 text-[11px]">
+                        <span style={{ color: 'var(--soc-warning)' }}>⚠</span>
+                        <span>{e}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {host.recommended_next_step && (
+                <div className="rounded p-2.5" style={{ background: 'var(--soc-sidebar-accent)', borderLeft: '3px solid var(--soc-primary)' }}>
+                  <div className="text-[10px] font-semibold mb-0.5" style={{ color: 'var(--soc-muted-fg)' }}>Recommended Next Step</div>
+                  <div className="text-[11px]">{host.recommended_next_step}</div>
+                </div>
+              )}
+            </div>
+          </section>
+        )}
 
         {/* Wazuh Security */}
         <section>
@@ -270,7 +497,10 @@ export function UnifiedHostsPage({ active }: Props) {
   const [hosts, setHosts] = useState<UnifiedHost[]>([]);
   const [loading, setLoading] = useState(false);
   const [syncing, setSyncing] = useState(false);
-  const [syncResult, setSyncResult] = useState<TacticalSyncResult | null>(null);
+  const [wazuhSyncing, setWazuhSyncing] = useState(false);
+  const [recomputing, setRecomputing] = useState(false);
+  const [syncResult, setSyncResult] = useState<WazuhSyncReport | null>(null);
+  const [showSyncReport, setShowSyncReport] = useState(false);
   const [syncError, setSyncError] = useState<string | null>(null);
   const [health, setHealth] = useState<{ reachable: boolean; detail: string } | null>(null);
   const [selectedHost, setSelectedHost] = useState<UnifiedHost | null>(null);
@@ -306,17 +536,44 @@ export function UnifiedHostsPage({ active }: Props) {
 
   async function handleSync() {
     setSyncing(true);
-    setSyncResult(null);
     setSyncError(null);
     try {
-      const result = await triggerTacticalSync();
-      setSyncResult(result);
+      await triggerTacticalSync();
       void fetchHosts();
       void fetchHealth();
     } catch (e) {
       setSyncError(e instanceof Error ? e.message : 'Sync failed');
     } finally {
       setSyncing(false);
+    }
+  }
+
+  async function handleWazuhSync() {
+    setWazuhSyncing(true);
+    setSyncResult(null);
+    setSyncError(null);
+    try {
+      const result = await syncWazuhAgents();
+      setSyncResult(result);
+      setShowSyncReport(true);
+      void fetchHosts();
+    } catch (e) {
+      setSyncError(e instanceof Error ? e.message : 'Wazuh sync failed');
+    } finally {
+      setWazuhSyncing(false);
+    }
+  }
+
+  async function handleRecompute() {
+    setRecomputing(true);
+    setSyncError(null);
+    try {
+      await recomputePolicies();
+      void fetchHosts();
+    } catch (e) {
+      setSyncError(e instanceof Error ? e.message : 'Recompute failed');
+    } finally {
+      setRecomputing(false);
     }
   }
 
@@ -369,9 +626,16 @@ export function UnifiedHostsPage({ active }: Props) {
 
         <div className="ml-auto flex items-center gap-2">
           {syncResult && (
-            <span className="text-[10px] font-mono" style={{ color: 'var(--soc-muted-fg)' }}>
-              {syncResult.agents_cached} agents · {syncResult.conflicts_detected} conflicts · {syncResult.duration_ms}ms
-            </span>
+            <button
+              type="button"
+              onClick={() => setShowSyncReport(true)}
+              className="flex items-center gap-1 text-[10px] font-mono px-2 py-1 rounded"
+              style={{ color: 'var(--soc-muted-fg)', background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}
+              title="View full sync report"
+            >
+              {syncResult.agents_total} agents · {syncResult.matched} matched · {syncResult.conflicts} conflicts · {syncResult.duration_ms}ms
+              <ChevronRight size={10} />
+            </button>
           )}
           {syncError && (
             <span className="text-[10px] font-mono" style={{ color: 'var(--soc-critical)' }}>
@@ -381,12 +645,35 @@ export function UnifiedHostsPage({ active }: Props) {
           <button
             type="button"
             onClick={() => void handleSync()}
-            disabled={syncing}
+            disabled={syncing || wazuhSyncing}
             className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-mono disabled:opacity-50"
-            style={{ background: 'var(--soc-primary)', color: 'oklch(0.98 0 0)' }}
+            style={{ background: 'var(--soc-sidebar-accent)', color: 'var(--soc-foreground)', border: '1px solid var(--soc-border)' }}
+            title="Sync from Tactical RMM"
           >
             <RefreshCw size={12} className={syncing ? 'animate-spin' : ''} />
-            {syncing ? 'Syncing…' : 'Sync Now'}
+            {syncing ? 'Syncing…' : 'Tactical Sync'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleWazuhSync()}
+            disabled={wazuhSyncing || syncing}
+            className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-mono disabled:opacity-50"
+            style={{ background: 'var(--soc-primary)', color: 'oklch(0.98 0 0)' }}
+            title="Pull Wazuh Manager agents and match to unified hosts"
+          >
+            <RefreshCw size={12} className={wazuhSyncing ? 'animate-spin' : ''} />
+            {wazuhSyncing ? 'Syncing Wazuh…' : 'Wazuh Sync'}
+          </button>
+          <button
+            type="button"
+            onClick={() => void handleRecompute()}
+            disabled={recomputing || wazuhSyncing || syncing}
+            className="flex items-center gap-1.5 px-3 py-1 rounded text-[11px] font-mono disabled:opacity-50"
+            style={{ background: 'var(--soc-sidebar-accent)', color: 'var(--soc-foreground)', border: '1px solid var(--soc-border)' }}
+            title="Recompute action_policy for all unified hosts based on current trust signals"
+          >
+            <Shield size={12} className={recomputing ? 'animate-spin' : ''} />
+            {recomputing ? 'Recomputing…' : 'Recompute Policy'}
           </button>
         </div>
       </div>
@@ -435,6 +722,33 @@ export function UnifiedHostsPage({ active }: Props) {
         </span>
       </div>
 
+      {/* Status cards */}
+      {hosts.length > 0 && (() => {
+        const wazuhMatched = hosts.filter(h => h.wazuh_agent_id).length;
+        const tacticalMatched = hosts.filter(h => h.tactical_agent_id).length;
+        const conflicts = hosts.filter(h => (h.conflict_count ?? 0) > 0).length;
+        const blocked = hosts.filter(h => h.action_policy === 'blocked').length;
+        const unknownId = hosts.filter(h => h.identity_status === 'unknown').length;
+        const cards = [
+          { label: 'Wazuh matched', value: wazuhMatched, color: 'var(--soc-success)' },
+          { label: 'Tactical matched', value: tacticalMatched, color: 'var(--soc-primary)' },
+          { label: 'Conflicts', value: conflicts, color: 'var(--soc-warning)' },
+          { label: 'Blocked', value: blocked, color: 'var(--soc-critical)' },
+          { label: 'Unknown identity', value: unknownId, color: 'var(--soc-muted-fg)' },
+        ];
+        return (
+          <div className="flex items-center gap-3 px-4 py-2 border-b shrink-0 flex-wrap" style={{ background: 'var(--soc-panel)', borderColor: 'var(--soc-border)' }}>
+            {cards.map(c => (
+              <div key={c.label} className="flex items-center gap-2 rounded px-2.5 py-1" style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                <span className="font-mono font-bold text-[13px]" style={{ color: c.color }}>{c.value}</span>
+                <span className="text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>{c.label}</span>
+              </div>
+            ))}
+            <span className="ml-auto text-[10px] font-mono" style={{ color: 'var(--soc-muted-fg)' }}>{hosts.length} total hosts</span>
+          </div>
+        );
+      })()}
+
       {/* Table */}
       <div className="flex-1 overflow-auto">
         {loading ? (
@@ -450,7 +764,7 @@ export function UnifiedHostsPage({ active }: Props) {
           <table className="w-full text-[12px] border-collapse">
             <thead>
               <tr style={{ background: 'var(--soc-panel)', borderBottom: '1px solid var(--soc-border)' }}>
-                {['Hostname', 'OS', 'IP', 'Wazuh', 'Tactical', 'MeshCentral', 'Score', 'Identity', 'Policy', 'Conflicts', 'Last Seen'].map((col) => (
+                {['Hostname', 'OS', 'IP', 'Wazuh Agent', 'Wazuh', 'Tactical', 'Score', 'Identity', 'Match', 'Policy', 'Conflicts'].map((col) => (
                   <th
                     key={col}
                     className="text-left px-3 py-2 font-semibold text-[10px] uppercase tracking-wider"
@@ -474,9 +788,12 @@ export function UnifiedHostsPage({ active }: Props) {
                   <td className="px-3 py-2 font-mono font-semibold">{host.display_name}</td>
                   <td className="px-3 py-2 font-mono text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>{host.os_platform ?? '—'}</td>
                   <td className="px-3 py-2 font-mono text-[10px]">{host.primary_ip ?? '—'}</td>
+                  <td className="px-3 py-2 font-mono text-[10px]" title={host.wazuh_agent_id ? `Agent ID: ${host.wazuh_agent_id}` : 'No Wazuh agent linked'}
+                    style={{ color: host.wazuh_agent_id ? 'var(--soc-foreground)' : 'var(--soc-muted-fg)' }}>
+                    {host.wazuh_agent_id ?? '—'}
+                  </td>
                   <td className="px-3 py-2"><StatusBadge status={host.wazuh_status} /></td>
                   <td className="px-3 py-2"><StatusBadge status={host.tactical_status} /></td>
-                  <td className="px-3 py-2"><StatusBadge status={host.mesh_status} /></td>
                   <td className="px-3 py-2">
                     <span
                       className="font-mono font-bold text-[12px]"
@@ -486,13 +803,27 @@ export function UnifiedHostsPage({ active }: Props) {
                     </span>
                   </td>
                   <td className="px-3 py-2">
-                    <span className="text-[10px] font-semibold" style={{ color: identityColor(host.identity_status) }}>
+                    <span
+                      className="text-[10px] font-semibold"
+                      style={{ color: identityColor(host.identity_status) }}
+                      title={host.identity_reason ?? undefined}
+                    >
                       {identityLabel(host.identity_status)}
+                      {host.identity_reason && <span className="ml-1 opacity-50 text-[9px]">&#9432;</span>}
                     </span>
                   </td>
+                  <td className="px-3 py-2 font-mono text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}
+                    title={host.match_source ?? ''}>
+                    {(host.match_source ?? '').replace('wazuh_', '').replace('_', ' ') || '—'}
+                  </td>
                   <td className="px-3 py-2">
-                    <span className="text-[10px]" style={{ color: policyColor(host.action_policy) }}>
+                    <span
+                      className="text-[10px]"
+                      style={{ color: policyColor(host.action_policy) }}
+                      title={host.policy_reason ?? undefined}
+                    >
                       {policyLabel(host.action_policy)}
+                      {host.policy_reason && <span className="ml-1 opacity-50 text-[9px]">&#9432;</span>}
                     </span>
                   </td>
                   <td className="px-3 py-2">
@@ -503,9 +834,6 @@ export function UnifiedHostsPage({ active }: Props) {
                     ) : (
                       <span style={{ color: 'var(--soc-muted-fg)' }}>—</span>
                     )}
-                  </td>
-                  <td className="px-3 py-2 font-mono text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>
-                    {relTime(host.last_seen_tactical ?? host.last_seen_wazuh)}
                   </td>
                 </tr>
               ))}
@@ -521,6 +849,11 @@ export function UnifiedHostsPage({ active }: Props) {
           conflicts={selectedConflicts}
           onClose={() => setSelectedHost(null)}
         />
+      )}
+
+      {/* Wazuh Sync Report modal */}
+      {showSyncReport && syncResult && (
+        <WazuhSyncReportModal report={syncResult} onClose={() => setShowSyncReport(false)} />
       )}
     </div>
   );

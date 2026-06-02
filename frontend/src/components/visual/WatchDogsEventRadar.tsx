@@ -6,6 +6,8 @@ import {
   getTimelineEvents,
   getScripts,
   logAuditAction,
+  reconnectWazuhAgent,
+  type WazuhReconnectResult,
 } from '../../services/api';
 import type { ResolvedUnifiedHost, TimelineItem, ScriptEntry } from '../../types';
 import { getEventKnowledge, getEventSummary, CATEGORY_LABELS } from '../../services/eventKnowledge';
@@ -21,6 +23,7 @@ import {
   type PlaybookPlatform,
   SCRIPT_LABELS,
 } from '../../services/investigationPlaybooks';
+import { WazuhAgentDetailDrawer } from '../WazuhAgentDetailDrawer';
 
 type Severity = 'critical' | 'high' | 'medium' | 'low' | 'info' | 'safe';
 
@@ -1254,6 +1257,15 @@ function InvestigationWorkbench({
 }) {
   const [rawExpanded, setRawExpanded] = useState(false);
   const [checksExpanded, setChecksExpanded] = useState(false);
+  // Agent detail drawer
+  const [agentDrawerOpen, setAgentDrawerOpen] = useState(false);
+  // Reconnect state (Event Map workbench)
+  const [reconnectModalOpen, setReconnectModalOpen] = useState(false);
+  const [reconnecting, setReconnecting]             = useState(false);
+  const [reconnectResult, setReconnectResult]       = useState<WazuhReconnectResult | null>(null);
+  const [reconnectError, setReconnectError]         = useState<string | null>(null);
+  const [reconnectReason, setReconnectReason]       = useState('');
+  const [reconnectWait, setReconnectWait]           = useState(false);
   // Host resolution
   const [resolvedHost, setResolvedHost] = useState<ResolvedUnifiedHost | null>(null);
   const [hostLoading, setHostLoading] = useState(false);
@@ -1666,6 +1678,100 @@ function InvestigationWorkbench({
           <EvidenceSection evidence={evidence} eventId={node.eventIds[0]} count={node.count} />
         </section>
 
+        {/* ── 4b. HOST BASELINE CONTEXT ── */}
+        {(() => {
+          const bctx = enrichedCluster?.evaluation?.baseline_context;
+          if (!bctx) return null;
+          const kf = bctx.known_features as Record<string, boolean | null>;
+          const verdMod = bctx.host_risk_modifier;
+          return (
+            <section className="wd-wb-section">
+              <div className="wd-wb-section-label">HOST BASELINE CONTEXT</div>
+              {!bctx.baseline_available ? (
+                <p className="wd-wb-empty-note" style={{ color: '#ffd070' }}>
+                  {(bctx.warnings as string[])[0] ?? 'No baseline available for this host.'}
+                </p>
+              ) : (
+                <>
+                  {/* Snapshot info */}
+                  <div style={{ display: 'flex', gap: '12px', flexWrap: 'wrap', marginBottom: '8px', fontSize: '11px', color: 'rgba(180,210,230,0.5)' }}>
+                    {bctx.snapshot.computed_at && <span>Snapshot: {(bctx.snapshot.computed_at as string).slice(0, 16).replace('T', ' ')}</span>}
+                    {bctx.snapshot.window_hours != null && <span>Window: {bctx.snapshot.window_hours as number}h</span>}
+                    {bctx.snapshot.total_events != null && <span>{(bctx.snapshot.total_events as number).toLocaleString()} events in baseline</span>}
+                  </div>
+                  {/* Feature grid */}
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: '4px', marginBottom: '8px' }}>
+                    {Object.entries(kf).map(([k, v]) => (
+                      <div key={k} style={{
+                        fontSize: '10px', padding: '3px 6px', borderRadius: '4px',
+                        background: v === null ? 'rgba(255,255,255,0.03)' : v ? 'rgba(35,211,107,0.08)' : 'rgba(255,122,24,0.10)',
+                        color:      v === null ? 'rgba(180,210,230,0.3)'  : v ? '#23d36b' : '#ff7a18',
+                        border: `1px solid ${v === null ? 'rgba(255,255,255,0.05)' : v ? 'rgba(35,211,107,0.2)' : 'rgba(255,122,24,0.22)'}`,
+                      }}>
+                        <span style={{ opacity: 0.6 }}>{k.replace(/_/g, ' ')}: </span>
+                        {v === null ? '—' : v ? 'common on this host' : 'new for this host'}
+                      </div>
+                    ))}
+                  </div>
+                  {/* New features */}
+                  {(bctx.new_features as string[]).length > 0 && (
+                    <div style={{ marginBottom: '5px', fontSize: '11px' }}>
+                      <span style={{ color: '#ff7a18', fontWeight: 600 }}>NEW FOR HOST: </span>
+                      <span style={{ color: 'rgba(255,180,100,0.8)', fontFamily: 'monospace' }}>
+                        {(bctx.new_features as string[]).join(' · ')}
+                      </span>
+                    </div>
+                  )}
+                  {/* Rare features */}
+                  {(bctx.rare_features as string[]).length > 0 && (
+                    <div style={{ marginBottom: '5px', fontSize: '11px' }}>
+                      <span style={{ color: '#ffd21f', fontWeight: 600 }}>RARE ON HOST: </span>
+                      <span style={{ color: 'rgba(255,220,100,0.7)', fontFamily: 'monospace' }}>
+                        {(bctx.rare_features as string[]).join(' · ')}
+                      </span>
+                    </div>
+                  )}
+                  {/* Open deviations */}
+                  {(bctx.open_deviations as number) > 0 && (
+                    <div style={{ marginBottom: '6px', fontSize: '11px', color: 'rgba(255,180,80,0.75)' }}>
+                      ⚠ {bctx.open_deviations as number} open deviation{(bctx.open_deviations as number) !== 1 ? 's' : ''}
+                      {(bctx.top_risk_deviations as {risk_level:string;key:string}[]).slice(0, 2).map((d, i) => (
+                        <span key={i} style={{ marginLeft: '8px', fontSize: '10px', color: 'rgba(255,150,60,0.65)' }}>
+                          [{d.risk_level}] {d.key}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                  {/* Risk modifier + baseline candidate badges */}
+                  <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginTop: '6px' }}>
+                    <span style={{
+                      fontSize: '10px', padding: '2px 8px', borderRadius: '4px',
+                      background: verdMod > 1.0 ? 'rgba(255,60,60,0.12)' : verdMod < 1.0 ? 'rgba(35,211,107,0.10)' : 'rgba(255,255,255,0.04)',
+                      color:      verdMod > 1.0 ? '#ff7a7a' : verdMod < 1.0 ? '#23d36b' : 'rgba(180,210,230,0.45)',
+                      border:     `1px solid ${verdMod > 1.0 ? 'rgba(255,60,60,0.2)' : verdMod < 1.0 ? 'rgba(35,211,107,0.2)' : 'rgba(255,255,255,0.06)'}`,
+                    }}>
+                      Host risk ×{verdMod}
+                    </span>
+                    {bctx.baseline_candidate && (
+                      <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(0,217,255,0.08)', color: '#00d9ff', border: '1px solid rgba(0,217,255,0.18)' }}>
+                        ✓ baseline candidate
+                      </span>
+                    )}
+                  </div>
+                  {bctx.host_context_reason && bctx.host_context_reason !== 'Baseline context nominal.' && (
+                    <p style={{ fontSize: '10px', color: 'rgba(180,210,230,0.4)', marginTop: '5px', lineHeight: '1.4' }}>
+                      {bctx.host_context_reason as string}
+                    </p>
+                  )}
+                  {(bctx.warnings as string[]).map((w, i) => (
+                    <p key={i} style={{ fontSize: '10px', color: '#ffd21f', marginTop: '3px' }}>⚠ {w}</p>
+                  ))}
+                </>
+              )}
+            </section>
+          );
+        })()}
+
         {/* ── 5. CORRELATION ── */}
         <section className="wd-wb-section">
           <div className="wd-wb-section-label">CORRELATION</div>
@@ -2058,6 +2164,173 @@ function InvestigationWorkbench({
           </div>
         </section>
 
+        {/* ── 10b. FINAL APP EVALUATION ── */}
+        {(() => {
+          const evalResult = enrichedCluster?.evaluation;
+          if (!evalResult?.final_evaluation) return null;
+          const base = evalResult.base_evaluation;
+          const final = evalResult.final_evaluation;
+          const verdColors: Record<string, string> = {
+            ignore: '#23d36b', monitor: '#23d36b', review: '#ffd21f',
+            investigate: '#ff7a18', incident_candidate: '#ff2f55',
+          };
+          const vc = verdColors[final.verdict] ?? '#7fa4b8';
+          return (
+            <section className="wd-wb-section">
+              <div className="wd-wb-section-label">FINAL APP EVALUATION</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', marginBottom: '10px' }}>
+                {base && (
+                  <div style={{ flex: 1, minWidth: '110px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                    <div style={{ fontSize: '9px', color: 'rgba(180,210,230,0.4)', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Base verdict</div>
+                    <div style={{ fontSize: '12px', fontWeight: 700, color: '#7fa4b8', textTransform: 'uppercase' }}>{base.verdict}</div>
+                    <div style={{ fontSize: '10px', color: 'rgba(180,210,230,0.45)', marginTop: '2px' }}>Risk {base.risk_score.toFixed(1)}</div>
+                  </div>
+                )}
+                <div style={{ alignSelf: 'center', fontSize: '16px', color: 'rgba(180,210,230,0.3)' }}>→</div>
+                <div style={{ flex: 1, minWidth: '110px', padding: '8px 10px', borderRadius: '6px', background: `${vc}12`, border: `1px solid ${vc}30` }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(180,210,230,0.4)', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Final verdict</div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: vc, textTransform: 'uppercase' }}>{final.verdict}</div>
+                  <div style={{ fontSize: '10px', color: 'rgba(180,210,230,0.45)', marginTop: '2px' }}>Risk {final.risk_score.toFixed(1)}</div>
+                </div>
+                <div style={{ flex: 1, minWidth: '90px', padding: '8px 10px', borderRadius: '6px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.07)' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(180,210,230,0.4)', marginBottom: '3px', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Confidence</div>
+                  <div style={{ fontSize: '12px', fontWeight: 700, color: '#9fbdd0', textTransform: 'uppercase' }}>{final.confidence}</div>
+                </div>
+              </div>
+              {/* Flags */}
+              <div style={{ display: 'flex', gap: '7px', flexWrap: 'wrap', marginBottom: '8px' }}>
+                {final.manual_review_required && (
+                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(255,122,24,0.12)', color: '#ff9a50', border: '1px solid rgba(255,122,24,0.22)' }}>
+                    ⚡ manual review required
+                  </span>
+                )}
+                {final.safe_to_baseline && (
+                  <span style={{ fontSize: '10px', padding: '2px 8px', borderRadius: '4px', background: 'rgba(35,211,107,0.10)', color: '#23d36b', border: '1px solid rgba(35,211,107,0.22)' }}>
+                    ✓ safe to baseline
+                  </span>
+                )}
+              </div>
+              {/* Reason */}
+              <p style={{ fontSize: '10.5px', color: 'rgba(180,210,230,0.5)', lineHeight: '1.55', marginBottom: '6px', fontStyle: 'italic' }}>
+                {final.reason}
+              </p>
+              {(final.warnings as string[]).map((w, i) => (
+                <p key={i} style={{ fontSize: '10px', color: '#ffd21f', marginBottom: '2px' }}>⚠ {w}</p>
+              ))}
+            </section>
+          );
+        })()}
+
+        {/* ── 10c. DETERMINISTIC EXPLANATION ── */}
+        {(() => {
+          const expl = enrichedCluster?.explanation;
+          if (!expl) return null;
+
+          const verdColors: Record<string, string> = {
+            ignore: '#23d36b', monitor: '#23d36b', review: '#ffd21f',
+            investigate: '#ff7a18', incident_candidate: '#ff2f55',
+          };
+          const vc = verdColors[expl.verdict] ?? '#7fa4b8';
+
+          const bullet = (items: string[], color: string, icon: string) =>
+            items.length === 0 ? null : (
+              <ul style={{ listStyle: 'none', margin: '0 0 6px', padding: 0 }}>
+                {items.map((item, i) => (
+                  <li key={i} style={{ fontSize: '10.5px', color, lineHeight: '1.5', marginBottom: '3px', display: 'flex', gap: '6px' }}>
+                    <span style={{ flexShrink: 0 }}>{icon}</span>
+                    <span>{item}</span>
+                  </li>
+                ))}
+              </ul>
+            );
+
+          return (
+            <section className="wd-wb-section">
+              <div className="wd-wb-section-label">
+                DETERMINISTIC EXPLANATION
+                {expl.explanation_source && (
+                  <span style={{ marginLeft: '8px', fontSize: '9px', color: 'rgba(180,210,230,0.3)', fontWeight: 400, textTransform: 'lowercase', letterSpacing: 0 }}>
+                    [{expl.explanation_source}]
+                  </span>
+                )}
+              </div>
+
+              {/* Title + verdict pill */}
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center', marginBottom: '6px', flexWrap: 'wrap' }}>
+                <span style={{ fontSize: '12px', fontWeight: 700, color: '#b4d2e6' }}>{expl.title}</span>
+                <span style={{ fontSize: '10px', padding: '1px 7px', borderRadius: '4px', background: `${vc}18`, color: vc, border: `1px solid ${vc}30`, textTransform: 'uppercase', fontWeight: 700 }}>
+                  {expl.verdict}
+                </span>
+                <span style={{ fontSize: '10px', color: 'rgba(180,210,230,0.4)' }}>risk {expl.risk_score?.toFixed(1)}/10</span>
+                <span style={{ fontSize: '10px', color: 'rgba(180,210,230,0.35)' }}>· {expl.confidence} confidence</span>
+              </div>
+
+              {/* Subtitle */}
+              {expl.subtitle && (
+                <p style={{ fontSize: '10px', color: 'rgba(180,210,230,0.4)', marginBottom: '6px', fontStyle: 'italic' }}>{expl.subtitle}</p>
+              )}
+
+              {/* Summary */}
+              {expl.summary && (
+                <p style={{ fontSize: '10.5px', color: 'rgba(180,210,230,0.55)', lineHeight: '1.55', marginBottom: '8px' }}>{expl.summary}</p>
+              )}
+
+              {/* Suspicious indicators */}
+              {expl.why_suspicious?.length > 0 && (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,122,24,0.6)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Suspicious Indicators</div>
+                  {bullet(expl.why_suspicious, 'rgba(255,154,80,0.85)', '⚠')}
+                </div>
+              )}
+
+              {/* Benign indicators */}
+              {expl.why_likely_benign?.length > 0 && (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(35,211,107,0.55)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Likely Benign</div>
+                  {bullet(expl.why_likely_benign, 'rgba(100,220,140,0.7)', '✓')}
+                </div>
+              )}
+
+              {/* Not enough evidence */}
+              {expl.not_enough_evidence?.length > 0 && (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,210,31,0.55)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Insufficient Evidence</div>
+                  {bullet(expl.not_enough_evidence, 'rgba(255,210,31,0.65)', '?')}
+                </div>
+              )}
+
+              {/* Recommended checks */}
+              {expl.recommended_checks?.length > 0 && (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(127,164,184,0.55)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Recommended Checks</div>
+                  {bullet(expl.recommended_checks, 'rgba(127,164,184,0.75)', '→')}
+                </div>
+              )}
+
+              {/* Escalation conditions */}
+              {expl.escalation_conditions?.length > 0 && (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(255,47,85,0.5)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Escalate If</div>
+                  {bullet(expl.escalation_conditions, 'rgba(255,100,120,0.7)', '!')}
+                </div>
+              )}
+
+              {/* Baseline notes */}
+              {expl.baseline_notes?.length > 0 && (
+                <div style={{ marginBottom: '6px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(180,210,230,0.35)', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: '4px' }}>Baseline Context</div>
+                  {bullet(expl.baseline_notes, 'rgba(180,210,230,0.45)', '·')}
+                </div>
+              )}
+
+              {/* Wording warnings */}
+              {expl.wording_warnings?.filter(Boolean).map((w, i) => (
+                <p key={i} style={{ fontSize: '9.5px', color: 'rgba(255,210,31,0.55)', marginBottom: '2px', fontStyle: 'italic' }}>⚠ {w}</p>
+              ))}
+            </section>
+          );
+        })()}
+
         {/* ── 11. CASE HANDLING ── */}
         <section className="wd-wb-section">
           <div className="wd-wb-section-label">CASE HANDLING</div>
@@ -2079,7 +2352,275 @@ function InvestigationWorkbench({
           </div>
         </section>
 
-        {/* ── 12. RAW DATA ── */}
+        {/* ── 12. WAZUH AGENT CONTEXT ── */}
+        {(() => {
+          const ac = enrichedCluster?.wazuh_agent_context;
+          if (!ac) return null;
+          const agent = ac.agent ?? {};
+          const isManagerApi = ac.source === 'manager_api';
+          const isCache      = ac.source === 'cache';
+          const statusColor: Record<string, string> = {
+            active: '#23d36b', disconnected: '#ff2f55', never_connected: '#7fa4b8',
+          };
+          const sc = statusColor[(agent.status ?? '').toLowerCase()] ?? '#ffd21f';
+          const sourceLabel = isManagerApi ? 'manager_api' : isCache ? 'cache' : 'event_only';
+          const sourceLabelColor = isManagerApi ? '#23d36b66' : isCache ? '#ffd21f55' : 'rgba(180,210,230,0.25)';
+          return (
+            <section className="wd-wb-section">
+              <div className="wd-wb-section-label">
+                WAZUH AGENT CONTEXT
+                <span style={{ marginLeft: '8px', fontSize: '9px', color: sourceLabelColor, fontWeight: 400, textTransform: 'lowercase', letterSpacing: 0 }}>
+                  [{sourceLabel}
+                  {isCache && (ac as any).cache_age_seconds != null ? ` · ${(ac as any).cache_age_seconds}s ago` : ''}
+                  ]
+                </span>
+              </div>
+
+              {/* source_reason line */}
+              {(ac as any).source_reason && (
+                <p style={{ fontSize: '9.5px', color: 'rgba(180,210,230,0.3)', marginBottom: '5px', fontStyle: 'italic' }}>
+                  {(ac as any).source_reason}
+                </p>
+              )}
+
+              {/* Ambiguous match warning */}
+              {((ac as any).warnings ?? []).some((w: string) => /multiple|ambiguous/i.test(w)) && (
+                <p style={{ fontSize: '9.5px', color: 'rgba(255,210,31,0.55)', marginBottom: '5px' }}>
+                  ⚠ Ambiguous agent match — results may be inaccurate.
+                </p>
+              )}
+
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '10.5px' }}>
+                <tbody>
+                  {[
+                    ['Agent ID',      agent.id],
+                    ['Name',          agent.name],
+                    ['IP',            agent.ip],
+                    ['Status',        agent.status ? <span style={{ color: sc, fontWeight: 700 }}>{agent.status}</span> : null],
+                    ['Groups',        (agent.groups ?? []).join(', ') || null],
+                    ['OS',            agent.os?.name ?? agent.os?.platform],
+                    ['Version',       agent.version],
+                    ['Manager',       agent.manager_name],
+                    ['Node',          agent.node_name],
+                    ['Last keep-alive', agent.last_keep_alive ? new Date(agent.last_keep_alive).toLocaleString() : null],
+                  ].filter(([, v]) => v != null).map(([k, v]) => (
+                    <tr key={String(k)}>
+                      <td style={{ paddingRight: '10px', paddingBottom: '2px', color: 'rgba(180,210,230,0.4)', whiteSpace: 'nowrap' }}>{String(k)}</td>
+                      <td style={{ paddingBottom: '2px', color: 'rgba(180,210,230,0.8)', fontFamily: 'monospace', fontSize: '10px' }}>{v as React.ReactNode}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+              {/* Syscollector availability */}
+              {ac.syscollector && Object.keys(ac.syscollector).length > 0 && (
+                <div style={{ marginTop: '8px' }}>
+                  <div style={{ fontSize: '9px', color: 'rgba(180,210,230,0.3)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '4px' }}>Syscollector</div>
+                  <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
+                    {Object.entries(ac.syscollector).map(([k, v]) => (
+                      <span key={k} style={{ fontSize: '9px', padding: '1px 6px', borderRadius: '3px', background: v ? '#23d36b18' : 'rgba(180,210,230,0.05)', color: v ? '#23d36b88' : 'rgba(180,210,230,0.3)', border: `1px solid ${v ? '#23d36b30' : 'rgba(180,210,230,0.1)'}` }}>
+                        {k.replace('_available', '')}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+              {/* SCA */}
+              {ac.sca?.available && (
+                <div style={{ marginTop: '6px', fontSize: '10px', color: 'rgba(180,210,230,0.5)' }}>
+                  SCA score: <span style={{ color: '#ffd21f', fontWeight: 700 }}>{ac.sca.score ?? '?'}%</span>
+                  {ac.sca.failed_checks != null && <span style={{ marginLeft: '8px', color: '#ff7a1880' }}>failed: {ac.sca.failed_checks}</span>}
+                </div>
+              )}
+              {/* FIM / Rootcheck */}
+              {(ac.fim?.available || ac.rootcheck?.available) && (
+                <div style={{ marginTop: '4px', fontSize: '10px', color: 'rgba(180,210,230,0.4)', display: 'flex', gap: '12px', flexWrap: 'wrap' }}>
+                  {ac.fim?.available && (
+                    <span>FIM last scan: {ac.fim.last_scan ? new Date(ac.fim.last_scan).toLocaleString() : 'n/a'}</span>
+                  )}
+                  {ac.rootcheck?.available && (
+                    <span>Rootcheck last scan: {ac.rootcheck.last_scan ? new Date(ac.rootcheck.last_scan).toLocaleString() : 'n/a'}</span>
+                  )}
+                </div>
+              )}
+              {/* Warnings (non-ambiguous) */}
+              {((ac as any).warnings ?? []).filter((w: string) => !/multiple|ambiguous/i.test(w)).map((w: string, i: number) => (
+                <p key={i} style={{ fontSize: '9.5px', color: 'rgba(255,210,31,0.4)', marginTop: '4px', marginBottom: '1px' }}>⚠ {w}</p>
+              ))}
+              {/* Open Agent Details button */}
+              <div style={{ marginTop: '10px' }}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    void logAuditAction({
+                      action_type: 'wazuh_agent_detail_opened',
+                      source_page: 'event_map',
+                      wazuh_agent_id: agent.id ?? undefined,
+                      host: agent.name ?? undefined,
+                      details_json: {
+                        cluster_id: enrichedCluster?.id,
+                        rule_ids: enrichedCluster?.ruleIds,
+                        event_ids: enrichedCluster?.eventIds,
+                      },
+                    }).catch(() => {});
+                    setAgentDrawerOpen(true);
+                  }}
+                  disabled={!agent.id && !agent.name}
+                  style={{
+                    fontSize: '11px', padding: '4px 12px', borderRadius: '4px', cursor: 'pointer',
+                    background: (agent.id || agent.name) ? 'rgba(0,184,255,0.12)' : 'rgba(180,210,230,0.05)',
+                    color: (agent.id || agent.name) ? '#00b8ff' : 'rgba(180,210,230,0.25)',
+                    border: `1px solid ${(agent.id || agent.name) ? '#00b8ff40' : 'rgba(180,210,230,0.1)'}`,
+                    opacity: (agent.id || agent.name) ? 1 : 0.5,
+                  }}
+                >
+                  Open Agent Details
+                </button>
+
+                {/* Reconnect Agent — controlled action */}
+                <button
+                  type="button"
+                  disabled={!agent.id || reconnecting}
+                  onClick={() => { setReconnectResult(null); setReconnectError(null); setReconnectReason(''); setReconnectModalOpen(true); }}
+                  title={agent.id
+                    ? 'Reconnect this agent only (requires confirmation)'
+                    : 'Reconnect is disabled until a Wazuh agent ID is known and action policy permits controlled actions.'}
+                  style={{
+                    fontSize: '11px', padding: '4px 12px', borderRadius: '4px', cursor: agent.id ? 'pointer' : 'not-allowed',
+                    background: agent.id ? 'rgba(255,210,31,0.10)' : 'rgba(180,210,230,0.05)',
+                    color: agent.id ? '#ffd21f' : 'rgba(180,210,230,0.25)',
+                    border: `1px solid ${agent.id ? 'rgba(255,210,31,0.3)' : 'rgba(180,210,230,0.1)'}`,
+                    opacity: agent.id ? 1 : 0.5,
+                  }}
+                >
+                  {reconnecting ? 'Reconnecting…' : '↺ Reconnect Agent'}
+                </button>
+              </div>
+
+              {/* Reconnect feedback */}
+              {reconnectResult && (
+                <div style={{
+                  marginTop: '6px', fontSize: '10px', padding: '5px 8px', borderRadius: '3px',
+                  background: reconnectResult.status === 'ok' ? 'rgba(35,211,107,0.08)' : reconnectResult.status === 'blocked' ? 'rgba(255,210,31,0.08)' : 'rgba(255,47,85,0.08)',
+                  color: reconnectResult.status === 'ok' ? '#23d36b' : reconnectResult.status === 'blocked' ? '#ffd21f' : '#ff2f55',
+                  border: `1px solid ${reconnectResult.status === 'ok' ? 'rgba(35,211,107,0.2)' : reconnectResult.status === 'blocked' ? 'rgba(255,210,31,0.2)' : 'rgba(255,47,85,0.2)'}`,
+                }}>
+                  <div>
+                    {reconnectResult.status === 'ok'      && '✓ Reconnect signal sent'}
+                    {reconnectResult.status === 'blocked'  && '⚠ Blocked by policy'}
+                    {reconnectResult.status === 'denied'   && '✗ Permission denied by Wazuh RBAC'}
+                    {reconnectResult.status === 'error'    && '✗ Reconnect failed'}
+                  </div>
+                  {reconnectResult.message && (
+                    <div style={{ opacity: 0.7, marginTop: 2 }}>{reconnectResult.message}</div>
+                  )}
+                </div>
+              )}
+              {reconnectError && (
+                <div style={{ marginTop: '6px', fontSize: '10px', padding: '4px 8px', borderRadius: '3px', background: 'rgba(255,47,85,0.08)', color: '#ff2f55', border: '1px solid rgba(255,47,85,0.2)' }}>
+                  ✗ {reconnectError}
+                </div>
+              )}
+
+              {/* Reconnect confirmation modal */}
+              {reconnectModalOpen && agent.id && (
+                <div
+                  style={{ position: 'fixed', inset: 0, zIndex: 200, background: 'rgba(0,0,0,0.65)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                  onClick={e => { if (e.target === e.currentTarget) setReconnectModalOpen(false); }}
+                >
+                  <div style={{ width: '400px', maxWidth: '95vw', background: 'var(--soc-panel, #141b26)', border: '1px solid var(--soc-border, #2a3547)', borderRadius: '8px', padding: '20px', display: 'flex', flexDirection: 'column', gap: '14px', boxShadow: '0 8px 40px rgba(0,0,0,0.6)' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <span style={{ fontSize: '13px', fontWeight: 600, color: 'var(--soc-foreground, #cfe2f3)' }}>↺ Reconnect Agent</span>
+                      <button type="button" onClick={() => setReconnectModalOpen(false)} style={{ background: 'none', border: 'none', color: 'rgba(180,210,230,0.4)', cursor: 'pointer', fontSize: '16px' }}>×</button>
+                    </div>
+                    <div style={{ fontSize: '11px', background: 'rgba(180,210,230,0.04)', border: '1px solid rgba(180,210,230,0.1)', borderRadius: '4px', padding: '8px 10px' }}>
+                      <div style={{ color: 'rgba(180,210,230,0.4)' }}>Agent ID: <span style={{ fontFamily: 'monospace', color: 'rgba(180,210,230,0.8)' }}>{agent.id}</span></div>
+                      <div style={{ color: 'rgba(180,210,230,0.4)', marginTop: '2px' }}>Name: <span style={{ color: 'rgba(180,210,230,0.8)' }}>{agent.name ?? '—'}</span></div>
+                    </div>
+                    <div style={{ fontSize: '11px', background: 'rgba(255,210,31,0.06)', border: '1px solid rgba(255,210,31,0.2)', borderRadius: '4px', padding: '8px 10px', color: '#ffd21f' }}>
+                      ⚠ This reconnects the selected Wazuh agent only. It does <strong>not</strong> restart the host or affect other agents.
+                    </div>
+                    <div>
+                      <label style={{ display: 'block', fontSize: '11px', color: 'rgba(180,210,230,0.5)', marginBottom: '4px' }}>Reason <span style={{ color: '#ff2f55' }}>*</span></label>
+                      <textarea
+                        value={reconnectReason}
+                        onChange={e => setReconnectReason(e.target.value)}
+                        rows={3}
+                        placeholder="e.g. Agent appears disconnected but host is reachable"
+                        style={{ width: '100%', boxSizing: 'border-box', resize: 'none', padding: '6px 10px', fontSize: '11px', borderRadius: '4px', background: 'rgba(180,210,230,0.05)', border: '1px solid rgba(180,210,230,0.15)', color: 'rgba(180,210,230,0.85)', outline: 'none' }}
+                      />
+                    </div>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '11px', color: 'rgba(180,210,230,0.5)', cursor: 'pointer' }}>
+                      <input type="checkbox" checked={reconnectWait} onChange={e => setReconnectWait(e.target.checked)} />
+                      Wait for complete (synchronous)
+                    </label>
+                    <div style={{ display: 'flex', gap: '8px', justifyContent: 'flex-end' }}>
+                      <button type="button" onClick={() => setReconnectModalOpen(false)}
+                        style={{ fontSize: '11px', padding: '5px 14px', borderRadius: '4px', background: 'transparent', border: '1px solid rgba(180,210,230,0.15)', color: 'rgba(180,210,230,0.5)', cursor: 'pointer' }}>
+                        Cancel
+                      </button>
+                      <button
+                        type="button"
+                        disabled={!reconnectReason.trim()}
+                        onClick={async () => {
+                          const id = agent.id!;
+                          setReconnectModalOpen(false);
+                          setReconnecting(true);
+                          setReconnectResult(null);
+                          setReconnectError(null);
+                          try {
+                            const result = await reconnectWazuhAgent(id, {
+                              reason: reconnectReason.trim(),
+                              wait_for_complete: reconnectWait,
+                              agent_name: agent.name ?? undefined,
+                              source_page: 'event_map',
+                            });
+                            setReconnectResult(result);
+                          } catch (e) {
+                            setReconnectError(String(e));
+                          } finally {
+                            setReconnecting(false);
+                          }
+                        }}
+                        style={{
+                          fontSize: '11px', padding: '5px 14px', borderRadius: '4px', fontWeight: 600,
+                          background: reconnectReason.trim() ? 'rgba(255,210,31,0.15)' : 'rgba(255,210,31,0.05)',
+                          color: reconnectReason.trim() ? '#ffd21f' : 'rgba(255,210,31,0.3)',
+                          border: `1px solid ${reconnectReason.trim() ? 'rgba(255,210,31,0.4)' : 'rgba(255,210,31,0.1)'}`,
+                          cursor: reconnectReason.trim() ? 'pointer' : 'not-allowed',
+                        }}
+                      >
+                        ↺ Reconnect
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </section>
+          );
+        })()}
+
+        {/* Agent Detail Drawer */}
+        {agentDrawerOpen && (() => {
+          const ac = enrichedCluster?.wazuh_agent_context;
+          const aid   = ac?.agent?.id ?? null;
+          const aname = ac?.agent?.name ?? node.hosts?.[0]?.hostname ?? null;
+          return (
+            <WazuhAgentDetailDrawer
+              agentId={aid}
+              agentName={aname}
+              open={agentDrawerOpen}
+              onClose={() => setAgentDrawerOpen(false)}
+              auditMeta={{
+                source_page: 'event_map',
+                cluster_id: enrichedCluster?.id,
+                rule_ids: enrichedCluster?.ruleIds,
+                event_ids: enrichedCluster?.eventIds,
+              }}
+            />
+          );
+        })()}
+
+        {/* ── 13. RAW DATA ── */}
         <section className="wd-wb-section" style={{ borderBottom: 0 }}>
           <div className="wd-wb-section-label">
             RAW DATA

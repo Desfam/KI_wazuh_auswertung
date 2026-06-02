@@ -16,10 +16,15 @@ import {
   GitBranch,
   RefreshCw,
   Sparkles,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
 } from 'lucide-react';
 import {
   getSnipenHostEvents,
   getSnipenHosts,
+  getSnipenAllEvents,
   explainSnipenEvent,
   explainSnipenEventWithContext,
 } from '../services/api';
@@ -104,10 +109,14 @@ function categoryIcon(cat: CategoryFilter): React.ComponentType<{ className?: st
   return found?.icon ?? FileText;
 }
 
-/** Format a UTC ISO timestamp string as HH:MM:SS in the browser's local timezone. */
+/** Format a UTC ISO timestamp as "dd.MM  HH:MM:SS" in the browser's local timezone. */
 function fmtTime(ts: string | null | undefined): string {
   if (!ts) return '—';
-  return new Date(ts).toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  const d = new Date(ts);
+  const day   = String(d.getDate()).padStart(2, '0');
+  const month = String(d.getMonth() + 1).padStart(2, '0');
+  const time  = d.toLocaleTimeString('de-DE', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+  return `${day}.${month}  ${time}`;
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
@@ -186,7 +195,10 @@ export function SnipenPage({
     setSelectedEventTs(null);
     setExplainResult(null);
     setExplainError(null);
-    getSnipenHostEvents(selectedHost, { hours, limit: eventLimit })
+    const loadPromise = selectedHost === '__all__'
+      ? getSnipenAllEvents({ hours, limit: eventLimit })
+      : getSnipenHostEvents(selectedHost, { hours, limit: eventLimit });
+    loadPromise
       .then((data) => {
         setEvents(data);
         if (data.length > 0) setSelectedEventTs(data[0].smart.timestamp ?? null);
@@ -271,10 +283,29 @@ export function SnipenPage({
     return Object.entries(counts).sort((a, b) => b[1] - a[1]).slice(0, 4).map(([u]) => u);
   }, [events]);
 
+  const [leftCollapsed, setLeftCollapsed] = useState(false);
+  const [rightCollapsed, setRightCollapsed] = useState(false);
+
   return (
-    <div className="h-full grid grid-cols-[180px_1fr_460px] min-h-0">
+    <div
+      className="h-full grid min-h-0"
+      style={{ gridTemplateColumns: `${leftCollapsed ? '28px' : '180px'} 1fr ${rightCollapsed ? '28px' : '460px'}` }}
+    >
       {/* Left: type filter + context */}
-      <aside className="border-r border-border bg-[var(--panel)] flex flex-col min-h-0">
+      <aside className="border-r border-border bg-[var(--panel)] flex flex-col min-h-0 overflow-hidden">
+        {leftCollapsed ? (
+          /* collapsed: just the expand button */
+          <div className="flex-1 flex flex-col items-center justify-end pb-2 pt-1">
+            <button
+              onClick={() => setLeftCollapsed(false)}
+              title="Sidebar aufklappen"
+              className="h-6 w-6 rounded-sm border border-border hover:bg-accent inline-flex items-center justify-center text-muted-foreground"
+            >
+              <PanelLeftOpen className="h-3.5 w-3.5" />
+            </button>
+          </div>
+        ) : (
+          <>
         <FSec title="Type">
           {TYPES.map((t) => {
             const active2 = typeFilter === t.id;
@@ -315,6 +346,18 @@ export function SnipenPage({
         </FSec>
 
         <FSec title="Hosts" scrollable>
+          {/* All-hosts shortcut */}
+          <button
+            onClick={() => { setSelectedHost('__all__'); setQuery(''); }}
+            className={
+              'w-full text-left h-6 px-2 rounded-sm text-[11.5px] font-mono truncate ' +
+              (selectedHost === '__all__'
+                ? 'bg-accent text-foreground'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground')
+            }
+          >
+            ★ All Hosts
+          </button>
           {hostsLoading && (
             <div className="px-2 text-[11px] font-mono text-muted-foreground">loading…</div>
           )}
@@ -366,14 +409,26 @@ export function SnipenPage({
           </FSec>
         )}
 
-        <div className="mt-auto p-2 border-t border-border">
+        <div className="mt-auto p-2 border-t border-border flex flex-col gap-1">
+          {!leftCollapsed && (
+            <button
+              onClick={loadHosts}
+              className="w-full h-6 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center justify-center gap-1 text-muted-foreground"
+            >
+              <RefreshCw className="h-3 w-3" /> Refresh
+            </button>
+          )}
           <button
-            onClick={loadHosts}
+            onClick={() => setLeftCollapsed((v) => !v)}
+            title={leftCollapsed ? 'Sidebar aufklappen' : 'Sidebar einklappen'}
             className="w-full h-6 rounded-sm border border-border hover:bg-accent text-[11px] font-mono inline-flex items-center justify-center gap-1 text-muted-foreground"
           >
-            <RefreshCw className="h-3 w-3" /> Refresh
+            {leftCollapsed ? <PanelLeftOpen className="h-3.5 w-3.5" /> : <PanelLeftClose className="h-3.5 w-3.5" />}
+            {!leftCollapsed && <span>Einklappen</span>}
           </button>
         </div>
+          </> {/* end expanded left sidebar */}
+        )}
       </aside>
 
       {/* Center: event timeline */}
@@ -395,8 +450,8 @@ export function SnipenPage({
             onChange={(e) => setEventLimit(Number(e.target.value))}
             className="h-7 px-2 rounded-sm border border-border bg-[var(--panel)] text-[11px] font-mono text-muted-foreground cursor-pointer hover:bg-accent"
           >
-            {[200, 500, 1000, 2000].map((l) => (
-              <option key={l} value={l}>{l}</option>
+            {[500, 1000, 2000, 5000, 10000, 50000, 100000].map((l) => (
+              <option key={l} value={l}>{l >= 100000 ? 'All' : l >= 50000 ? '50 k' : l >= 10000 ? '10 k' : l >= 5000 ? '5 k' : l}</option>
             ))}
           </select>
           <button
@@ -446,7 +501,7 @@ export function SnipenPage({
           )}
           {!eventsLoading && filtered.length === 0 && (
             <div className="flex items-center justify-center h-20 text-[12px] font-mono text-muted-foreground">
-              {selectedHost ? 'no events match filter' : 'select a host →'}
+              {selectedHost ? 'no events match filter' : 'select a host or All Hosts →'}
             </div>
           )}
           {filtered.map((e) => {
@@ -459,7 +514,7 @@ export function SnipenPage({
                 key={(s.timestamp ?? '') + (s.event_id ?? '') + (e.doc_id ?? '')}
                 onClick={() => setSelectedEventTs(s.timestamp ?? null)}
                 className={
-                  'w-full text-left grid grid-cols-[60px_22px_60px_70px_1fr_120px] gap-2 px-3 py-1.5 border-b border-border/60 hover:bg-[var(--row-hover)] ' +
+                  'w-full text-left grid grid-cols-[110px_22px_60px_70px_1fr_120px] gap-2 px-3 py-1.5 border-b border-border/60 hover:bg-[var(--row-hover)] ' +
                   (sel ? 'bg-[var(--row-hover)] border-l-2 border-l-primary -ml-px pl-[11px]' : '')
                 }
               >
@@ -493,7 +548,7 @@ export function SnipenPage({
         {!eventsLoading && events.length > 0 && (
           <div className="border-t border-border bg-[var(--panel)] px-3 h-6 flex items-center justify-between flex-shrink-0">
             <span className="text-[10.5px] font-mono text-muted-foreground">{filtered.length} Events</span>
-            <span className="text-[10.5px] font-mono text-muted-foreground">{selectedHost ?? ''}</span>
+            <span className="text-[10.5px] font-mono text-muted-foreground">{selectedHost === '__all__' ? 'All Hosts' : (selectedHost ?? '')}</span>
           </div>
         )}
 
@@ -511,10 +566,18 @@ export function SnipenPage({
       </div>
 
       {/* Right: event detail */}
-      <aside className="bg-[var(--panel)] flex flex-col min-h-0">
+      <aside className="bg-[var(--panel)] flex flex-col min-h-0 overflow-hidden">
         {/* Header: mode tabs + actions */}
         <div className="h-9 px-2 flex items-center gap-2 border-b border-border shrink-0">
-          {selectedEvent ? (
+          {/* Right-panel collapse toggle — always visible */}
+          <button
+            onClick={() => setRightCollapsed((v) => !v)}
+            title={rightCollapsed ? 'Detail aufklappen' : 'Detail einklappen'}
+            className="h-6 w-6 rounded-sm border border-border hover:bg-accent inline-flex items-center justify-center text-muted-foreground shrink-0"
+          >
+            {rightCollapsed ? <PanelRightOpen className="h-3.5 w-3.5" /> : <PanelRightClose className="h-3.5 w-3.5" />}
+          </button>
+          {!rightCollapsed && selectedEvent ? (
             <>
               {/* Mode toggle */}
               <div className="flex rounded-sm overflow-hidden border border-border text-[11px] font-mono shrink-0">
@@ -566,11 +629,11 @@ export function SnipenPage({
               </button>
             </>
           ) : (
-            <span className="text-[12px] font-semibold tracking-wide px-1">EVENT</span>
+            !rightCollapsed && <span className="text-[12px] font-semibold tracking-wide px-1">EVENT</span>
           )}
         </div>
 
-        {selectedEvent ? (
+        {!rightCollapsed && selectedEvent ? (
           <div className="flex-1 overflow-y-auto">
             {/* Event title + meta (always visible) */}
             <div className="px-3 py-2 border-b border-border">

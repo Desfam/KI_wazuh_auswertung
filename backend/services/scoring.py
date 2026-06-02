@@ -51,9 +51,24 @@ def score_group(group: dict[str, Any]) -> dict[str, Any]:
             suspicious = True
             reason_bits.append("New user account created")
         elif event_id == "4688":
-            score = 58 if count < 5 else 72
-            suspicious = count >= 3
-            reason_bits.append("Process creation burst")
+            # Process creation: base is info/low.  Only raise on suspicious signals.
+            # Check rule description and sample command line for suspicious patterns.
+            _proc   = str(sample.get("process") or "").lower()
+            _cmdline = str(sample.get("command_line") or "").lower()
+            _desc_lower = description  # already .lower() above
+            _has_suspicious = _ALWAYS_SUSPICIOUS_RE.search(_cmdline + " " + _desc_lower)
+            if _has_suspicious:
+                score = 72
+                suspicious = True
+                reason_bits.append("Process creation with suspicious command line pattern")
+            elif count >= 50:
+                score = 45
+                suspicious = False
+                reason_bits.append("High-volume process creation burst")
+            else:
+                score = 22
+                suspicious = False
+                reason_bits.append("Process creation event")
         elif event_id == "4625":
             if count >= 20:
                 score = 84

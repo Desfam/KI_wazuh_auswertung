@@ -4,11 +4,17 @@ Python port of frontend/src/services/eventEvidenceExtractor.ts
 
 Extracts structured evidence fields from a raw Wazuh event dict.
 Used by Event Map cluster enrichment and investigation workbench.
+
+Field access is handled via wazuh_field_mapper.get_field() which resolves
+both nested JSON (lowercase 'eventdata' / camelCase 'eventData') and
+flat CSV escaped-dot field names.
 """
 from __future__ import annotations
 
 import re
 from typing import Any
+
+from services.wazuh_field_mapper import get_field as _wf
 
 # ── Sensitive path patterns: (regex, reason) ──────────────────────────────────
 _SENSITIVE_PATTERNS: list[tuple[str, str]] = [
@@ -64,7 +70,8 @@ def extract_event_evidence(event: dict) -> dict:
     data: dict = src.get("data") or {}
     win_raw = data.get("win")
     win: dict = win_raw if isinstance(win_raw, dict) else {}
-    evtdata_raw = win.get("eventdata")
+    # Handle both lowercase 'eventdata' and camelCase 'eventData'
+    evtdata_raw = win.get("eventdata") or win.get("eventData")
     evtdata: dict = evtdata_raw if isinstance(evtdata_raw, dict) else {}
     system_raw = win.get("system")
     system: dict = system_raw if isinstance(system_raw, dict) else {}
@@ -161,10 +168,15 @@ def extract_event_evidence(event: dict) -> dict:
         out["mitre_techniques"] = ids
 
     # ── Windows system metadata ────────────────────────────────────────────────
-    out["provider"] = _first(system.get("providerName"))
-    out["channel"] = _first(system.get("channel"))
-    out["computer"] = _first(system.get("computer"))
-    out["event_record_id"] = _first(system.get("eventRecordID"))
+    out["provider"] = _first(system.get("providerName"), _wf(src, "data.win.system.providerName"))
+    out["channel"] = _first(system.get("channel"), _wf(src, "data.win.system.channel"))
+    out["computer"] = _first(system.get("computer"), _wf(src, "data.win.system.computer"))
+    out["event_record_id"] = _first(system.get("eventRecordID"), _wf(src, "data.win.system.eventRecordID"))
+    out["event_id"] = _first(
+        _wf(src, "data.win.system.eventID"),
+        _wf(src, "data.win.system.eventId"),
+        data.get("eventid"), data.get("event_id"),
+    )
     out["level"] = _first(system.get("level"))
     out["task"] = _first(system.get("task"))
     out["opcode"] = _first(system.get("opcode"))

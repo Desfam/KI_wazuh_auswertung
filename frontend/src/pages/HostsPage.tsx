@@ -472,6 +472,31 @@ function DetailPanel({
               warn={!asgn}
             />
           </div>
+          {/* Trust explanations */}
+          {(host.identity_reason || host.policy_reason) && (
+            <div className="mt-2 space-y-1.5">
+              {host.identity_reason && (
+                <div
+                  className="rounded px-2.5 py-1.5 text-[11px]"
+                  style={{ background: 'rgba(255,255,255,0.04)', borderLeft: '2px solid rgba(255,255,255,0.15)' }}
+                  title="Identity reason"
+                >
+                  <span className="text-[9px] font-semibold uppercase tracking-wider mr-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Identity</span>
+                  {host.identity_reason}
+                </div>
+              )}
+              {host.policy_reason && (
+                <div
+                  className="rounded px-2.5 py-1.5 text-[11px]"
+                  style={{ background: 'rgba(255,255,255,0.04)', borderLeft: '2px solid rgba(255,255,255,0.1)' }}
+                  title="Policy reason"
+                >
+                  <span className="text-[9px] font-semibold uppercase tracking-wider mr-1" style={{ color: 'rgba(255,255,255,0.35)' }}>Policy</span>
+                  {host.policy_reason}
+                </div>
+              )}
+            </div>
+          )}
         </section>
 
         {/* ── Quick Actions ── */}

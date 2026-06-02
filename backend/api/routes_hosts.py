@@ -15,6 +15,7 @@ from db.database import (
     list_unified_hosts,
 )
 from schemas.types import FindingGroupRecord, HostOverviewResponse, HostRankingRecord, HostTrendPoint
+from services.host_explain import explain_host_trust
 from services.snipen_service import get_host_events, get_snipen_hosts
 
 router = APIRouter(prefix="/hosts", tags=["hosts"])
@@ -133,16 +134,17 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
         for item in get_ranked_hosts(latest_job_id):
             ranked_map[item["host"]] = item
 
-    # Build lookup from hostname_short → unified host row (for tactical_status + ip)
+    # Build lookup from hostname_short/display_name/fqdn shortname → unified host row
     rmm_map: dict[str, dict[str, Any]] = {}
     for uh in list_unified_hosts():
-        key = (uh.get("hostname_short") or "").lower()
-        if key:
-            rmm_map[key] = uh
-        # also index by display_name as fallback
-        dn = (uh.get("display_name") or "").lower()
-        if dn and dn not in rmm_map:
-            rmm_map[dn] = uh
+        for key_field in ("hostname_short", "display_name"):
+            key = (uh.get(key_field) or "").lower()
+            if key and key not in rmm_map:
+                rmm_map[key] = uh
+        # also index the first DNS label of FQDN
+        fqdn = (uh.get("fqdn") or "").lower().split(".")[0]
+        if fqdn and fqdn not in rmm_map:
+            rmm_map[fqdn] = uh
 
     now = datetime.now(timezone.utc)
     output: list[dict[str, Any]] = []
@@ -155,17 +157,28 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
         last_seen_dt = _parse_iso(host_info.last_seen)
         is_online_wazuh = bool(last_seen_dt and (now - last_seen_dt) <= timedelta(hours=6))
 
-        # Tactical RMM status takes priority over Wazuh last-seen estimate
-        uh_row = rmm_map.get(host.lower())
+        # Prefer unified_hosts row matched by hostname (covers Tactical + Wazuh data)
+        uh_row = rmm_map.get(host.lower()) or rmm_map.get(host.lower().split(".")[0])
         tactical_status = (uh_row.get("tactical_status") or "unknown") if uh_row else "unknown"
+        wazuh_status    = (uh_row.get("wazuh_status")    or "unknown") if uh_row else "unknown"
+        wazuh_agent_id  = (uh_row.get("wazuh_agent_id")) if uh_row else None
+
+        # Connection status: Tactical > Wazuh agent status > Wazuh last-seen
         if tactical_status == "online":
             connection_status = "reachable"
         elif tactical_status in ("offline", "overdue"):
+            connection_status = "unreachable"
+        elif wazuh_status == "online":
+            connection_status = "reachable"
+        elif wazuh_status == "offline":
             connection_status = "unreachable"
         else:
             connection_status = "reachable" if is_online_wazuh else "unknown"
 
         primary_ip = (uh_row.get("primary_ip") if uh_row else None)
+
+        # Trust explanation from unified host row
+        explain = explain_host_trust(uh_row or {}) if uh_row else {}
 
         platforms = host_info.platforms or []
         # Access capabilities: inferred from platform until SSH/RDP manager integration
@@ -187,8 +200,13 @@ def hosts_central(hours: int = Query(default=24, ge=1, le=720)) -> list[dict[str
                 "ssh_enabled": is_linux,
                 "rdp_enabled": is_windows,
                 "tactical_status": tactical_status,
+                "wazuh_status": wazuh_status,
+                "wazuh_agent_id": wazuh_agent_id,
                 "connection_status": connection_status,
                 "last_connection": None,
+                "identity_reason": explain.get("identity_reason", ""),
+                "policy_reason": explain.get("policy_reason", ""),
+                "match_confidence_label": explain.get("match_confidence_label", "unknown"),
             }
         )
 

@@ -25,6 +25,7 @@ from services.snipen_service import (
     analyze_host,
     explain_event,
     explain_event_with_context,
+    get_all_events,
     get_host_events,
     get_host_snipen_overview,
     get_related_events,
@@ -58,7 +59,7 @@ def snipen_hosts(
 def snipen_host_events(
     host: str,
     hours: int = Query(default=24, ge=1, le=168),
-    limit: int = Query(default=200, ge=10, le=2000),
+    limit: int = Query(default=500, ge=10, le=100000),
     platform: str | None = Query(default=None, description="windows or linux"),
     min_rule_level: int | None = Query(default=None, ge=0, le=20),
     category: str | None = Query(default=None, description="auth|process|service|registry|powershell|network"),
@@ -77,6 +78,27 @@ def snipen_host_events(
             min_rule_level=min_rule_level,
             category_filter=category,
             event_ids_filter=ids_filter,
+        )
+    except RuntimeError as exc:
+        raise HTTPException(status_code=502, detail=str(exc)) from exc
+
+
+@router.get("/events")
+def snipen_all_events(
+    hours: int = Query(default=24, ge=1, le=168),
+    limit: int = Query(default=500, ge=10, le=100000),
+    min_rule_level: int | None = Query(default=None, ge=0, le=20),
+    category: str | None = Query(default=None, description="auth|process|service|registry|powershell|network"),
+) -> list[SnipenEvent]:
+    """Fetch recent events across ALL hosts for the given time window."""
+    conn = _get_active_connection_dict()
+    try:
+        return get_all_events(
+            conn,
+            hours=hours,
+            limit=limit,
+            min_rule_level=min_rule_level,
+            category_filter=category,
         )
     except RuntimeError as exc:
         raise HTTPException(status_code=502, detail=str(exc)) from exc

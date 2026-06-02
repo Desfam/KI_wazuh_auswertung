@@ -367,6 +367,11 @@ def decide_event(
     profile_name: str | None = None,
     has_baseline_deviation: bool = False,
     has_ti_match: bool = False,
+    # ── Process context (optional, used for 4688 analysis) ───────────────────
+    command_line: str | None = None,
+    process_path: str | None = None,
+    process_name: str | None = None,
+    parent_process_name: str | None = None,
 ) -> EventDecision:
     """Pre-AI risk gate.  Returns an EventDecision with guardrails for the AI."""
     eid = str(event_id or "").strip()
@@ -468,8 +473,50 @@ def decide_event(
         risk_score += 2.0
         reasoning.append(f"Event-ID {eid} hat mittleren Signalwert.")
 
-    # Rule-level contribution (capped at +2.0)
-    risk_score += min(rl * 0.25, 2.0)
+    # ── 4688 process-specific scoring ─────────────────────────────────────────
+    # Import lazily to avoid circular dependencies.
+    if eid == "4688":
+        try:
+            from services.event_explanation_builder import (   # type: ignore[import]
+                get_4688_risk_score,
+                is_benign_4688,
+                _is_appx_backgroundtask,
+            )
+            adjusted = get_4688_risk_score(
+                process_name=process_name,
+                process_path=process_path,
+                command_line=command_line,
+                parent_name=parent_process_name,
+                rule_level=max(0, int(rule_level or 0)),
+            )
+            # Use the more informative value as starting point
+            risk_score = adjusted
+            benign = is_benign_4688(
+                process_name=process_name,
+                process_path=process_path,
+                command_line=command_line,
+                parent_name=parent_process_name,
+            )
+            if _is_appx_backgroundtask(process_name, command_line):
+                reasoning.append(
+                    "4688: backgroundTaskHost.exe + AppX ServerName pattern — "
+                    "bekannter Windows-Systemprozess, kein Angriffsindikator."
+                )
+            elif benign:
+                reasoning.append(
+                    f"4688: Bekannter Windows-Prozess ({process_name or 'n/a'}) ohne verdächtige Indikatoren."
+                )
+            else:
+                reasoning.append(
+                    f"4688: Prozess {process_name or 'n/a'} — suspicious indicators detected."
+                )
+        except Exception:
+            # Fallback to old behavior if import fails
+            pass
+
+    # Rule-level contribution (capped at +2.0) — skip for 4688 already handled above
+    if eid != "4688":
+        risk_score += min(rl * 0.25, 2.0)
 
     if has_baseline_deviation:
         risk_score += 1.0

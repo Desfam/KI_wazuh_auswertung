@@ -422,7 +422,9 @@ export default function FullScanTab(_props: FullScanTabProps) {
         setFleetStatus(st);
         setFleetProgress(st.progress ?? 0);
         setFleetFinished(st.finished_hosts ?? 0);
-        setFleetTotal(st.total_hosts ?? 0);
+        // Preserve current total if backend hasn't reported it yet (queued hosts
+        // may not appear in total_hosts until they start)
+        if ((st.total_hosts ?? 0) > 0) setFleetTotal(st.total_hosts);
         setFleetActiveHosts(st.active_hosts ?? []);
         if (st.log) setFleetLog(Array.isArray(st.log) ? st.log : [String(st.log)]);
         if (st.status === 'finished') {
@@ -822,7 +824,9 @@ export default function FullScanTab(_props: FullScanTabProps) {
             <div className="flex flex-col gap-1.5">
               <BarBtn icon={RefreshCw} label="Re-scan" onClick={handleStartScan} />
               <BarBtn icon={Download} label="Export" onClick={() => result && downloadFile(`scan-${selectedHost}-${new Date().toISOString().slice(0, 10)}.json`, JSON.stringify(result, null, 2), 'application/json')} />
-              <BarBtn icon={ShieldOff} label="Isolate" tone="critical" />
+              <BarBtn icon={ShieldOff} label="Isolate" tone="critical"
+                disabled={scanState === 'running' || bulkRunning}
+                title={scanState === 'running' ? 'Cannot isolate while scan is running' : 'Host isolation is not yet available in Phase 1'} />
             </div>
           </div>
         )}
@@ -1275,18 +1279,23 @@ function BarBtn({
   label,
   tone = 'default',
   onClick,
+  disabled,
+  title,
 }: {
   icon: React.ComponentType<{ className?: string }>;
   label: string;
   tone?: 'default' | 'critical';
   onClick?: () => void;
+  disabled?: boolean;
+  title?: string;
 }) {
   const t =
     tone === 'critical'
       ? 'border-critical/50 hover:bg-critical/15 text-critical'
       : 'border-border hover:bg-accent text-foreground';
   return (
-    <button onClick={onClick} className={'h-6 px-2 rounded-sm border text-[11px] font-mono inline-flex items-center gap-1 ' + t}>
+    <button onClick={onClick} disabled={disabled} title={title}
+      className={'h-6 px-2 rounded-sm border text-[11px] font-mono inline-flex items-center gap-1 disabled:opacity-40 disabled:cursor-not-allowed ' + t}>
       <Icon className="h-3 w-3" />
       {label}
     </button>

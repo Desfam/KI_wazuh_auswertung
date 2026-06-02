@@ -252,6 +252,119 @@ def init_db() -> None:
         )
         ensure_connection_columns(connection)
         _seed_script_library(connection)
+        _ensure_server_tables(connection)
+
+
+def _ensure_server_tables(connection: sqlite3.Connection) -> None:
+    """Create server/remote-access tables if they do not exist."""
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS server_connections (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            hostname TEXT NOT NULL DEFAULT '',
+            ip TEXT NOT NULL DEFAULT '',
+            protocol TEXT NOT NULL DEFAULT 'ssh',
+            port INTEGER NOT NULL DEFAULT 22,
+            username TEXT NOT NULL DEFAULT '',
+            auth_type TEXT NOT NULL DEFAULT 'none',
+            credential_ref TEXT NOT NULL DEFAULT '',
+            key_ref TEXT NOT NULL DEFAULT '',
+            os TEXT NOT NULL DEFAULT '',
+            platform TEXT NOT NULL DEFAULT '',
+            tags_json TEXT NOT NULL DEFAULT '[]',
+            favorite INTEGER NOT NULL DEFAULT 0,
+            mac TEXT NOT NULL DEFAULT '',
+            unified_host_id TEXT NOT NULL DEFAULT '',
+            tactical_agent_id TEXT NOT NULL DEFAULT '',
+            wazuh_agent_id TEXT NOT NULL DEFAULT '',
+            notes TEXT NOT NULL DEFAULT '',
+            created_at TEXT NOT NULL DEFAULT '',
+            updated_at TEXT NOT NULL DEFAULT ''
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS server_activity_log (
+            id TEXT PRIMARY KEY,
+            timestamp TEXT NOT NULL,
+            action TEXT NOT NULL,
+            connection_id TEXT NOT NULL DEFAULT '',
+            host TEXT NOT NULL DEFAULT '',
+            protocol TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'ok',
+            message TEXT NOT NULL DEFAULT '',
+            metadata_json TEXT NOT NULL DEFAULT '{}'
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS remote_sessions (
+            id TEXT PRIMARY KEY,
+            connection_id TEXT NOT NULL DEFAULT '',
+            protocol TEXT NOT NULL DEFAULT '',
+            host TEXT NOT NULL DEFAULT '',
+            started_at TEXT NOT NULL DEFAULT '',
+            ended_at TEXT,
+            status TEXT NOT NULL DEFAULT 'started',
+            audit_json TEXT NOT NULL DEFAULT '{}'
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS server_host_groups (
+            id TEXT PRIMARY KEY,
+            name TEXT NOT NULL,
+            description TEXT NOT NULL DEFAULT '',
+            color TEXT NOT NULL DEFAULT '#6366f1',
+            tags_json TEXT NOT NULL DEFAULT '[]',
+            created_at TEXT NOT NULL DEFAULT '',
+            updated_at TEXT NOT NULL DEFAULT ''
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS server_host_group_members (
+            id TEXT PRIMARY KEY,
+            group_id TEXT NOT NULL,
+            connection_id TEXT NOT NULL,
+            added_at TEXT NOT NULL DEFAULT '',
+            UNIQUE(group_id, connection_id)
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS server_batch_runs (
+            id TEXT PRIMARY KEY,
+            group_id TEXT,
+            action TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'running',
+            started_at TEXT NOT NULL DEFAULT '',
+            finished_at TEXT,
+            summary_json TEXT NOT NULL DEFAULT '{}',
+            created_by TEXT NOT NULL DEFAULT ''
+        )
+        """
+    )
+    connection.execute(
+        """
+        CREATE TABLE IF NOT EXISTS server_batch_results (
+            id TEXT PRIMARY KEY,
+            batch_run_id TEXT NOT NULL,
+            connection_id TEXT NOT NULL,
+            host TEXT NOT NULL DEFAULT '',
+            status TEXT NOT NULL DEFAULT 'pending',
+            duration_ms INTEGER NOT NULL DEFAULT 0,
+            result_json TEXT NOT NULL DEFAULT '{}',
+            error TEXT
+        )
+        """
+    )
 
 
 def ensure_connection_columns(connection: sqlite3.Connection) -> None:

@@ -553,7 +553,7 @@ function ViewOptions({ mode, setMode }: { mode: ViewMode; setMode: (m: ViewMode)
           \u25a3 TIMELINE
         </button>
         <button className={cx(mode === 'geo' && 'selected')} onClick={() => setMode('geo')}>
-          \u25ce GEO MAP
+          ◎ GEO MAP
         </button>
       </div>
     </Card>
@@ -566,7 +566,7 @@ function DataLayers() {
       <div className="waia-layer-list">
         {['EVENTS', 'AGENTS', 'NETWORK', 'SYSTEMS', 'THREATS'].map((layer) => (
           <div key={layer} className="waia-layer-row">
-            <span>\u2299 {layer}</span>
+            <span>⊙ {layer}</span>
             <MiniToggle />
           </div>
         ))}
@@ -618,7 +618,7 @@ function RightPanel({
         <div className="waia-summary-sev">
           {(['critical', 'high', 'medium', 'low', 'info'] as Severity[]).map((sev) => (
             <div key={sev}>
-              <span style={{ color: sevColor(sev) }}>\u25cf {SEVERITY_LABEL[sev].toUpperCase()}</span>
+              <span style={{ color: sevColor(sev) }}>● {SEVERITY_LABEL[sev].toUpperCase()}</span>
               <b>{severityCounts[sev]}</b>
             </div>
           ))}
@@ -696,7 +696,7 @@ function SeverityDonut({ counts }: { counts: Record<Severity, number> }) {
       <div className="waia-donut-legend">
         {(['safe', 'medium', 'high', 'critical'] as Severity[]).map((sev) => (
           <div key={sev}>
-            <span style={{ color: sevColor(sev) }}>\u25cf {SEVERITY_LABEL[sev]}</span>
+            <span style={{ color: sevColor(sev) }}>● {SEVERITY_LABEL[sev]}</span>
             <b>{Math.round(((counts[sev] ?? 0) / total) * 1000) / 10}%</b>
           </div>
         ))}
@@ -714,7 +714,7 @@ function EventStream({ clusters, setSelected }: { clusters: EventCluster[]; setS
             <span>{formatClock(cluster.lastSeen)}</span>
             <b>{short(cluster.title, 24)}</b>
             <em>{cluster.affectedHosts[0]?.hostname ?? '-'}</em>
-            <strong style={{ color: sevColor(cluster.severity) }}>\u25cf {SEVERITY_LABEL[cluster.severity]}</strong>
+            <strong style={{ color: sevColor(cluster.severity) }}>● {SEVERITY_LABEL[cluster.severity]}</strong>
           </button>
         ))}
       </div>
@@ -955,7 +955,7 @@ export default function EventConstellationView({ initialHost, onNavigate }: Even
         </div>
 
         <div className="waia-top-metrics">
-          <span className="waia-live-dot">\u25cf {isDemo ? 'DEMO' : error ? 'ERROR' : 'LIVE'}</span>
+          <span className="waia-live-dot">● {isDemo ? 'DEMO' : error ? 'ERROR' : 'LIVE'}</span>
           <span>{new Date().toLocaleTimeString()} UTC</span>
           <span>EVENTS / SEC <b>{loading ? '...' : Math.max(1, Math.round(filteredEvents.length / 3))}</b></span>
           <span>TOTAL EVENTS <b>{filteredEvents.reduce((s, e) => s + Number(e.count ?? 1), 0).toLocaleString()}</b></span>

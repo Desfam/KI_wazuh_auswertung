@@ -14,6 +14,7 @@ from fastapi import APIRouter, Query
 
 from db.database import get_active_connection
 from services.wazuh_indexer import fetch_alerts
+from services.wazuh_field_mapper import get_field as _wf_get
 
 # ── Knowledge / Evidence / Playbook enrichment (optional — graceful fallback) ─
 try:
@@ -35,6 +36,46 @@ except ImportError:
 
     def build_evidence_summary(e: Any) -> dict:  # type: ignore[misc]
         return {}
+
+# ── Baseline-aware evaluation (optional — graceful fallback) ──────────────────
+try:
+    from services.final_event_evaluator import evaluate_event_with_baseline as _evaluate_event
+    _EVALUATION_AVAILABLE = True
+except ImportError:
+    _EVALUATION_AVAILABLE = False
+
+    def _evaluate_event(event: Any) -> dict | None:  # type: ignore[misc]
+        return None
+
+# ── Unified pipeline (Phase 3+) ───────────────────────────────────────────────
+try:
+    from services.unified_event_evaluator import evaluate_unified_event as _evaluate_unified  # type: ignore[import]
+    _UNIFIED_EVAL_AVAILABLE = True
+except ImportError:
+    _UNIFIED_EVAL_AVAILABLE = False
+
+    def _evaluate_unified(event: Any) -> dict:  # type: ignore[misc]
+        return {}
+
+# ── Agent enrichment (optional — graceful fallback) ──────────────────────────
+try:
+    from services.wazuh_agent_enrichment import (
+        enrich_agent_context as _enrich_agent,
+        enrich_agent_contexts as _enrich_agents_batch,
+        _cache_primary_key as _agent_cache_key,
+    )
+    _AGENT_ENRICHMENT_AVAILABLE = True
+except ImportError:
+    _AGENT_ENRICHMENT_AVAILABLE = False
+
+    def _enrich_agent(*a: Any, **kw: Any) -> dict:  # type: ignore[misc]
+        return {}
+
+    def _enrich_agents_batch(agents: Any, conn: Any = None) -> dict:  # type: ignore[misc]
+        return {}
+
+    def _agent_cache_key(aid: Any, name: Any, ip: Any) -> str:  # type: ignore[misc]
+        return "unknown"
 
 router = APIRouter(prefix="/event-map", tags=["event-map"])
 
@@ -176,7 +217,9 @@ def _extract(hit: dict[str, Any]) -> dict[str, Any] | None:
     rule = hit.get("rule") or {}
     data = hit.get("data") or {}
     win = data.get("win") if isinstance(data.get("win"), dict) else {}
-    evtdata = win.get("eventdata") if isinstance(win.get("eventdata"), dict) else {}
+    # Handle both lowercase 'eventdata' and camelCase 'eventData'
+    evtdata_raw = win.get("eventdata") or win.get("eventData")
+    evtdata = evtdata_raw if isinstance(evtdata_raw, dict) else {}
     system = win.get("system") if isinstance(win.get("system"), dict) else {}
     mitre = rule.get("mitre") or {}
 
@@ -202,7 +245,8 @@ def _extract(hit: dict[str, Any]) -> dict[str, Any] | None:
         sev = "info"
 
     event_id = _first(
-        system.get("eventID"), system.get("eventId"),
+        _wf_get(hit, "data.win.system.eventID"),
+        _wf_get(hit, "data.win.system.eventId"),
         data.get("eventid"), data.get("event_id"),
     )
 
@@ -372,6 +416,25 @@ def get_live_clusters(
             b["_raw_highest_sev"] = hit
 
     result = []
+
+    # ── Batch-enrich agent contexts once before the result loop ───────────────
+    agent_context_map: dict = {}
+    if _AGENT_ENRICHMENT_AVAILABLE and buckets:
+        try:
+            agent_descriptors = []
+            for b in buckets.values():
+                hc = sorted(b["_hostCounts"].items(), key=lambda x: -x[1])
+                top_host = hc[0][0] if hc else None
+                if top_host:
+                    agent_descriptors.append({
+                        "agent_id":   b["_hostAgentIds"].get(top_host),
+                        "agent_name": top_host,
+                        "agent_ip":   b["_hostIps"].get(top_host),
+                    })
+            agent_context_map = _enrich_agents_batch(agent_descriptors, conn=conn)  # type: ignore[call-arg]
+        except Exception:
+            agent_context_map = {}
+
     for b in buckets.values():
         host_counts = sorted(b["_hostCounts"].items(), key=lambda x: -x[1])
         eids = list(b["eventIds"])
@@ -384,6 +447,7 @@ def get_live_clusters(
         evidence_smry: dict[str, Any] = {}
         cluster_playbooks: list[dict[str, Any]] = []
         raw_preview: dict[str, Any] | None = None
+        evaluation: dict[str, Any] | None = None
 
         if raw_event:
             raw_preview = _raw_preview(raw_event)
@@ -402,6 +466,34 @@ def get_live_clusters(
                     evidence_smry = build_evidence_summary(ev)  # type: ignore[call-arg]
                 except Exception:
                     evidence_smry = {}
+            if _EVALUATION_AVAILABLE:
+                try:
+                    evaluation = _evaluate_event(raw_event)  # type: ignore[call-arg]
+                except Exception:
+                    evaluation = None
+
+            # ── Unified pipeline (explanation + deterministic evaluation) ──────
+            unified_evaluation: dict | None = None
+            explanation_obj:    dict | None = None
+            if raw_event and _UNIFIED_EVAL_AVAILABLE:
+                try:
+                    unified_evaluation = _evaluate_unified(raw_event)  # type: ignore[call-arg]
+                    explanation_obj    = unified_evaluation.get("explanation")
+                except Exception:
+                    pass
+
+        # ── Wazuh Agent Context — lookup from pre-built batch map ────────────
+        wazuh_agent_context: dict | None = None
+        if _AGENT_ENRICHMENT_AVAILABLE:
+            try:
+                top_host = host_counts[0][0] if host_counts else None
+                if top_host:
+                    top_agent_id = b["_hostAgentIds"].get(top_host)
+                    top_agent_ip = b["_hostIps"].get(top_host)
+                    cache_key = _agent_cache_key(top_agent_id, top_host, top_agent_ip)  # type: ignore[call-arg]
+                    wazuh_agent_context = agent_context_map.get(cache_key)
+            except Exception:
+                wazuh_agent_context = None
 
         # ── Title: prefer knowledge title ─────────────────────────────────────
         kb_title: str = knowledge.get("title") or ""
@@ -488,7 +580,11 @@ def get_live_clusters(
             "evidence_summary": evidence_smry,
             "playbooks": slim_playbooks,
             "rawPreview": raw_preview,
-        })
+            "evaluation": evaluation,
+            # ── Phase 3: unified pipeline ─────────────────────────────────────
+            "explanation": explanation_obj,
+            "unified_evaluation": unified_evaluation,            # ── Wazuh Agent Context ───────────────────────────────────────
+            "wazuh_agent_context": wazuh_agent_context,        })
 
     result.sort(key=lambda x: (-SEV_RANK.get(x["severity"], 0), -x["alertCount"]))
     return result[:limit]

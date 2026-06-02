@@ -1,4 +1,7 @@
-﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, AuditEntry, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, ClusterEvidenceSummary, ClusterKnowledge, ClusterPlaybook, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, NormalisedActionPolicy, RawPreview, Report, ResolvedUnifiedHost, RunAnalysisPayload, ScriptEntry, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, TimelineItem, UnifiedHost } from '../types';
+﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, AuditEntry, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, ClusterEvidenceSummary, ClusterEvaluation, ClusterExplanation, ClusterKnowledge, ClusterPlaybook, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, NormalisedActionPolicy, RawPreview, Report, ResolvedUnifiedHost, RunAnalysisPayload, ScriptEntry, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, TimelineItem, UnifiedEventEvaluation, UnifiedHost, WazuhAgent, WazuhAgentEnrichment, WazuhAPICapabilitiesResult, WazuhManagerHealth, WazuhSyncReport, ServerConnection, ServerConnectionInput, ServerActionResult, ServerActivityLog, RemoteSession, LegacyImportReport, PingResult, DnsResult, PortCheckResult, SshReadOnlyCommandResult, SshFileBrowserResult, SshHostInfoResult, SshHealthResult, SshReadOnlyCommand, WolResult, LegacyServerFeatureResponse, SshConfigExportResult, ServerHostGroup, ServerHostGroupMember, ServerBatchRun, ServerBatchResult, ServerBatchHealthRequest, ServerBatchHealthResponse } from '../types';
+
+// Alias for the agent context embedded in cluster responses
+export type WazuhAgentContextResult = WazuhAgentEnrichment;
 
 const isDesktopShell =
   window.location.protocol === 'tauri:' ||
@@ -17,7 +20,14 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const text = await response.text();
-    throw new Error(text || `Request failed with status ${response.status}`);
+    // Try to extract a human-readable message from a FastAPI {detail: ...} response
+    let message = text || `Request failed with status ${response.status}`;
+    try {
+      const parsed = JSON.parse(text) as Record<string, unknown>;
+      if (typeof parsed.detail === 'string') message = parsed.detail;
+      else if (Array.isArray(parsed.detail)) message = parsed.detail.map((d: unknown) => (d as Record<string,unknown>)?.msg ?? String(d)).join('; ');
+    } catch { /* leave message as raw text */ }
+    throw new Error(message);
   }
 
   return response.json() as Promise<T>;
@@ -154,6 +164,20 @@ export function getHostCentralDetail(host: string, hours = 168, limit = 250): Pr
 
 export function getSnipenHosts(hours = 24): Promise<SnipenHostInfo[]> {
   return request<SnipenHostInfo[]>(`/snipen/hosts?hours=${hours}`);
+}
+
+export function getSnipenAllEvents(params: {
+  hours?: number;
+  limit?: number;
+  min_rule_level?: number | null;
+  category?: string | null;
+} = {}): Promise<SnipenEvent[]> {
+  const q = new URLSearchParams();
+  if (params.hours != null) q.set('hours', String(params.hours));
+  if (params.limit != null) q.set('limit', String(params.limit));
+  if (params.min_rule_level != null) q.set('min_rule_level', String(params.min_rule_level));
+  if (params.category) q.set('category', params.category);
+  return request<SnipenEvent[]>(`/snipen/events?${q.toString()}`);
 }
 
 export function getSnipenHostEvents(
@@ -344,6 +368,14 @@ export function triggerTacticalSync(): Promise<TacticalSyncResult> {
   return request<TacticalSyncResult>('/integrations/tactical/sync', { method: 'POST' });
 }
 
+export function syncWazuhAgents(): Promise<WazuhSyncReport> {
+  return request<WazuhSyncReport>('/wazuh-manager/sync-agents', { method: 'POST' });
+}
+
+export function recomputePolicies(): Promise<{ status: string; updated: number; blocked: number; review_required: number; duration_ms: number }> {
+  return request('/wazuh-manager/recompute-policies', { method: 'POST' });
+}
+
 // ── Unified Hosts ─────────────────────────────────────────────────────────────
 
 export function getUnifiedHosts(): Promise<UnifiedHost[]> {
@@ -418,6 +450,12 @@ export interface LiveEventCluster {
   evidence_summary?: ClusterEvidenceSummary;
   playbooks?: ClusterPlaybook[];
   rawPreview?: RawPreview | null;
+  // ── Baseline-aware evaluation ─────────────────────────────────────────────
+  evaluation?: ClusterEvaluation | null;  // ── Phase 3: unified deterministic pipeline ───────────────────────────
+  explanation?:        ClusterExplanation | null;
+  unified_evaluation?: UnifiedEventEvaluation | null;
+  // ── Wazuh Agent Context ────────────────────────────────────────────────
+  wazuh_agent_context?: WazuhAgentContextResult | null;
 }
 
 export function getLiveEventClusters(params: {
@@ -594,6 +632,182 @@ export function getValidationStatus(): Promise<import('../types').ValidationStat
   return request<import('../types').ValidationStatus>('/validation/status');
 }
 
+// ── Wazuh Manager API ─────────────────────────────────────────────────────────
+
+export interface WazuhPingStep {
+  step: 'config' | 'dns' | 'tcp' | 'http' | 'auth';
+  ok: boolean;
+  detail: string;
+  duration_ms: number;
+}
+
+export function getWazuhManagerHealth(): Promise<WazuhManagerHealth> {
+  return request<WazuhManagerHealth>('/wazuh-manager/health');
+}
+
+export function getWazuhManagerPing(): Promise<{ configured: boolean; steps: WazuhPingStep[] }> {
+  return request('/wazuh-manager/ping');
+}
+
+export function getWazuhAgents(params?: { limit?: number; offset?: number; status?: string }): Promise<{ data: { affected_items: WazuhAgent[]; total_affected_items: number } }> {
+  const q = new URLSearchParams();
+  if (params?.limit != null) q.set('limit', String(params.limit));
+  if (params?.offset != null) q.set('offset', String(params.offset));
+  if (params?.status) q.set('status', params.status);
+  const qs = q.toString();
+  return request<{ data: { affected_items: WazuhAgent[]; total_affected_items: number } }>(`/wazuh-manager/agents${qs ? '?' + qs : ''}`);
+}
+
+export function getWazuhAgentsSummary(): Promise<{ status: unknown; os: unknown }> {
+  return request<{ status: unknown; os: unknown }>('/wazuh-manager/agents/summary');
+}
+
+export function getWazuhAgent(agentId: string): Promise<{ data: { affected_items: WazuhAgent[] } }> {
+  return request<{ data: { affected_items: WazuhAgent[] } }>(`/wazuh-manager/agents/${agentId}`);
+}
+
+export function getWazuhAgentEnrichment(agentId: string, agentName?: string): Promise<WazuhAgentEnrichment> {
+  const q = agentName ? `?agent_name=${encodeURIComponent(agentName)}` : '';
+  return request<WazuhAgentEnrichment>(`/wazuh-manager/agents/${agentId}/enrich${q}`);
+}
+
+export function getWazuhSyscollectorOS(agentId: string): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscollector/os`);
+}
+
+export function getWazuhSyscollectorHardware(agentId: string): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscollector/hardware`);
+}
+
+export function getWazuhSyscollectorPackages(agentId: string, limit = 100): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscollector/packages?limit=${limit}`);
+}
+
+export function getWazuhSyscollectorPorts(agentId: string, limit = 100): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscollector/ports?limit=${limit}`);
+}
+
+export function getWazuhSyscollectorProcesses(agentId: string, limit = 100): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscollector/processes?limit=${limit}`);
+}
+
+export function getWazuhSyscollectorServices(agentId: string, limit = 100): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscollector/services?limit=${limit}`);
+}
+
+export function getWazuhSCAResults(agentId: string): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/sca`);
+}
+
+export function getWazuhSCAChecks(agentId: string, policyId: string, limit = 100, result?: string): Promise<unknown> {
+  const q = new URLSearchParams({ limit: String(limit) });
+  if (result) q.set('result', result);
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/sca/${encodeURIComponent(policyId)}/checks?${q}`);
+}
+
+export function getWazuhSyscheckLastScan(agentId: string): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscheck/last-scan`);
+}
+
+export function getWazuhSyscheckResults(agentId: string, limit = 100): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/syscheck/results?limit=${limit}`);
+}
+
+export function getWazuhRootcheckLastScan(agentId: string): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/rootcheck/last-scan`);
+}
+
+export function getWazuhRootcheckResults(agentId: string, limit = 100): Promise<unknown> {
+  return request<unknown>(`/wazuh-manager/agents/${agentId}/rootcheck/results?limit=${limit}`);
+}
+
+export function getAgentRecentAlerts(agentId: string, agentName?: string, lookbackHours = 24, limit = 50): Promise<{
+  agent_id: string; agent_name: string;
+  alerts: Array<{ timestamp: string | null; rule_id: string | null; rule_level: number; severity: string; description: string | null; agent_name: string | null; event_id: string | null; mitre_tactic: string | null; mitre_id: string | null }>;
+  total: number;
+}> {
+  const q = new URLSearchParams({ lookback_hours: String(lookbackHours), limit: String(limit) });
+  if (agentName) q.set('agent_name', agentName);
+  return request(`/wazuh-manager/agents/${agentId}/recent-alerts?${q}`);
+}
+
+export function getWazuhCapabilities(params?: { safety?: string; tag?: string }): Promise<WazuhAPICapabilitiesResult> {
+  const q = new URLSearchParams();
+  if (params?.safety) q.set('safety', params.safety);
+  if (params?.tag) q.set('tag', params.tag);
+  const qs = q.toString();
+  return request<WazuhAPICapabilitiesResult>(`/wazuh-manager/capabilities${qs ? '?' + qs : ''}`);
+}
+
+export function runWazuhLogtest(body: { log_format?: string; location?: string; event: string }): Promise<unknown> {
+  return request<unknown>('/wazuh-manager/logtest', { method: 'POST', body: JSON.stringify(body) });
+}
+
+export function getWazuhPermissions(): Promise<import('../types').WazuhPermissionsResult> {
+  return request('/wazuh-manager/permissions');
+}
+
+export function getWazuhRecipes(): Promise<{ recipes: import('../types').WazuhAPIRecipe[] }> {
+  return request('/wazuh-manager/recipes');
+}
+
+export function getWazuhDocSections(): Promise<{ sections: import('../types').WazuhAPIDocSection[] }> {
+  return request('/wazuh-manager/docs/sections');
+}
+
+export function getWazuhAgentsFiltered(params: {
+  limit?: number;
+  offset?: number;
+  status?: string;
+  os_platform?: string;
+  group?: string;
+  name_contains?: string;
+  search?: string;
+  q?: string;
+}): Promise<{ data: { affected_items: import('../types').WazuhAgent[]; total_affected_items: number } }> {
+  const qs = new URLSearchParams();
+  if (params.limit)        qs.set('limit', String(params.limit));
+  if (params.offset)       qs.set('offset', String(params.offset));
+  if (params.status)       qs.set('status', params.status);
+  if (params.os_platform)  qs.set('os_platform', params.os_platform);
+  if (params.group)        qs.set('group', params.group);
+  if (params.name_contains) qs.set('name_contains', params.name_contains);
+  if (params.search)       qs.set('search', params.search);
+  if (params.q)            qs.set('q', params.q);
+  const s = qs.toString();
+  return request(`/wazuh-manager/agents${s ? '?' + s : ''}`);
+}
+
+export type WazuhReconnectResult = {
+  status: 'ok' | 'blocked' | 'denied' | 'error';
+  agent_id: string;
+  action: string;
+  policy: string;
+  policy_reason: string | null;
+  message: string | null;
+  wazuh_response: {
+    ok: boolean;
+    error_code: number | null;
+    message: string | null;
+    affected_items: unknown[];
+    total_affected_items: number;
+    failed_items: unknown[];
+    total_failed_items: number;
+  } | null;
+  audit_id_requested: number | null;
+  audit_id_completed: number | null;
+};
+
+export function reconnectWazuhAgent(
+  agentId: string,
+  body?: { wait_for_complete?: boolean; reason?: string; agent_name?: string; source_page?: string },
+): Promise<WazuhReconnectResult> {
+  return request<WazuhReconnectResult>(
+    `/wazuh-manager/agents/${encodeURIComponent(agentId)}/reconnect`,
+    { method: 'POST', body: JSON.stringify(body ?? {}) },
+  );
+}
+
 // ── Local Runner ──────────────────────────────────────────────────────────────
 
 export interface FetchWazuhEventsResult {
@@ -645,4 +859,195 @@ export function runFetchEventsPerHost(params: {
     method: 'POST',
     body: JSON.stringify(params),
   });
+}
+
+// ── Server / Remote Access ────────────────────────────────────────────
+
+type ListConnectionsParams = {
+  protocol?: string;
+  tag?: string;
+  search?: string;
+  favorite_only?: boolean;
+};
+
+export function getServerConnections(params?: ListConnectionsParams): Promise<{ status: string; count: number; data: ServerConnection[] }> {
+  const q = new URLSearchParams();
+  if (params?.protocol) q.set('protocol', params.protocol);
+  if (params?.tag) q.set('tag', params.tag);
+  if (params?.search) q.set('search', params.search);
+  if (params?.favorite_only) q.set('favorite_only', 'true');
+  const qs = q.toString();
+  return request(`/server/connections${qs ? `?${qs}` : ''}`);
+}
+
+export function createServerConnection(data: ServerConnectionInput): Promise<ServerActionResult> {
+  return request('/server/connections', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function updateServerConnection(id: string, data: Partial<ServerConnectionInput>): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export function deleteServerConnection(id: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}`, { method: 'DELETE' });
+}
+
+export function importLegacyServerConnections(payload: { format: 'json' | 'csv'; data: string; auto_link?: boolean }): Promise<{ status: string; data: LegacyImportReport; audit_id: string }> {
+  return request('/server/import/legacy', { method: 'POST', body: JSON.stringify(payload) });
+}
+
+export function testServerConnection(id: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/test`, { method: 'POST' });
+}
+
+export function pingServerConnection(id: string): Promise<ServerActionResult & { data: PingResult }> {
+  return request(`/server/connections/${id}/ping`, { method: 'POST' });
+}
+
+export function dnsServerConnection(id: string): Promise<ServerActionResult & { data: DnsResult }> {
+  return request(`/server/connections/${id}/dns`, { method: 'POST' });
+}
+
+export function portCheckServerConnection(id: string, ports?: number[]): Promise<ServerActionResult & { data: PortCheckResult }> {
+  return request(`/server/connections/${id}/ports`, { method: 'POST', body: JSON.stringify({ ports: ports ?? [22, 80, 443, 3389, 5985] }) });
+}
+
+export function healthCheckServerConnection(id: string): Promise<ServerActionResult & { data: SshHealthResult }> {
+  return request(`/server/connections/${id}/health`, { method: 'POST' });
+}
+
+export function sshHostInfo(id: string): Promise<ServerActionResult & { data: SshHostInfoResult }> {
+  return request(`/server/connections/${id}/ssh/host-info`, { method: 'POST' });
+}
+
+export function sshRunReadOnlyCommand(id: string, command_id: string): Promise<ServerActionResult & { data: SshReadOnlyCommandResult }> {
+  return request(`/server/connections/${id}/ssh/read-only-command`, { method: 'POST', body: JSON.stringify({ command_id }) });
+}
+
+export function sshFileList(id: string, path = '/'): Promise<ServerActionResult & { data: SshFileBrowserResult }> {
+  return request(`/server/connections/${id}/ssh/file-list`, { method: 'POST', body: JSON.stringify({ path }) });
+}
+
+export function openRdpConnection(id: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/rdp/open`, { method: 'POST' });
+}
+
+export function wakeOnLanConnection(id: string, mac?: string): Promise<ServerActionResult & { data: WolResult }> {
+  return request(`/server/connections/${id}/wol`, { method: 'POST', body: JSON.stringify({ mac: mac ?? undefined }) });
+}
+
+export function getServerActivity(limit?: number, connection_id?: string): Promise<{ status: string; count: number; data: ServerActivityLog[] }> {
+  const q = new URLSearchParams();
+  if (limit) q.set('limit', String(limit));
+  if (connection_id) q.set('connection_id', connection_id);
+  const qs = q.toString();
+  return request(`/server/activity${qs ? `?${qs}` : ''}`);
+}
+
+export function getRemoteSessions(limit?: number): Promise<{ status: string; count: number; data: RemoteSession[] }> {
+  const q = new URLSearchParams();
+  if (limit) q.set('limit', String(limit));
+  const qs = q.toString();
+  return request(`/server/sessions${qs ? `?${qs}` : ''}`);
+}
+
+export function getSshReadOnlyCommands(): Promise<{ status: string; data: SshReadOnlyCommand[] }> {
+  return request('/server/ssh/commands');
+}
+
+export function standalongPing(host: string): Promise<ServerActionResult & { data: PingResult }> {
+  return request('/server/tools/ping', { method: 'POST', body: JSON.stringify({ host }) });
+}
+
+export function standalongDns(host: string): Promise<ServerActionResult & { data: DnsResult }> {
+  return request('/server/tools/dns', { method: 'POST', body: JSON.stringify({ host }) });
+}
+
+export function standalongPortCheck(host: string, ports: number[]): Promise<ServerActionResult & { data: PortCheckResult }> {
+  return request('/server/tools/port-check', { method: 'POST', body: JSON.stringify({ host, ports }) });
+}
+
+export function standalongTraceroute(host: string): Promise<ServerActionResult> {
+  return request('/server/tools/traceroute', { method: 'POST', body: JSON.stringify({ host }) });
+}
+
+export function standalongArp(ip: string): Promise<ServerActionResult> {
+  return request('/server/tools/arp', { method: 'POST', body: JSON.stringify({ ip }) });
+}
+
+export function standalongWol(mac: string, broadcast?: string): Promise<ServerActionResult & { data: WolResult }> {
+  return request('/server/tools/wol', { method: 'POST', body: JSON.stringify({ mac, broadcast: broadcast ?? '255.255.255.255' }) });
+}
+
+export function getSshConfig(id: string): Promise<{ status: string; data: { config: string } }> {
+  return request(`/server/connections/${id}/ssh/config`);
+}
+
+export function getServerLegacyFeatures(): Promise<LegacyServerFeatureResponse> {
+  return request('/server/legacy-features');
+}
+
+export function exportSshConfig(params?: {
+  favorites_only?: boolean;
+  tag?: string;
+}): Promise<SshConfigExportResult> {
+  const q = new URLSearchParams();
+  if (params?.favorites_only) q.set('favorites_only', 'true');
+  if (params?.tag) q.set('tag', params.tag);
+  const qs = q.toString();
+  return request(`/server/export/ssh-config${qs ? `?${qs}` : ''}`);
+}
+
+// ── Host Groups ────────────────────────────────────────────────────────
+
+export function getServerGroups(): Promise<{ status: string; data: ServerHostGroup[] }> {
+  return request('/server/groups');
+}
+
+export function createServerGroup(data: { name: string; description?: string; color?: string; tags?: string[] }): Promise<{ status: string; data: ServerHostGroup }> {
+  return request('/server/groups', { method: 'POST', body: JSON.stringify(data) });
+}
+
+export function updateServerGroup(id: string, data: Partial<{ name: string; description: string; color: string; tags: string[] }>): Promise<{ status: string; data: ServerHostGroup }> {
+  return request(`/server/groups/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+}
+
+export function deleteServerGroup(id: string): Promise<{ status: string }> {
+  return request(`/server/groups/${id}`, { method: 'DELETE' });
+}
+
+export function getServerGroupMembers(groupId: string): Promise<{ status: string; data: ServerHostGroupMember[] }> {
+  return request(`/server/groups/${groupId}/members`);
+}
+
+export function addServerGroupMember(groupId: string, connectionId: string): Promise<{ status: string; data: ServerHostGroupMember }> {
+  return request(`/server/groups/${groupId}/members`, { method: 'POST', body: JSON.stringify({ connection_id: connectionId }) });
+}
+
+export function removeServerGroupMember(groupId: string, connectionId: string): Promise<{ status: string }> {
+  return request(`/server/groups/${groupId}/members/${connectionId}`, { method: 'DELETE' });
+}
+
+export function runServerGroupHealth(groupId: string, checks?: string[], concurrency?: number): Promise<ServerBatchHealthResponse> {
+  return request(`/server/groups/${groupId}/health`, {
+    method: 'POST',
+    body: JSON.stringify({ connection_ids: [], checks: checks ?? ['ping', 'port'], concurrency: concurrency ?? 5 }),
+  });
+}
+
+export function runServerBatchHealth(req: ServerBatchHealthRequest): Promise<ServerBatchHealthResponse> {
+  return request('/server/batch/health', { method: 'POST', body: JSON.stringify(req) });
+}
+
+export function getServerBatchRuns(limit?: number): Promise<{ status: string; data: ServerBatchRun[] }> {
+  const q = limit ? `?limit=${limit}` : '';
+  return request(`/server/batch/runs${q}`);
+}
+
+export function getServerBatchRun(runId: string): Promise<{ status: string; data: ServerBatchRun }> {
+  return request(`/server/batch/runs/${runId}`);
+}
+
+export function getServerBatchResults(runId: string): Promise<{ status: string; data: ServerBatchResult[] }> {
+  return request(`/server/batch/runs/${runId}/results`);
 }

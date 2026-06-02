@@ -29,10 +29,10 @@ Deep entries also carry the full analyst fields from the underlying KB.
 
 from __future__ import annotations
 
-from backend.knowledge.linux_event_knowledge import resolve_linux_event_from_log
+from knowledge.linux_event_knowledge import resolve_linux_event_from_log
 
 # Import lazily or at module level — Windows KB is a plain dict lookup
-from backend.knowledge.event_id_knowledge import EVENT_ID_KNOWLEDGE
+from knowledge.event_id_knowledge import EVENT_ID_KNOWLEDGE
 
 # ---------------------------------------------------------------------------
 # Internal helpers
@@ -92,11 +92,15 @@ def _is_linux_event(event: dict) -> bool:
 def _extract_windows_event_id(event: dict) -> str | None:
     """Return the Windows Event ID as a string, or None."""
     try:
-        # Wazuh normalised field
-        eid = event.get("data", {}).get("win", {}).get("system", {}).get("eventID")
+        from services.wazuh_field_mapper import get_field
+        eid = get_field(event,
+            "data.win.system.eventID",
+            "data.win.system.eventId",
+            "data.win.system.eventid",
+        )
         if eid:
             return str(eid)
-    except (KeyError, TypeError, AttributeError):
+    except Exception:
         pass
     try:
         eid = event.get("data", {}).get("id")
