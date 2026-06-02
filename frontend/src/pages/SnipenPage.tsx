@@ -427,7 +427,7 @@ export function SnipenPage({
             {!leftCollapsed && <span>Einklappen</span>}
           </button>
         </div>
-          </> {/* end expanded left sidebar */}
+          </> 
         )}
       </aside>
 
