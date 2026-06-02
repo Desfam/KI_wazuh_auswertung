@@ -4,13 +4,14 @@ Normalise host action policy from unified host identity data.
 
 Policy values
 -------------
-- blocked          : cannot safely take any action on this host
-- review_required  : read-only actions allowed, manual review required
-- allowed          : (reserved for future) all actions allowed pending RBAC
+- blocked          : cannot safely take action on this host
+- review_required  : read-only and controlled actions need review/audit
+- allowed          : trusted identity; controlled actions may proceed via RBAC/audit
 
 Security rule:
-Even if policy is 'allowed', dangerous_actions_enabled is always False
-in Phase 1.
+Destructive actions are never enabled by this generic host policy alone.  They
+must be explicitly implemented as controlled actions with RBAC, confirmation and
+audit logging in the caller.
 """
 from __future__ import annotations
 
@@ -21,21 +22,12 @@ def get_action_policy_for_unified_host(
 ) -> dict:
     """Return a normalised action policy dict for a unified host.
 
-    Parameters
-    ----------
-    host:
-        Unified host dict from the database (or a partial dict with at
-        least ``identity_status`` and ``action_policy`` keys).
-    conflicts:
-        Active host conflict list from ``list_host_conflicts()``.
-
-    Returns
-    -------
-    dict with keys:
-        policy                    : "blocked" | "review_required" | "allowed"
-        reason                    : str
-        dangerous_actions_enabled : False  (always in Phase 1)
-        read_only_actions_enabled : bool
+    Returns a dict with:
+        policy                     : "blocked" | "review_required" | "allowed"
+        reason                     : human-readable reason
+        read_only_actions_enabled  : bool
+        controlled_actions_enabled : bool
+        dangerous_actions_enabled  : bool  (always false here)
     """
     if not isinstance(host, dict):
         return _blocked("No host context available.")
@@ -53,36 +45,45 @@ def get_action_policy_for_unified_host(
                     desc = c.get("description") or ctype
                     return _blocked(f"Active conflict blocks action: {desc}")
 
+    # ── Explicit database policy wins when blocked ─────────────────────────────
+    if action_policy_raw == "blocked":
+        return _blocked("Host action policy is explicitly blocked.")
+
     # ── Identity status → policy ───────────────────────────────────────────────
     if identity_status in ("unknown", "uncertain"):
         return _blocked(
             f"Host identity status is '{identity_status}'. "
-            "Cannot confirm host identity before taking any action."
+            "Cannot confirm host identity before taking remote or endpoint actions."
         )
 
     if identity_status == "likely":
         return _review(
-            "Host matched with 'likely' confidence. "
-            "Manual review required before acting."
+            "Host matched with likely confidence. Read-only actions are allowed; "
+            "controlled actions require confirmation and audit."
         )
 
     if identity_status == "trusted":
-        return _review(
-            "Host is trusted. Dangerous actions remain disabled in Phase 1."
-        )
+        return {
+            "policy": "allowed",
+            "reason": (
+                "Host identity is trusted. Read-only actions are allowed and "
+                "controlled actions may proceed when RBAC, confirmation and audit pass."
+            ),
+            "dangerous_actions_enabled": False,
+            "controlled_actions_enabled": True,
+            "read_only_actions_enabled": True,
+        }
 
     # ── Legacy action_policy value mapping ────────────────────────────────────
-    if action_policy_raw == "blocked":
-        return _blocked("Host action policy is explicitly blocked.")
-
     if action_policy_raw in ("full", "allowed"):
         return {
             "policy": "allowed",
             "reason": (
-                "Host action policy allows actions. "
-                "Dangerous actions remain disabled in Phase 1."
+                "Host action policy allows controlled actions when RBAC, "
+                "confirmation and audit pass."
             ),
             "dangerous_actions_enabled": False,
+            "controlled_actions_enabled": True,
             "read_only_actions_enabled": True,
         }
 
@@ -95,6 +96,7 @@ def _blocked(reason: str) -> dict:
         "policy": "blocked",
         "reason": reason,
         "dangerous_actions_enabled": False,
+        "controlled_actions_enabled": False,
         "read_only_actions_enabled": False,
     }
 
@@ -104,5 +106,6 @@ def _review(reason: str) -> dict:
         "policy": "review_required",
         "reason": reason,
         "dangerous_actions_enabled": False,
+        "controlled_actions_enabled": True,
         "read_only_actions_enabled": True,
     }
