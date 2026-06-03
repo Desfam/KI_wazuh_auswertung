@@ -924,12 +924,95 @@ export function sshRunReadOnlyCommand(id: string, command_id: string): Promise<S
   return request(`/server/connections/${id}/ssh/read-only-command`, { method: 'POST', body: JSON.stringify({ command_id }) });
 }
 
+export function sshConnectNative(id: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/ssh/connect`, { method: 'POST' });
+}
+
+export function sshInteractiveShell(id: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/ssh/interactive-shell`, { method: 'POST' });
+}
+
+export function sshRunArbitraryCommand(id: string, command: string, reason: string, timeout = 30): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/ssh/arbitrary-command`, {
+    method: 'POST',
+    body: JSON.stringify({ command, reason, timeout }),
+  });
+}
+
+export function sshDeployPublicKey(id: string, public_key: string, reason: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/ssh/key-deploy`, {
+    method: 'POST',
+    body: JSON.stringify({ public_key, reason }),
+  });
+}
+
+export function sshStartPortForward(
+  id: string,
+  local_port: number,
+  remote_host: string,
+  remote_port: number,
+  reason: string,
+): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/ssh/port-forward`, {
+    method: 'POST',
+    body: JSON.stringify({ local_port, remote_host, remote_port, reason }),
+  });
+}
+
 export function sshFileList(id: string, path = '/'): Promise<ServerActionResult & { data: SshFileBrowserResult }> {
   return request(`/server/connections/${id}/ssh/file-list`, { method: 'POST', body: JSON.stringify({ path }) });
 }
 
+export async function sshFileUpload(
+  id: string,
+  file: File,
+  remote_dir: string,
+  reason: string,
+): Promise<ServerActionResult> {
+  const form = new FormData();
+  form.append('file', file);
+  form.append('remote_dir', remote_dir || '/');
+  form.append('reason', reason);
+
+  const response = await fetch(`${API_BASE}/server/connections/${id}/ssh/file-upload`, {
+    method: 'POST',
+    body: form,
+  });
+
+  if (!response.ok) {
+    const text = await response.text();
+    let message = text || `Request failed with status ${response.status}`;
+    try {
+      const parsed = JSON.parse(text) as Record<string, unknown>;
+      if (typeof parsed.detail === 'string') message = parsed.detail;
+      else if (Array.isArray(parsed.detail)) message = parsed.detail.map((d: unknown) => (d as Record<string, unknown>)?.msg ?? String(d)).join('; ');
+    } catch {
+      // Keep raw message if response is not JSON.
+    }
+    throw new Error(message);
+  }
+
+  return response.json() as Promise<ServerActionResult>;
+}
+
+export function sshFileDelete(
+  id: string,
+  path: string,
+  reason: string,
+  confirm_name: string,
+): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/ssh/file-delete`, {
+    method: 'POST',
+    body: JSON.stringify({ path, reason, confirm_name }),
+  });
+}
+
 export function openRdpConnection(id: string): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/rdp/open`, { method: 'POST' });
+}
+
+export function openWinRmConnection(id: string): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/winrm/open`, { method: 'POST' });
 }
 
 export function wakeOnLanConnection(id: string, mac?: string): Promise<ServerActionResult & { data: WolResult }> {

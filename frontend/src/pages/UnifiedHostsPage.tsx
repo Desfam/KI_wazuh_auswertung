@@ -36,12 +36,14 @@ function statusDot(status: string) {
 function policyLabel(p: ActionPolicy) {
   if (p === 'full') return 'Full (Phase 2)';
   if (p === 'read_only') return 'Read-only';
+  if (p === 'review_required') return 'Review Required';
   return 'Blocked';
 }
 
 function policyColor(p: ActionPolicy) {
   if (p === 'full') return 'var(--soc-success)';
   if (p === 'read_only') return 'var(--soc-warning)';
+  if (p === 'review_required') return 'rgba(245,158,11,0.9)';
   return 'var(--soc-critical)';
 }
 

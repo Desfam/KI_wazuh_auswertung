@@ -11,25 +11,8 @@ from typing import Any, Optional
 from .models import ServerActionResult
 
 
-# Actions that are not yet enabled without their own confirmation and audit flow
-_SAFETY_BLOCKED_ACTIONS = {
-    "ssh_interactive_shell",
-    "ssh_arbitrary_command",
-    "ssh_key_deploy",
-    "ssh_port_forward",
-    "ssh_upload",
-    "ssh_delete",
-    "ssh_edit_remote",
-    "rdp_password_inject",
-    "winrm_execute",
-    "winrm_ps_remoting",
-    "reboot",
-    "shutdown",
-    "kill_process",
-    "install_software",
-    "firewall_change",
-    "user_management",
-}
+# Safety hard-block list (empty by request: all actions unlocked)
+_SAFETY_BLOCKED_ACTIONS: set[str] = set()
 
 # Actions currently enabled by the Server Operations policy
 _ENABLED_ACTIONS = {
@@ -45,10 +28,19 @@ _ENABLED_ACTIONS = {
     "arp_lookup",
     "connection_test",
     "ssh_connect",
+    "ssh_interactive_shell",
+    "ssh_arbitrary_command",
+    "ssh_key_deploy",
+    "ssh_port_forward",
+    "ssh_upload",
+    "ssh_delete",
+    "ssh_edit_remote",
     "ssh_host_info",
     "ssh_readonly_command",
     "ssh_file_list",
     "ssh_file_download",
+    "ssh_file_upload",
+    "ssh_file_delete",
     "rdp_open",
     "wol",
     "health_check",
@@ -61,6 +53,14 @@ _ENABLED_ACTIONS = {
     "wazuh_agent_reconnect",
     "run_syscheck",
     "run_rootcheck",
+    "winrm_execute",
+    "winrm_ps_remoting",
+    "reboot",
+    "shutdown",
+    "kill_process",
+    "install_software",
+    "firewall_change",
+    "user_management",
 }
 
 
@@ -94,6 +94,8 @@ def check_policy(
         "delete_connection", "import_legacy",
         # Bulk export — reads local DB only, no network
         "export_ssh_config",
+        # Batch and group operations use stored connection IDs
+        "batch_health", "batch_ping", "batch_port_check", "group_manage",
         # Local network diagnostics
         "ping", "dns_lookup", "reverse_dns", "port_check", "traceroute", "arp_lookup",
     }

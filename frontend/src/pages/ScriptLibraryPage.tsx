@@ -478,8 +478,8 @@ export function ScriptLibraryPage() {
       <div className="grid grid-cols-2 gap-3 px-6 py-4 sm:grid-cols-4">
         <StatCard label="Total Scripts"    value={totalCount}    sub="in catalog" />
         <StatCard label="Enabled"          value={enabledCount}  sub="active in catalog"       accent="text-emerald-300" />
-        <StatCard label="Read-only"        value={readonlyCount} sub="safe for Phase 1"         accent="text-cyan-300" />
-        <StatCard label="Dangerous"        value={dangerCount}   sub="disabled — Phase 2+"      accent="text-red-400" />
+        <StatCard label="Read-only"        value={readonlyCount} sub="low-risk / controlled"    accent="text-cyan-300" />
+        <StatCard label="Dangerous"        value={dangerCount}   sub="requires approval flow"   accent="text-red-400" />
       </div>
 
       {/* ── FILTER BAR ── */}
@@ -742,7 +742,7 @@ export function ScriptLibraryPage() {
                 <div className="flex items-start gap-2 rounded-lg border border-red-500/25 bg-red-500/[0.07] px-3 py-2">
                   <AlertTriangle size={13} className="text-red-400 flex-shrink-0 mt-0.5" />
                   <p className="text-[11px] text-red-300/90">
-                    This script is not considered safe for Phase 1. Execution will remain disabled.
+                    This script requires an explicit approval and audit flow before execution can be enabled.
                   </p>
                 </div>
               )}

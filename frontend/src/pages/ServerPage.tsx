@@ -58,12 +58,20 @@ import {
   getSshConfig,
   healthCheckServerConnection,
   importLegacyServerConnections,
+  openWinRmConnection,
   openRdpConnection,
   pingServerConnection,
   portCheckServerConnection,
+  sshConnectNative,
+  sshDeployPublicKey,
+  sshFileDelete,
   sshFileList,
+  sshFileUpload,
   sshHostInfo,
+  sshInteractiveShell,
+  sshRunArbitraryCommand,
   sshRunReadOnlyCommand,
+  sshStartPortForward,
   testServerConnection,
   updateServerConnection,
   wakeOnLanConnection,
@@ -198,9 +206,9 @@ function RiskBadge({ risk }: { risk: LegacyFeatureRisk }) {
 
 function PhaseBadge({ feature }: { feature: LegacyServerFeature }) {
   if (feature.phase1)
-    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'var(--soc-success)', background: 'rgba(34,197,94,0.12)' }}>Phase 1</span>;
+    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'var(--soc-success)', background: 'rgba(34,197,94,0.12)' }}>Enabled</span>;
   if (feature.phase2)
-    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'rgba(245,158,11,0.9)', background: 'rgba(245,158,11,0.10)' }}>Phase 2</span>;
+    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'rgba(245,158,11,0.9)', background: 'rgba(245,158,11,0.10)' }}>Roadmap</span>;
   return <span className="text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>—</span>;
 }
 
@@ -249,7 +257,7 @@ function LegacyCatalogView({ data, loading }: { data: LegacyServerFeatureRespons
           <strong>Idea source only.</strong>{' '}
           The SSH_Manager repository is used exclusively as a migration reference.
           It is not cloned, not modified, and not executed.
-          Only Phase&nbsp;1 features are active. Dangerous features remain disabled until policy / audit / confirmation exists.
+          Features with elevated risk require explicit policy, confirmation and audit flow before activation.
         </span>
       </div>
 
@@ -271,8 +279,8 @@ function LegacyCatalogView({ data, loading }: { data: LegacyServerFeatureRespons
         <div className="grid grid-cols-6 gap-3 px-4 py-3 flex-shrink-0"
           style={{ borderBottom: '1px solid var(--soc-border)' }}>
           <StatCard label="Total"     value={data.summary.total} />
-          <StatCard label="Phase 1"   value={data.summary.phase1}   tone="ok" />
-          <StatCard label="Phase 2"   value={data.summary.phase2}   tone="warn" />
+          <StatCard label="Enabled"   value={data.summary.phase1}   tone="ok" />
+          <StatCard label="Roadmap"   value={data.summary.phase2}   tone="warn" />
           <StatCard label="Disabled"  value={data.summary.disabled} />
           <StatCard label="Rejected"  value={data.summary.rejected}  tone="critical" />
           <StatCard label="Dangerous" value={data.summary.dangerous} tone="critical" />
@@ -409,6 +417,7 @@ export function ServerPage({ active }: Props) {
   const [fileList, setFileList]           = useState<SshFileBrowserEntry[]>([]);
   const [filePath, setFilePath]           = useState('/');
   const [fileLoading, setFileLoading]     = useState(false);
+  const [fileActionResult, setFileActionResult] = useState<ServerActionResult | null>(null);
   const [sshCommands, setSshCommands]     = useState<SshReadOnlyCommand[]>([]);
   const [sshConfig, setSshConfig]         = useState<string>('');
   const [healthResult, setHealthResult]   = useState<ServerActionResult | null>(null);
@@ -417,6 +426,24 @@ export function ServerPage({ active }: Props) {
   const [dnsResult, setDnsResult]         = useState<ServerActionResult | null>(null);
   const [testResult, setTestResult]       = useState<ServerActionResult | null>(null);
   const [testLoading, setTestLoading]     = useState(false);
+  const [shellResult, setShellResult]     = useState<ServerActionResult | null>(null);
+  const [shellLoading, setShellLoading]   = useState(false);
+  const [arbitraryCommand, setArbitraryCommand] = useState('id && uname -a');
+  const [arbitraryReason, setArbitraryReason] = useState('manual diagnostics');
+  const [arbitraryResult, setArbitraryResult] = useState<ServerActionResult | null>(null);
+  const [arbitraryLoading, setArbitraryLoading] = useState(false);
+  const [publicKey, setPublicKey]         = useState('');
+  const [keyReason, setKeyReason]         = useState('temporary admin access');
+  const [keyDeployResult, setKeyDeployResult] = useState<ServerActionResult | null>(null);
+  const [keyDeployLoading, setKeyDeployLoading] = useState(false);
+  const [pfLocalPort, setPfLocalPort]     = useState('8080');
+  const [pfRemoteHost, setPfRemoteHost]   = useState('localhost');
+  const [pfRemotePort, setPfRemotePort]   = useState('80');
+  const [pfReason, setPfReason]           = useState('secure local tunnel');
+  const [pfResult, setPfResult]           = useState<ServerActionResult | null>(null);
+  const [pfLoading, setPfLoading]         = useState(false);
+  const [winrmResult, setWinrmResult]     = useState<ServerActionResult | null>(null);
+  const [winrmLoading, setWinrmLoading]   = useState(false);
 
   // Page-level tab
   const [pageTab, setPageTab]             = useState<PageTab>('connections');
@@ -513,11 +540,17 @@ export function ServerPage({ active }: Props) {
     setRdpResult(null);
     setTestResult(null);
     setFileList([]);
+    setFileActionResult(null);
     setDnsResult(null);
     setPortResult(null);
     setSshConfig('');
     setHealthResult(null);
     setFilePath('/');
+    setShellResult(null);
+    setArbitraryResult(null);
+    setKeyDeployResult(null);
+    setPfResult(null);
+    setWinrmResult(null);
   }
 
   async function handleCreate(data: ServerConnectionInput) {
@@ -599,13 +632,129 @@ export function ServerPage({ active }: Props) {
     finally { setRdpLoading(false); }
   }
 
+  async function handleOpenShell() {
+    if (!selected) return;
+    setShellLoading(true); setShellResult(null);
+    try {
+      const r = await sshInteractiveShell(selected.id);
+      setShellResult(r);
+      loadActivity();
+    } finally { setShellLoading(false); }
+  }
+
+  async function handleQuickConnect() {
+    if (!selected) return;
+    setShellLoading(true); setShellResult(null);
+    try {
+      const r = await sshConnectNative(selected.id);
+      setShellResult(r);
+      loadActivity();
+    } finally { setShellLoading(false); }
+  }
+
+  async function handleArbitraryCommand() {
+    if (!selected) return;
+    if (!arbitraryReason.trim() || !arbitraryCommand.trim()) {
+      alert('Command and reason are required.');
+      return;
+    }
+    setArbitraryLoading(true); setArbitraryResult(null);
+    try {
+      const r = await sshRunArbitraryCommand(selected.id, arbitraryCommand.trim(), arbitraryReason.trim(), 45);
+      setArbitraryResult(r);
+      loadActivity();
+    } finally { setArbitraryLoading(false); }
+  }
+
+  async function handleKeyDeploy() {
+    if (!selected) return;
+    if (!publicKey.trim() || !keyReason.trim()) {
+      alert('Public key and reason are required.');
+      return;
+    }
+    setKeyDeployLoading(true); setKeyDeployResult(null);
+    try {
+      const r = await sshDeployPublicKey(selected.id, publicKey.trim(), keyReason.trim());
+      setKeyDeployResult(r);
+      loadActivity();
+    } finally { setKeyDeployLoading(false); }
+  }
+
+  async function handlePortForward() {
+    if (!selected) return;
+    const local = parseInt(pfLocalPort, 10);
+    const remote = parseInt(pfRemotePort, 10);
+    if (!Number.isFinite(local) || !Number.isFinite(remote) || !pfRemoteHost.trim() || !pfReason.trim()) {
+      alert('Local port, remote host, remote port and reason are required.');
+      return;
+    }
+    setPfLoading(true); setPfResult(null);
+    try {
+      const r = await sshStartPortForward(selected.id, local, pfRemoteHost.trim(), remote, pfReason.trim());
+      setPfResult(r);
+      loadActivity();
+    } finally { setPfLoading(false); }
+  }
+
+  async function handleOpenWinRm() {
+    if (!selected) return;
+    setWinrmLoading(true); setWinrmResult(null);
+    try {
+      const r = await openWinRmConnection(selected.id);
+      setWinrmResult(r);
+      loadActivity();
+    } finally { setWinrmLoading(false); }
+  }
+
   async function handleLoadFiles(path = '/') {
     if (!selected) return;
+    setFileActionResult(null);
     setFileLoading(true); setFileList([]); setFilePath(path);
     try {
       const r = await sshFileList(selected.id, path);
       setFileList((r.data as { entries?: SshFileBrowserEntry[] })?.entries ?? []);
     } finally { setFileLoading(false); }
+  }
+
+  async function handleUploadFile(file: File) {
+    if (!selected) return;
+    const reason = prompt('Upload reason (required for audit):', 'incident response / evidence collection') ?? '';
+    if (!reason.trim()) {
+      alert('Upload cancelled: reason is required.');
+      return;
+    }
+    try {
+      const result = await sshFileUpload(selected.id, file, filePath, reason.trim());
+      setFileActionResult(result);
+      await handleLoadFiles(filePath);
+      loadActivity();
+    } catch (err) {
+      setFileActionResult({ status: 'error', message: err instanceof Error ? err.message : 'Upload failed' });
+    }
+  }
+
+  async function handleDeleteFile(entry: SshFileBrowserEntry) {
+    if (!selected || entry.type !== 'file') return;
+    const basePath = filePath === '/' ? '' : filePath.replace(/\/$/, '');
+    const fullPath = `${basePath}/${entry.name}` || `/${entry.name}`;
+    const reason = prompt(`Delete reason for ${entry.name} (required):`, 'cleanup / rollback') ?? '';
+    if (!reason.trim()) {
+      alert('Delete cancelled: reason is required.');
+      return;
+    }
+    const confirmName = prompt(`Type the exact filename to confirm delete:\n${entry.name}`, '') ?? '';
+    if (confirmName !== entry.name) {
+      alert('Delete cancelled: filename confirmation mismatch.');
+      return;
+    }
+    try {
+      const result = await sshFileDelete(selected.id, fullPath, reason.trim(), confirmName);
+      setFileActionResult(result);
+      await handleLoadFiles(filePath);
+      loadActivity();
+    } catch (err) {
+      setFileActionResult({ status: 'error', message: err instanceof Error ? err.message : 'Delete failed' });
+    }
   }
 
   async function handleHealthCheck() {
@@ -1022,10 +1171,116 @@ export function ServerPage({ active }: Props) {
                   </section>
                   <section>
                     <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>Interactive Shell</div>
-                    <div className="rounded p-3 text-[11px]"
-                      style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.7)' }}>
-                      ⊘ Interactive shell is disabled in Phase 1.
+                    <div className="flex flex-wrap gap-2 mb-2">
+                      <button type="button" onClick={handleOpenShell} disabled={shellLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                        <Terminal size={11} /> {shellLoading ? 'Launching…' : 'Open Interactive Shell'}
+                      </button>
+                      <button type="button" onClick={handleQuickConnect} disabled={shellLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                        <Terminal size={11} /> Quick SSH Connect
+                      </button>
                     </div>
+                    {shellResult && (
+                      <div className="rounded p-2.5 text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', borderLeft: `3px solid ${shellResult.status === 'ok' ? 'var(--soc-success)' : 'var(--soc-critical)'}` }}>
+                        <div>{shellResult.message || shellResult.status}</div>
+                        {Boolean((shellResult.data as Record<string, unknown>)?.command_used) && (
+                          <div className="font-mono text-[10px] mt-1" style={{ color: 'var(--soc-muted-fg)' }}>
+                            {String((shellResult.data as Record<string, unknown>).command_used)}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </section>
+                  <section>
+                    <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>Arbitrary SSH Command</div>
+                    <textarea
+                      className="w-full rounded px-2 py-1.5 text-[11px] font-mono outline-none mb-2"
+                      style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}
+                      rows={3}
+                      value={arbitraryCommand}
+                      onChange={e => setArbitraryCommand(e.target.value)}
+                    />
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        className="flex-1 rounded px-2 py-1.5 text-[11px] outline-none"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}
+                        value={arbitraryReason}
+                        onChange={e => setArbitraryReason(e.target.value)}
+                        placeholder="Reason for audit"
+                      />
+                      <button type="button" onClick={handleArbitraryCommand} disabled={arbitraryLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                        <Terminal size={11} /> {arbitraryLoading ? 'Running…' : 'Run Command'}
+                      </button>
+                    </div>
+                    {arbitraryResult && (
+                      <pre className="rounded p-2.5 text-[11px] font-mono whitespace-pre-wrap max-h-56 overflow-auto"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                        {JSON.stringify(arbitraryResult.data ?? arbitraryResult, null, 2)}
+                      </pre>
+                    )}
+                  </section>
+                  <section>
+                    <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>SSH Public Key Deploy</div>
+                    <textarea
+                      className="w-full rounded px-2 py-1.5 text-[11px] font-mono outline-none mb-2"
+                      style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}
+                      rows={3}
+                      placeholder="ssh-ed25519 AAAA... user@host"
+                      value={publicKey}
+                      onChange={e => setPublicKey(e.target.value)}
+                    />
+                    <div className="flex items-center gap-2 mb-2">
+                      <input
+                        className="flex-1 rounded px-2 py-1.5 text-[11px] outline-none"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}
+                        value={keyReason}
+                        onChange={e => setKeyReason(e.target.value)}
+                        placeholder="Reason for key deployment"
+                      />
+                      <button type="button" onClick={handleKeyDeploy} disabled={keyDeployLoading}
+                        className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                        <Upload size={11} /> {keyDeployLoading ? 'Deploying…' : 'Deploy Key'}
+                      </button>
+                    </div>
+                    {keyDeployResult && (
+                      <div className="rounded p-2 text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', borderLeft: `3px solid ${keyDeployResult.status === 'ok' ? 'var(--soc-success)' : 'var(--soc-critical)'}` }}>
+                        {keyDeployResult.message || keyDeployResult.status}
+                      </div>
+                    )}
+                  </section>
+                  <section>
+                    <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>SSH Port Forward</div>
+                    <div className="grid grid-cols-4 gap-2 mb-2">
+                      <input className="rounded px-2 py-1.5 text-[11px] outline-none" style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }} value={pfLocalPort} onChange={e => setPfLocalPort(e.target.value)} placeholder="Local port" />
+                      <input className="rounded px-2 py-1.5 text-[11px] outline-none" style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }} value={pfRemoteHost} onChange={e => setPfRemoteHost(e.target.value)} placeholder="Remote host" />
+                      <input className="rounded px-2 py-1.5 text-[11px] outline-none" style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }} value={pfRemotePort} onChange={e => setPfRemotePort(e.target.value)} placeholder="Remote port" />
+                      <button type="button" onClick={handlePortForward} disabled={pfLoading}
+                        className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 rounded text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                        <Network size={11} /> {pfLoading ? 'Starting…' : 'Start Tunnel'}
+                      </button>
+                    </div>
+                    <input
+                      className="w-full rounded px-2 py-1.5 text-[11px] outline-none mb-2"
+                      style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}
+                      value={pfReason}
+                      onChange={e => setPfReason(e.target.value)}
+                      placeholder="Reason for audit"
+                    />
+                    {pfResult && (
+                      <div className="rounded p-2 text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', borderLeft: `3px solid ${pfResult.status === 'ok' ? 'var(--soc-success)' : 'var(--soc-critical)'}` }}>
+                        {pfResult.message || pfResult.status}
+                      </div>
+                    )}
                   </section>
                 </>
               )}
@@ -1069,10 +1324,17 @@ export function ServerPage({ active }: Props) {
                   )}
                   <section>
                     <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>PowerShell Remoting / WinRM</div>
-                    <div className="rounded p-3 text-[11px]"
-                      style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.7)' }}>
-                      ⊘ PowerShell Remoting is disabled in Phase 1.
-                    </div>
+                    <button type="button" onClick={handleOpenWinRm} disabled={winrmLoading}
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] mb-2"
+                      style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                      <Terminal size={11} /> {winrmLoading ? 'Launching…' : 'Open WinRM Session'}
+                    </button>
+                    {winrmResult && (
+                      <div className="rounded p-2 text-[11px]"
+                        style={{ background: 'var(--soc-sidebar-accent)', borderLeft: `3px solid ${winrmResult.status === 'ok' ? 'var(--soc-success)' : 'var(--soc-critical)'}` }}>
+                        {winrmResult.message || winrmResult.status}
+                      </div>
+                    )}
                   </section>
                 </>
               )}
@@ -1080,7 +1342,7 @@ export function ServerPage({ active }: Props) {
               {/* Files tab */}
               {detailTab === 'files' && (
                 <section>
-                  <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>File Browser (Read-only SFTP)</div>
+                  <div className={sectionHeader} style={{ color: 'var(--soc-muted-fg)' }}>File Browser (SFTP)</div>
                   <div className="flex items-center gap-2 mb-2">
                     <input
                       className="flex-1 rounded px-2 py-1.5 text-[12px] font-mono outline-none"
@@ -1095,7 +1357,35 @@ export function ServerPage({ active }: Props) {
                       style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
                       <Folder size={11} /> {fileLoading ? 'Loading…' : 'Browse'}
                     </button>
+                    <label
+                      className="flex items-center gap-1.5 px-2.5 py-1.5 rounded text-[11px] cursor-pointer"
+                      style={{ background: 'var(--soc-sidebar-accent)', border: '1px solid var(--soc-border)' }}>
+                      <Upload size={11} /> Upload
+                      <input
+                        type="file"
+                        className="hidden"
+                        onChange={e => {
+                          const file = e.target.files?.[0];
+                          if (file) {
+                            void handleUploadFile(file);
+                            e.currentTarget.value = '';
+                          }
+                        }}
+                      />
+                    </label>
                   </div>
+                  {fileActionResult && (
+                    <div className="mb-2 rounded p-2 text-[11px]"
+                      style={{
+                        background: 'var(--soc-sidebar-accent)',
+                        borderLeft: `3px solid ${fileActionResult.status === 'ok' ? 'var(--soc-success)' : 'var(--soc-critical)'}`,
+                      }}>
+                      <div className="font-mono">{fileActionResult.status.toUpperCase()} · {fileActionResult.message || 'SFTP action completed'}</div>
+                      {fileActionResult.audit_id && (
+                        <div className="text-[10px] mt-0.5" style={{ color: 'var(--soc-muted-fg)' }}>audit: {fileActionResult.audit_id.slice(0, 8)}</div>
+                      )}
+                    </div>
+                  )}
                   {fileList.length > 0 && (
                     <div className="rounded overflow-hidden" style={{ border: '1px solid var(--soc-border)' }}>
                       <table className="w-full text-[11px]">
@@ -1105,6 +1395,7 @@ export function ServerPage({ active }: Props) {
                             <th className="px-2 py-1.5 text-left">Name</th>
                             <th className="px-2 py-1.5 text-left">Type</th>
                             <th className="px-2 py-1.5 text-right">Size</th>
+                            <th className="px-2 py-1.5 text-right">Action</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -1114,6 +1405,7 @@ export function ServerPage({ active }: Props) {
                               onClick={() => handleLoadFiles(filePath.replace(/\/[^/]+\/?$/, '') || '/')}>
                               <td className="px-2 py-1.5 font-mono" style={{ color: 'var(--soc-primary)' }}>../</td>
                               <td className="px-2 py-1.5" style={{ color: 'var(--soc-muted-fg)' }}>dir</td>
+                              <td></td>
                               <td></td>
                             </tr>
                           )}
@@ -1133,6 +1425,19 @@ export function ServerPage({ active }: Props) {
                               <td className="px-2 py-1.5 text-right font-mono" style={{ color: 'var(--soc-muted-fg)' }}>
                                 {entry.size != null ? `${Math.ceil(entry.size / 1024)}KB` : '—'}
                               </td>
+                              <td className="px-2 py-1.5 text-right">
+                                {entry.type === 'file' ? (
+                                  <button
+                                    type="button"
+                                    className="text-[10px] px-2 py-0.5 rounded"
+                                    style={{ background: 'rgba(239,68,68,0.12)', color: 'var(--soc-critical)' }}
+                                    onClick={() => void handleDeleteFile(entry)}>
+                                    Delete
+                                  </button>
+                                ) : (
+                                  <span style={{ color: 'var(--soc-muted-fg)' }}>—</span>
+                                )}
+                              </td>
                             </tr>
                           ))}
                         </tbody>
@@ -1141,7 +1446,7 @@ export function ServerPage({ active }: Props) {
                   )}
                   <div className="mt-3 rounded p-2.5 text-[11px]"
                     style={{ background: 'rgba(239,68,68,0.06)', border: '1px solid rgba(239,68,68,0.2)', color: 'rgba(239,68,68,0.7)' }}>
-                    ⊘ Upload, delete and edit are disabled in Phase 1.
+                    Upload and delete require mandatory reason + audit trail. Interactive edit is not implemented yet.
                   </div>
                 </section>
               )}

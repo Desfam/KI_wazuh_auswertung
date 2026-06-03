@@ -2102,26 +2102,26 @@ def _run_server_operations_tests() -> list[dict]:
         tests.append(_pass("SSH_READONLY_COMMANDS required entries", CAT,
                            f"All required IDs present: {list(required_cmds)}"))
 
-    # T09–T13: Phase-1 blocked actions ────────────────────────────────────────
+    # T09–T13: Advanced actions are no longer hard-blocked ────────────────────
     try:
         from services.remote_access.remote_policy import check_policy
-        blocked_actions = {
+        unlocked_actions = {
             "ssh_arbitrary_command": "T09",
             "ssh_interactive_shell": "T10",
             "ssh_upload":            "T11",
             "ssh_key_deploy":        "T12",
             "ssh_port_forward":      "T13",
         }
-        for action, tid in blocked_actions.items():
+        for action, tid in unlocked_actions.items():
             result = check_policy(action=action, connection=None)
-            if result.status == "blocked":
-                tests.append(_pass(f"Phase-1 block: {action}", CAT,
-                                   f"[{tid}] '{action}' correctly blocked in Phase 1"))
+            if result.status != "blocked":
+                tests.append(_pass(f"Policy unlock: {action}", CAT,
+                                   f"[{tid}] '{action}' status='{result.status}' (not blocked)"))
             else:
-                tests.append(_fail(f"Phase-1 block: {action}", CAT,
-                                   f"[{tid}] '{action}' returned status='{result.status}' — expected 'blocked'"))
+                tests.append(_fail(f"Policy unlock: {action}", CAT,
+                                   f"[{tid}] '{action}' is still blocked"))
     except Exception as exc:
-        tests.append(_fail("Phase-1 blocked actions check", CAT, f"Policy check failed: {exc}"))
+        tests.append(_fail("Advanced action unlock check", CAT, f"Policy check failed: {exc}"))
 
     # T14: create_connection allowed without connection context ───────────────
     try:
@@ -2174,47 +2174,52 @@ def _run_server_operations_tests() -> list[dict]:
     except Exception as exc:
         tests.append(_fail("Legacy feature API: source repo mode", CAT, str(exc)))
 
-    # T18: Disabled features include interactive shell / upload / key deploy / port forward ──
+    # T18: Advanced features are no longer listed as disabled ──────────────────
     try:
         from services.remote_access.legacy_feature_catalog import get_disabled_features
         disabled = get_disabled_features()
         disabled_ids = {f["id"] for f in disabled}
-        required_disabled = {
-            "web_ssh_terminal":  "ssh_interactive_shell must remain disabled",
-            "file_upload":       "sftp upload must remain disabled",
-            "ssh_key_deployment":"key deployment must remain disabled",
-            "port_forwarding":   "port forwarding must remain disabled",
+        must_be_enabled = {
+            "web_ssh_terminal":  "ssh_interactive_shell is implemented",
+            "ssh_key_deployment":"key deployment is implemented",
+            "port_forwarding":   "port forwarding is implemented",
         }
-        missing_disabled = [iid for iid in required_disabled if iid not in disabled_ids]
-        if missing_disabled:
-            tests.append(_fail("Feature catalog: required disabled features", CAT,
-                               f"Expected disabled but not found: {missing_disabled}"))
+        wrongly_disabled = [iid for iid in must_be_enabled if iid in disabled_ids]
+        if wrongly_disabled:
+            tests.append(_fail("Feature catalog: advanced features no longer disabled", CAT,
+                               f"Unexpected disabled features: {wrongly_disabled}"))
         else:
-            tests.append(_pass("Feature catalog: required disabled features", CAT,
-                               f"All required features correctly disabled: {list(required_disabled)}"))
+            tests.append(_pass("Feature catalog: advanced features no longer disabled", CAT,
+                               f"Catalog marks advanced features as implemented: {list(must_be_enabled)}"))
     except Exception as exc:
-        tests.append(_fail("Feature catalog: required disabled features", CAT, str(exc)))
+        tests.append(_fail("Feature catalog: advanced features no longer disabled", CAT, str(exc)))
 
-    # T19: Phase 1 features include network diagnostics and SSH read-only commands ──
+    # T19: Baseline enabled features include diagnostics + remote ops ──────────
     try:
         from services.remote_access.legacy_feature_catalog import get_phase1_features
         phase1 = get_phase1_features()
         phase1_ids = {f["id"] for f in phase1}
         required_phase1 = {
-            "network_diagnostics":  "ping/dns/port-check should be Phase 1",
-            "ssh_readonly_commands":"SSH allowlist commands should be Phase 1",
-            "ssh_connection_test":  "connection test should be Phase 1",
-            "wol":                  "Wake-on-LAN should be Phase 1",
+            "network_diagnostics":  "ping/dns/port-check should be baseline-enabled",
+            "ssh_readonly_commands":"SSH allowlist commands should be baseline-enabled",
+            "ssh_connection_test":  "connection test should be baseline-enabled",
+            "wol":                  "Wake-on-LAN should be baseline-enabled",
+            "file_upload":          "SFTP upload should be enabled with audit",
+            "file_delete":          "SFTP delete should be enabled with confirmation + audit",
+            "web_ssh_terminal":     "interactive shell launch should be enabled",
+            "ssh_key_deployment":   "SSH key deployment should be enabled",
+            "port_forwarding":      "SSH port forwarding should be enabled",
+            "winrm_remoting":       "WinRM remoting should be enabled",
         }
         missing_phase1 = [iid for iid in required_phase1 if iid not in phase1_ids]
         if missing_phase1:
-            tests.append(_fail("Feature catalog: required Phase 1 features", CAT,
-                               f"Expected Phase 1 but not found: {missing_phase1}"))
+            tests.append(_fail("Feature catalog: required baseline-enabled features", CAT,
+                               f"Expected enabled but not found: {missing_phase1}"))
         else:
-            tests.append(_pass("Feature catalog: required Phase 1 features", CAT,
-                               f"All required Phase 1 features present: {list(required_phase1)}"))
+            tests.append(_pass("Feature catalog: required baseline-enabled features", CAT,
+                               f"All required enabled features present: {list(required_phase1)}"))
     except Exception as exc:
-        tests.append(_fail("Feature catalog: required Phase 1 features", CAT, str(exc)))
+        tests.append(_fail("Feature catalog: required baseline-enabled features", CAT, str(exc)))
 
     # T20: ssh_config_exporter module imports cleanly ──────────────────────────
     try:

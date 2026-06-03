@@ -101,8 +101,8 @@ def _match_agent(
             elif uh_fqdn and norm_agent == _normalise(uh_fqdn):
                 score, reason = 75, "fqdn"
 
-        # Priority 4 — IP address match
-        elif (
+        # Priority 4 — IP address match (independent fallback)
+        if score == 0 and (
             agent_ip
             and agent_ip != "0.0.0.0"
             and uh_ip

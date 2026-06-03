@@ -5,10 +5,13 @@ All actions enforce remote_policy before executing.
 """
 from __future__ import annotations
 
+import os
+import posixpath
+import subprocess
 import uuid
 from typing import Any, Optional
 
-from fastapi import APIRouter, HTTPException, Query, Response
+from fastapi import APIRouter, File, Form, HTTPException, Query, Response, UploadFile
 from fastapi.responses import StreamingResponse
 from pydantic import BaseModel
 
@@ -36,11 +39,16 @@ from services.remote_access.legacy_importer import import_from_csv, import_from_
 from services.remote_access.rdp_service import generate_rdp_file_content, open_rdp
 from services.remote_access.remote_policy import check_policy
 from services.remote_access.ssh_service import (
+    deploy_public_key,
+    delete_file,
     download_file,
     generate_ssh_config_entry,
     get_host_info,
     health_check,
+    launch_native_ssh_shell,
     list_remote_directory,
+    run_arbitrary_command,
+    upload_file,
     run_readonly_command,
     test_ssh_connection,
 )
@@ -136,12 +144,36 @@ class ReadOnlyCommandRequest(BaseModel):
     command_id: str
 
 
+class ArbitraryCommandRequest(BaseModel):
+    command: str
+    reason: str
+    timeout: int = 30
+
+
+class PublicKeyDeployRequest(BaseModel):
+    public_key: str
+    reason: str
+
+
+class PortForwardRequest(BaseModel):
+    local_port: int
+    remote_host: str = "localhost"
+    remote_port: int
+    reason: str
+
+
 class FileBrowserRequest(BaseModel):
     path: str = "/"
 
 
 class FileDownloadRequest(BaseModel):
     path: str
+
+
+class FileDeleteRequest(BaseModel):
+    path: str
+    reason: str
+    confirm_name: str
 
 
 class WolRequest(BaseModel):
@@ -411,6 +443,149 @@ def ssh_readonly_command(connection_id: str, body: ReadOnlyCommandRequest) -> di
     return {"status": result.get("status", "ok"), "data": result, "audit_id": audit_id}
 
 
+@router.post("/connections/{connection_id}/ssh/connect")
+def ssh_connect(connection_id: str) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_connect", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+
+    result = launch_native_ssh_shell(conn)
+    audit_id = log_server_activity(
+        action="ssh_connect",
+        connection_id=connection_id,
+        host=conn.get("hostname") or conn.get("ip", ""),
+        protocol="ssh",
+        status=result.get("status", "error"),
+        message=f"Native SSH shell launch for '{conn['name']}'",
+        metadata={"command": result.get("command_used", "")},
+    )
+    return {"status": result.get("status", "ok"), "policy": policy_result.policy, "data": result, "audit_id": audit_id}
+
+
+@router.post("/connections/{connection_id}/ssh/interactive-shell")
+def ssh_interactive_shell(connection_id: str) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_interactive_shell", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+
+    result = launch_native_ssh_shell(conn)
+    audit_id = log_server_activity(
+        action="ssh_interactive_shell",
+        connection_id=connection_id,
+        host=conn.get("hostname") or conn.get("ip", ""),
+        protocol="ssh",
+        status=result.get("status", "error"),
+        message=f"Interactive shell launch for '{conn['name']}'",
+        metadata={"command": result.get("command_used", "")},
+    )
+    return {"status": result.get("status", "ok"), "policy": policy_result.policy, "data": result, "audit_id": audit_id}
+
+
+@router.post("/connections/{connection_id}/ssh/arbitrary-command")
+def ssh_arbitrary_command(connection_id: str, body: ArbitraryCommandRequest) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_arbitrary_command", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+    if not body.reason.strip():
+        raise HTTPException(status_code=400, detail="reason is required")
+
+    result = run_arbitrary_command(conn, body.command, timeout=max(1, min(body.timeout, 300)))
+    audit_id = log_server_activity(
+        action="ssh_arbitrary_command",
+        connection_id=connection_id,
+        host=conn.get("hostname") or conn.get("ip", ""),
+        protocol="ssh",
+        status=result.get("status", "error"),
+        message=f"Arbitrary SSH command on '{conn['name']}'",
+        metadata={"command": body.command, "reason": body.reason.strip()},
+    )
+    return {"status": result.get("status", "ok"), "policy": policy_result.policy, "data": result, "audit_id": audit_id}
+
+
+@router.post("/connections/{connection_id}/ssh/key-deploy")
+def ssh_key_deploy(connection_id: str, body: PublicKeyDeployRequest) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_key_deploy", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+    if not body.reason.strip():
+        raise HTTPException(status_code=400, detail="reason is required")
+
+    result = deploy_public_key(conn, body.public_key)
+    audit_id = log_server_activity(
+        action="ssh_key_deploy",
+        connection_id=connection_id,
+        host=conn.get("hostname") or conn.get("ip", ""),
+        protocol="ssh",
+        status=result.get("status", "error"),
+        message=f"SSH public key deploy on '{conn['name']}'",
+        metadata={"reason": body.reason.strip()},
+    )
+    return {"status": result.get("status", "ok"), "policy": policy_result.policy, "data": result, "audit_id": audit_id}
+
+
+@router.post("/connections/{connection_id}/ssh/port-forward")
+def ssh_port_forward(connection_id: str, body: PortForwardRequest) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_port_forward", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+    if not body.reason.strip():
+        raise HTTPException(status_code=400, detail="reason is required")
+
+    host = conn.get("hostname") or conn.get("ip", "")
+    port = int(conn.get("port") or 22)
+    user = conn.get("username", "")
+    if not host or not user:
+        raise HTTPException(status_code=400, detail="connection must have host and username")
+
+    cmd = [
+        "ssh",
+        "-L", f"{body.local_port}:{body.remote_host}:{body.remote_port}",
+        "-p", str(port),
+        f"{user}@{host}",
+    ]
+    creationflags = 0
+    if os.name == "nt":
+        creationflags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+    proc = subprocess.Popen(cmd, creationflags=creationflags)
+
+    audit_id = log_server_activity(
+        action="ssh_port_forward",
+        connection_id=connection_id,
+        host=host,
+        protocol="ssh",
+        status="ok",
+        message=f"SSH port forward started for '{conn['name']}'",
+        metadata={
+            "local_port": body.local_port,
+            "remote_host": body.remote_host,
+            "remote_port": body.remote_port,
+            "reason": body.reason.strip(),
+            "pid": proc.pid,
+            "command": " ".join(cmd),
+        },
+    )
+    return {
+        "status": "ok",
+        "policy": policy_result.policy,
+        "data": {
+            "pid": proc.pid,
+            "command_used": " ".join(cmd),
+            "message": "Port forward tunnel started",
+        },
+        "audit_id": audit_id,
+    }
+
+
 @router.post("/connections/{connection_id}/ssh/file-list")
 def ssh_file_list(connection_id: str, body: FileBrowserRequest) -> dict[str, Any]:
     conn = _get_conn_or_404(connection_id)
@@ -454,6 +629,106 @@ def ssh_file_download(connection_id: str, body: FileDownloadRequest) -> Response
         raise HTTPException(status_code=500, detail=str(exc))
 
 
+@router.post("/connections/{connection_id}/ssh/file-upload")
+async def ssh_file_upload(
+    connection_id: str,
+    file: UploadFile = File(...),
+    remote_dir: str = Form("/"),
+    reason: str = Form(...),
+) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_file_upload", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+
+    if not reason.strip():
+        raise HTTPException(status_code=400, detail="reason is required")
+    if not file.filename:
+        raise HTTPException(status_code=400, detail="file is required")
+
+    base = posixpath.basename(file.filename)
+    clean_dir = (remote_dir or "/").strip()
+    if not clean_dir:
+        clean_dir = "/"
+    clean_dir = clean_dir.rstrip("/") or "/"
+    remote_path = f"{clean_dir}/{base}" if clean_dir != "/" else f"/{base}"
+
+    content = await file.read()
+    result = upload_file(conn, remote_path, content)
+    status = result.get("status", "error")
+
+    audit_id = log_server_activity(
+        action="ssh_file_upload",
+        connection_id=connection_id,
+        host=conn.get("hostname") or conn.get("ip", ""),
+        protocol="ssh",
+        status=status,
+        message=f"Uploaded '{remote_path}' to '{conn['name']}'",
+        metadata={
+            "remote_path": remote_path,
+            "reason": reason.strip(),
+            "filename": base,
+            "size": len(content),
+            "policy": policy_result.policy,
+        },
+    )
+    return {
+        "status": status,
+        "policy": policy_result.policy,
+        "policy_reason": policy_result.policy_reason,
+        "data": result,
+        "audit_id": audit_id,
+    }
+
+
+@router.post("/connections/{connection_id}/ssh/file-delete")
+def ssh_file_delete(connection_id: str, body: FileDeleteRequest) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("ssh_file_delete", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+
+    if not body.reason.strip():
+        raise HTTPException(status_code=400, detail="reason is required")
+
+    clean_path = body.path.strip()
+    if not clean_path:
+        raise HTTPException(status_code=400, detail="path is required")
+
+    expected_name = posixpath.basename(clean_path)
+    if body.confirm_name.strip() != expected_name:
+        raise HTTPException(
+            status_code=400,
+            detail=f"confirm_name mismatch (expected '{expected_name}')",
+        )
+
+    result = delete_file(conn, clean_path)
+    status = result.get("status", "error")
+    audit_id = log_server_activity(
+        action="ssh_file_delete",
+        connection_id=connection_id,
+        host=conn.get("hostname") or conn.get("ip", ""),
+        protocol="ssh",
+        status=status,
+        message=f"Deleted '{clean_path}' from '{conn['name']}'",
+        metadata={
+            "path": clean_path,
+            "confirm_name": body.confirm_name.strip(),
+            "reason": body.reason.strip(),
+            "policy": policy_result.policy,
+        },
+    )
+    return {
+        "status": status,
+        "policy": policy_result.policy,
+        "policy_reason": policy_result.policy_reason,
+        "data": result,
+        "audit_id": audit_id,
+    }
+
+
 @router.get("/connections/{connection_id}/ssh/config")
 def ssh_export_config(connection_id: str) -> dict[str, Any]:
     conn = _get_conn_or_404(connection_id)
@@ -495,6 +770,45 @@ def rdp_open(connection_id: str) -> dict[str, Any]:
         "data": result,
         "audit_id": audit_id,
         "session_id": session_id,
+    }
+
+
+@router.post("/connections/{connection_id}/winrm/open")
+def winrm_open(connection_id: str) -> dict[str, Any]:
+    conn = _get_conn_or_404(connection_id)
+    uh = _get_unified_host(conn.get("unified_host_id", ""))
+    policy_result = check_policy("winrm_execute", conn, uh)
+    if policy_result.status == "blocked":
+        return _action_result(policy_result)
+
+    host = conn.get("hostname") or conn.get("ip", "")
+    if not host:
+        raise HTTPException(status_code=400, detail="connection must have host or ip")
+
+    cmd = ["powershell", "-NoLogo", "-NoExit", "-Command", f"Enter-PSSession -ComputerName '{host}'"]
+    creationflags = 0
+    if os.name == "nt":
+        creationflags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+    proc = subprocess.Popen(cmd, creationflags=creationflags)
+
+    audit_id = log_server_activity(
+        action="winrm_execute",
+        connection_id=connection_id,
+        host=host,
+        protocol="winrm",
+        status="ok",
+        message=f"WinRM session started for '{conn['name']}'",
+        metadata={"pid": proc.pid, "command": " ".join(cmd)},
+    )
+    return {
+        "status": "ok",
+        "policy": policy_result.policy,
+        "data": {
+            "pid": proc.pid,
+            "command_used": " ".join(cmd),
+            "message": "PowerShell remoting session started",
+        },
+        "audit_id": audit_id,
     }
 
 

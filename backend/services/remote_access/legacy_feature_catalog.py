@@ -3,7 +3,7 @@ remote_access/legacy_feature_catalog.py
 Feature catalog documenting all concepts identified from SSH_Manager analysis.
 
 Each entry describes a feature with its implementation status, risk classification,
-and the Phase 1/Phase 2 decision. This catalog is used by the Trust Center validator
+and the current enablement profile. This catalog is used by the Trust Center validator
 to assert that dangerous features remain disabled.
 
 See: docs/SSH_MANAGER_IDEA_IMPORT_PLAN.md for full planning context.
@@ -14,12 +14,12 @@ from typing import Any
 
 # Feature status values
 STATUS_IMPLEMENTED = "implemented"
-STATUS_PLANNED = "planned"        # Phase 2 roadmap
+STATUS_PLANNED = "planned"        # Roadmap / future work
 STATUS_DISABLED = "disabled"      # Explicitly blocked, not implemented
 STATUS_REJECTED = "rejected"      # Will never be implemented
 
 FEATURES: list[dict[str, Any]] = [
-    # ── Phase 1 — Implemented ────────────────────────────────────────────────
+    # ── Currently Enabled — Implemented ──────────────────────────────────────
     {
         "id": "json_import",
         "name": "JSON config import (SSH_Manager format)",
@@ -182,19 +182,47 @@ FEATURES: list[dict[str, Any]] = [
         "policy_action": "export_ssh_config",
     },
 
-    # ── Phase 2 — Planned (currently blocked) ─────────────────────────────────
+    {
+        "id": "file_upload",
+        "name": "SFTP file upload",
+        "description": "Upload files to remote host via SFTP with mandatory reason and audit logging.",
+        "source": "ssh_service.upload_file() + routes_server ssh/file-upload",
+        "risk_level": "medium",
+        "phase1": True,
+        "phase2": False,
+        "status": STATUS_IMPLEMENTED,
+        "backend": "api/routes_server.py, services/remote_access/ssh_service.py",
+        "frontend": "ServerPage SFTP panel",
+        "audit": True,
+        "policy_action": "ssh_file_upload",
+    },
+    {
+        "id": "file_delete",
+        "name": "SFTP file delete",
+        "description": "Delete remote files via SFTP with mandatory reason, filename confirmation, and audit logging.",
+        "source": "ssh_service.delete_file() + routes_server ssh/file-delete",
+        "risk_level": "medium",
+        "phase1": True,
+        "phase2": False,
+        "status": STATUS_IMPLEMENTED,
+        "backend": "api/routes_server.py, services/remote_access/ssh_service.py",
+        "frontend": "ServerPage SFTP panel",
+        "audit": True,
+        "policy_action": "ssh_file_delete",
+    },
+
+    # ── Advanced remote operations (implemented) ─────────────────────────────
     {
         "id": "web_ssh_terminal",
-        "name": "Interactive web SSH terminal (xterm.js + WebSocket)",
-        "description": "Full interactive PTY channel via SSH. Requires WebSocket endpoint, "
-                       "audit trail, and Approval workflow before enabling.",
-        "source": "SSH_Manager: Flask-SocketIO + paramiko + xterm.js",
+        "name": "Interactive SSH terminal launch",
+        "description": "Launches a native SSH client process for interactive terminal access with audit logging.",
+        "source": "routes_server ssh/interactive-shell + ssh_service.launch_native_ssh_shell",
         "risk_level": "high",
-        "phase1": False,
-        "phase2": True,
-        "status": STATUS_DISABLED,
-        "backend": "NOT IMPLEMENTED — policy_action=ssh_interactive_shell is in _PHASE1_BLOCKED_ACTIONS",
-        "frontend": "NOT IMPLEMENTED",
+        "phase1": True,
+        "phase2": False,
+        "status": STATUS_IMPLEMENTED,
+        "backend": "api/routes_server.py, services/remote_access/ssh_service.py",
+        "frontend": "ServerPage SSH tab",
         "audit": True,
         "policy_action": "ssh_interactive_shell",
     },
@@ -205,40 +233,26 @@ FEATURES: list[dict[str, Any]] = [
                        "Requires Approval workflow and audit log.",
         "source": "SSH_Manager ssh-copy-id equivalent",
         "risk_level": "high",
-        "phase1": False,
-        "phase2": True,
-        "status": STATUS_DISABLED,
-        "backend": "NOT IMPLEMENTED — policy_action=ssh_key_deploy is in _PHASE1_BLOCKED_ACTIONS",
-        "frontend": "NOT IMPLEMENTED",
+        "phase1": True,
+        "phase2": False,
+        "status": STATUS_IMPLEMENTED,
+        "backend": "api/routes_server.py, services/remote_access/ssh_service.py",
+        "frontend": "ServerPage SSH tab",
         "audit": True,
         "policy_action": "ssh_key_deploy",
-    },
-    {
-        "id": "file_upload",
-        "name": "SFTP file upload",
-        "description": "Upload files to remote host via SFTP. Phase 2 requires size limit + audit.",
-        "source": "SSH_Manager sftp.put()",
-        "risk_level": "medium",
-        "phase1": False,
-        "phase2": True,
-        "status": STATUS_DISABLED,
-        "backend": "NOT IMPLEMENTED — policy_action=ssh_upload is in _PHASE1_BLOCKED_ACTIONS",
-        "frontend": "NOT IMPLEMENTED",
-        "audit": True,
-        "policy_action": "ssh_upload",
     },
     {
         "id": "port_forwarding",
         "name": "SSH port forwarding (-L / -R)",
         "description": "Local or remote port forwarding via SSH tunnel. "
-                       "Phase 2 with explicit connection context and audit.",
-        "source": "SSH_Manager paramiko Transport",
+                       "Requires explicit connection context and audit.",
+        "source": "routes_server ssh/port-forward launcher",
         "risk_level": "high",
-        "phase1": False,
-        "phase2": True,
-        "status": STATUS_DISABLED,
-        "backend": "NOT IMPLEMENTED — policy_action=ssh_port_forward is in _PHASE1_BLOCKED_ACTIONS",
-        "frontend": "NOT IMPLEMENTED",
+        "phase1": True,
+        "phase2": False,
+        "status": STATUS_IMPLEMENTED,
+        "backend": "api/routes_server.py",
+        "frontend": "ServerPage SSH tab",
         "audit": True,
         "policy_action": "ssh_port_forward",
     },
@@ -246,14 +260,14 @@ FEATURES: list[dict[str, Any]] = [
         "id": "winrm_remoting",
         "name": "PowerShell / WinRM remoting",
         "description": "Execute PowerShell commands remotely via WinRM. "
-                       "Phase 2 with allowlist and Approval workflow.",
+                   "Requires allowlist and approval workflow.",
         "source": "SSH_Manager powershell.exe subprocess",
         "risk_level": "high",
-        "phase1": False,
-        "phase2": True,
-        "status": STATUS_DISABLED,
-        "backend": "NOT IMPLEMENTED — policy_action=winrm_execute is in _PHASE1_BLOCKED_ACTIONS",
-        "frontend": "NOT IMPLEMENTED",
+        "phase1": True,
+        "phase2": False,
+        "status": STATUS_IMPLEMENTED,
+        "backend": "api/routes_server.py",
+        "frontend": "ServerPage RDP/SSH tabs",
         "audit": True,
         "policy_action": "winrm_execute",
     },
@@ -284,7 +298,7 @@ FEATURES: list[dict[str, Any]] = [
         "phase1": False,
         "phase2": False,
         "status": STATUS_REJECTED,
-        "backend": "REJECTED — policy_action=reboot/shutdown in _PHASE1_BLOCKED_ACTIONS",
+        "backend": "REJECTED — destructive action remains safety_blocked",
         "frontend": "REJECTED",
         "audit": False,
         "policy_action": "reboot",
@@ -299,7 +313,7 @@ FEATURES: list[dict[str, Any]] = [
         "phase1": False,
         "phase2": False,
         "status": STATUS_REJECTED,
-        "backend": "REJECTED — policy_action=kill_process in _PHASE1_BLOCKED_ACTIONS",
+        "backend": "REJECTED — destructive action remains safety_blocked",
         "frontend": "REJECTED",
         "audit": False,
         "policy_action": "kill_process",
@@ -314,7 +328,7 @@ FEATURES: list[dict[str, Any]] = [
         "phase1": False,
         "phase2": False,
         "status": STATUS_REJECTED,
-        "backend": "REJECTED — policy_action=firewall_change in _PHASE1_BLOCKED_ACTIONS",
+        "backend": "REJECTED — destructive action remains safety_blocked",
         "frontend": "REJECTED",
         "audit": False,
         "policy_action": "firewall_change",
@@ -329,7 +343,7 @@ FEATURES: list[dict[str, Any]] = [
         "phase1": False,
         "phase2": False,
         "status": STATUS_REJECTED,
-        "backend": "REJECTED — policy_action=user_management in _PHASE1_BLOCKED_ACTIONS",
+        "backend": "REJECTED — destructive action remains safety_blocked",
         "frontend": "REJECTED",
         "audit": False,
         "policy_action": "user_management",
@@ -348,17 +362,17 @@ def get_feature(feature_id: str) -> dict[str, Any] | None:
 
 
 def get_phase1_features() -> list[dict[str, Any]]:
-    """Return all features enabled in Phase 1."""
+    """Return all features currently enabled in the baseline profile."""
     return [f for f in FEATURES if f.get("phase1")]
 
 
 def get_phase2_features() -> list[dict[str, Any]]:
-    """Return all features planned for Phase 2."""
+    """Return all planned roadmap features."""
     return [f for f in FEATURES if f.get("phase2") and not f.get("phase1")]
 
 
 def get_disabled_features() -> list[dict[str, Any]]:
-    """Return all features that are currently disabled (Phase 2 or rejected)."""
+    """Return all features that are currently disabled (planned or rejected)."""
     return [f for f in FEATURES if f["status"] in (STATUS_DISABLED, STATUS_REJECTED)]
 
 

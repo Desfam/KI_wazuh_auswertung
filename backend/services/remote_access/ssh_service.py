@@ -9,7 +9,9 @@ controlled routes with confirmation and audit logging.
 from __future__ import annotations
 
 import io
+import os
 import socket
+import subprocess
 import time
 from typing import Any, Optional
 
@@ -185,6 +187,109 @@ def run_readonly_command(
     finally:
         if client:
             client.close()
+
+
+def run_arbitrary_command(
+    connection: dict[str, Any],
+    command: str,
+    timeout: int = 30,
+) -> dict[str, Any]:
+    """Run a user-provided SSH command through paramiko."""
+    if not _PARAMIKO_AVAILABLE:
+        return _unavailable()
+    if not str(command or "").strip():
+        return {"status": "error", "error": "command is required"}
+
+    client = None
+    try:
+        client = _build_client(connection)
+        result = _run_command(client, command, timeout=timeout)
+        return {
+            "status": "ok",
+            "command": command,
+            "output": result["stdout"],
+            "error_output": result["stderr"],
+            "returncode": result["returncode"],
+        }
+    except Exception as exc:
+        return {"status": "error", "command": command, "error": str(exc)}
+    finally:
+        if client:
+            client.close()
+
+
+def deploy_public_key(
+    connection: dict[str, Any],
+    public_key_text: str,
+) -> dict[str, Any]:
+    """Append a public key to remote ~/.ssh/authorized_keys using SFTP."""
+    if not _PARAMIKO_AVAILABLE:
+        return _unavailable()
+    key = str(public_key_text or "").strip()
+    if not key:
+        return {"status": "error", "error": "public_key is required"}
+
+    client = None
+    sftp = None
+    try:
+        client = _build_client(connection)
+        sftp = client.open_sftp()
+
+        # Ensure remote .ssh directory exists and is private.
+        stdin_mk, stdout_mk, stderr_mk = client.exec_command("mkdir -p ~/.ssh && chmod 700 ~/.ssh", timeout=10)
+        _ = stdin_mk
+        _ = stdout_mk.read()
+        _ = stderr_mk.read()
+
+        remote_path = ".ssh/authorized_keys"
+        existing = ""
+        try:
+            with sftp.file(remote_path, "r") as f:
+                existing = f.read().decode("utf-8", errors="replace")
+        except Exception:
+            existing = ""
+
+        if key in existing:
+            return {"status": "ok", "path": remote_path, "message": "Key already present"}
+
+        with sftp.file(remote_path, "a") as f:
+            if existing and not existing.endswith("\n"):
+                f.write("\n")
+            f.write(key + "\n")
+        sftp.chmod(remote_path, 0o600)
+
+        return {"status": "ok", "path": remote_path, "message": "Public key appended"}
+    except Exception as exc:
+        return {"status": "error", "error": str(exc)}
+    finally:
+        if sftp:
+            sftp.close()
+        if client:
+            client.close()
+
+
+def launch_native_ssh_shell(connection: dict[str, Any]) -> dict[str, Any]:
+    """Launch system SSH client in a separate process for an interactive shell."""
+    host = connection.get("hostname") or connection.get("ip", "")
+    port = int(connection.get("port") or 22)
+    username = connection.get("username", "")
+    if not host or not username:
+        return {"status": "error", "error": "hostname/ip and username are required"}
+
+    cmd = ["ssh", "-p", str(port), f"{username}@{host}"]
+    try:
+        creationflags = 0
+        if os.name == "nt":
+            creationflags = getattr(subprocess, "CREATE_NEW_CONSOLE", 0)
+        proc = subprocess.Popen(cmd, creationflags=creationflags)
+        return {
+            "status": "ok",
+            "message": "Interactive SSH shell started",
+            "pid": proc.pid,
+            "command_used": " ".join(cmd),
+        }
+    except Exception as exc:
+        return {"status": "error", "error": str(exc), "command_used": " ".join(cmd)}
 
 
 def list_remote_directory(

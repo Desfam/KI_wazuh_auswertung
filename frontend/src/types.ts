@@ -532,7 +532,7 @@ export type TacticalAgent = {
 };
 
 export type IdentityStatus = 'trusted' | 'likely' | 'uncertain' | 'unknown';
-export type ActionPolicy = 'full' | 'read_only' | 'blocked';
+export type ActionPolicy = 'full' | 'read_only' | 'review_required' | 'blocked';
 
 export type UnifiedHost = {
   id: number;
