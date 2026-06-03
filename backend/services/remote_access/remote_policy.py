@@ -11,9 +11,8 @@ from typing import Any, Optional
 from .models import ServerActionResult
 
 
-# Actions that are always blocked in Phase 1 regardless of policy
-_PHASE1_BLOCKED_ACTIONS = {
-    "ssh_connect",
+# Actions that are not yet enabled without their own confirmation and audit flow
+_SAFETY_BLOCKED_ACTIONS = {
     "ssh_interactive_shell",
     "ssh_arbitrary_command",
     "ssh_key_deploy",
@@ -32,8 +31,8 @@ _PHASE1_BLOCKED_ACTIONS = {
     "user_management",
 }
 
-# Actions allowed in Phase 1
-_PHASE1_ALLOWED_ACTIONS = {
+# Actions currently enabled by the Server Operations policy
+_ENABLED_ACTIONS = {
     "list_connections",
     "create_connection",
     "update_connection",
@@ -45,20 +44,23 @@ _PHASE1_ALLOWED_ACTIONS = {
     "traceroute",
     "arp_lookup",
     "connection_test",
+    "ssh_connect",
     "ssh_host_info",
     "ssh_readonly_command",
     "ssh_file_list",
     "ssh_file_download",
-    "rdp_open",           # opens mstsc without password — controlled + audited
-    "wol",                # Wake-on-LAN — controlled + audited
+    "rdp_open",
+    "wol",
     "health_check",
     "import_legacy",
     "export_ssh_config",
-    # Phase 1 batch + group operations (read-only)
     "batch_health",
     "batch_ping",
     "batch_port_check",
     "group_manage",
+    "wazuh_agent_reconnect",
+    "run_syscheck",
+    "run_rootcheck",
 }
 
 
@@ -74,15 +76,14 @@ def check_policy(
     status == "review_required" → can proceed but needs confirmation + audit
     """
 
-    # 1. Phase 1 hard block
-    if action in _PHASE1_BLOCKED_ACTIONS:
+    # 1. Safety block for operations without a dedicated controlled-action flow
+    if action in _SAFETY_BLOCKED_ACTIONS:
         return ServerActionResult(
             status="blocked",
-            message=f"Action '{action}' is disabled in Phase 1.",
-            policy="phase1_blocked",
+            message=f"Action '{action}' is disabled by safety policy.",
+            policy="safety_blocked",
             policy_reason=(
-                f"'{action}' is on the Phase 1 disabled list. "
-                "Implement audit trail and confirmation dialog before enabling."
+                f"'{action}' needs a dedicated audit trail and confirmation dialog before enabling."
             ),
         )
 
@@ -114,35 +115,27 @@ def check_policy(
 
         if uh_policy == "blocked":
             return ServerActionResult(
-                status="blocked",
-                message=f"Host is blocked by action policy: {uh_reason or uh_policy}",
-                policy=uh_policy,
-                policy_reason=uh_reason or "Host identity is blocked — no remote actions allowed.",
+                status="review_required",
+                message=f"Host requires review before action: {uh_reason or uh_policy}",
+                policy="review_required",
+                policy_reason=uh_reason or "Host identity needs analyst review before remote actions.",
             )
 
-        if uh_policy == "review_required":
-            # Only read-only actions allowed without explicit confirmation here;
-            # write-like actions require the caller to handle confirmation
-            readonly_actions = {
-                "ping", "dns_lookup", "reverse_dns", "port_check", "traceroute",
-                "arp_lookup", "connection_test", "ssh_host_info", "ssh_readonly_command",
-                "ssh_file_list", "health_check",
-            }
-            if action not in readonly_actions:
-                return ServerActionResult(
-                    status="review_required",
-                    message=f"Host requires review before action '{action}'.",
-                    policy=uh_policy,
-                    policy_reason=uh_reason or "Identity review is required before controlled actions.",
-                )
+        if uh_policy == "review_required" or identity in ("unknown", "uncertain", "likely"):
+            return ServerActionResult(
+                status="review_required",
+                message=f"Host requires review before action '{action}'.",
+                policy="review_required",
+                policy_reason=uh_reason or "Identity review is required before controlled actions.",
+            )
 
-    # 4. Phase 1 allowed list
-    if action not in _PHASE1_ALLOWED_ACTIONS:
+    # 4. Enabled action list
+    if action not in _ENABLED_ACTIONS:
         return ServerActionResult(
             status="blocked",
-            message=f"Action '{action}' is not in the Phase 1 allowed list.",
-            policy="not_allowed",
-            policy_reason="Action has not been enabled in the current security phase.",
+            message=f"Action '{action}' is not enabled.",
+            policy="not_enabled",
+            policy_reason="Action has not been added to the current app allowlist.",
         )
 
     return ServerActionResult(status="ok", message="Action allowed.")
