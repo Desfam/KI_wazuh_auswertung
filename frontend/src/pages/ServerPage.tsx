@@ -175,10 +175,10 @@ type PageTab   = 'connections' | 'groups' | 'legacy';
 
 function StatusBadge({ status }: { status: LegacyFeatureStatus }) {
   const cfg: Record<LegacyFeatureStatus, { label: string; color: string; bg: string }> = {
-    implemented: { label: 'Implemented', color: 'var(--soc-success)',  bg: 'rgba(34,197,94,0.12)'  },
-    planned:     { label: 'Planned',     color: 'var(--soc-primary)',  bg: 'rgba(6,182,212,0.12)'  },
-    disabled:    { label: 'Disabled',    color: 'var(--soc-muted-fg)', bg: 'rgba(100,116,139,0.15)'},
-    rejected:    { label: 'Rejected',    color: 'var(--soc-critical)', bg: 'rgba(239,68,68,0.12)'  },
+    implemented: { label: 'Available',              color: 'var(--soc-success)',  bg: 'rgba(34,197,94,0.12)'  },
+    planned:     { label: 'Backend route missing',  color: 'var(--soc-primary)',  bg: 'rgba(6,182,212,0.12)'  },
+    disabled:    { label: 'Requires confirmation',  color: 'var(--soc-muted-fg)', bg: 'rgba(100,116,139,0.15)'},
+    rejected:    { label: 'Not supported',          color: 'var(--soc-critical)', bg: 'rgba(239,68,68,0.12)'  },
   };
   const { label, color, bg } = cfg[status] ?? cfg.disabled;
   return (
@@ -204,12 +204,12 @@ function RiskBadge({ risk }: { risk: LegacyFeatureRisk }) {
   );
 }
 
-function PhaseBadge({ feature }: { feature: LegacyServerFeature }) {
+function AccessBadge({ feature }: { feature: LegacyServerFeature }) {
   if (feature.phase1)
-    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'var(--soc-success)', background: 'rgba(34,197,94,0.12)' }}>Enabled</span>;
+    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'var(--soc-success)', background: 'rgba(34,197,94,0.12)' }}>Available</span>;
   if (feature.phase2)
-    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'rgba(245,158,11,0.9)', background: 'rgba(245,158,11,0.10)' }}>Roadmap</span>;
-  return <span className="text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>—</span>;
+    return <span className="px-1.5 py-0.5 rounded text-[10px] font-semibold" style={{ color: 'rgba(245,158,11,0.9)', background: 'rgba(245,158,11,0.10)' }}>Requires confirmation</span>;
+  return <span className="text-[10px]" style={{ color: 'var(--soc-muted-fg)' }}>Backend route missing</span>;
 }
 
 function TransportBadge({ feature }: { feature: LegacyServerFeature }) {
@@ -279,10 +279,10 @@ function LegacyCatalogView({ data, loading }: { data: LegacyServerFeatureRespons
         <div className="grid grid-cols-6 gap-3 px-4 py-3 flex-shrink-0"
           style={{ borderBottom: '1px solid var(--soc-border)' }}>
           <StatCard label="Total"     value={data.summary.total} />
-          <StatCard label="Enabled"   value={data.summary.phase1}   tone="ok" />
-          <StatCard label="Roadmap"   value={data.summary.phase2}   tone="warn" />
-          <StatCard label="Disabled"  value={data.summary.disabled} />
-          <StatCard label="Rejected"  value={data.summary.rejected}  tone="critical" />
+          <StatCard label="Available" value={data.summary.phase1}   tone="ok" />
+          <StatCard label="Confirm"   value={data.summary.phase2}   tone="warn" />
+          <StatCard label="Guarded"   value={data.summary.disabled} />
+          <StatCard label="Unsupported" value={data.summary.rejected}  tone="critical" />
           <StatCard label="Dangerous" value={data.summary.dangerous} tone="critical" />
         </div>
       )}
@@ -347,7 +347,7 @@ function LegacyCatalogView({ data, loading }: { data: LegacyServerFeatureRespons
                 <th className="px-2 py-2 text-left">Transport</th>
                 <th className="px-2 py-2 text-left">Risk</th>
                 <th className="px-2 py-2 text-left">Status</th>
-                <th className="px-2 py-2 text-left">Phase</th>
+                <th className="px-2 py-2 text-left">Access</th>
                 <th className="px-2 py-2 text-left">Notes</th>
               </tr>
             </thead>
@@ -367,7 +367,7 @@ function LegacyCatalogView({ data, loading }: { data: LegacyServerFeatureRespons
                   <td className="px-2 py-2.5"><TransportBadge feature={f} /></td>
                   <td className="px-2 py-2.5"><RiskBadge risk={f.risk_level} /></td>
                   <td className="px-2 py-2.5"><StatusBadge status={f.status} /></td>
-                  <td className="px-2 py-2.5"><PhaseBadge feature={f} /></td>
+                  <td className="px-2 py-2.5"><AccessBadge feature={f} /></td>
                   <td className="px-2 py-2.5 text-[11px] max-w-[200px]" style={{ color: 'var(--soc-muted-fg)' }}>
                     {f.rejection_reason
                       ? <span style={{ color: 'rgba(239,68,68,0.75)' }}>{f.rejection_reason}</span>
@@ -768,8 +768,18 @@ export function ServerPage({ active }: Props) {
       alert('Upload cancelled: reason is required.');
       return;
     }
+    const target = (selected.hostname || selected.ip || '').trim();
+    if (!target) {
+      alert('Selected connection has no hostname/ip for confirmation.');
+      return;
+    }
+    const confirmTarget = prompt(`Type target host to confirm upload:\n${target}`, '') ?? '';
+    if (confirmTarget.trim() !== target) {
+      alert('Upload cancelled: target confirmation mismatch.');
+      return;
+    }
     try {
-      const result = await sshFileUpload(selected.id, file, filePath, reason.trim());
+      const result = await sshFileUpload(selected.id, file, filePath, reason.trim(), target);
       setFileActionResult(result);
       await handleLoadFiles(filePath);
       loadActivity();
@@ -792,8 +802,23 @@ export function ServerPage({ active }: Props) {
       alert('Delete cancelled: filename confirmation mismatch.');
       return;
     }
+    const target = (selected.hostname || selected.ip || '').trim();
+    if (!target) {
+      alert('Selected connection has no hostname/ip for confirmation.');
+      return;
+    }
+    const confirmTarget = prompt(`Type target host to confirm delete:\n${target}`, '') ?? '';
+    if (confirmTarget.trim() !== target) {
+      alert('Delete cancelled: target confirmation mismatch.');
+      return;
+    }
+    const confirmAction = prompt('Type DELETE to confirm destructive action:', '') ?? '';
+    if (confirmAction.trim().toUpperCase() !== 'DELETE') {
+      alert('Delete cancelled: action confirmation mismatch.');
+      return;
+    }
     try {
-      const result = await sshFileDelete(selected.id, fullPath, reason.trim(), confirmName);
+      const result = await sshFileDelete(selected.id, fullPath, reason.trim(), confirmName, target, confirmAction.trim());
       setFileActionResult(result);
       await handleLoadFiles(filePath);
       loadActivity();

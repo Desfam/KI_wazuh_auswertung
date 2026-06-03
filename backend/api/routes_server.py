@@ -207,6 +207,8 @@ class FileDeleteRequest(BaseModel):
     path: str
     reason: str
     confirm_name: str
+    confirm_target: str
+    confirm_action: str
 
 
 class WolRequest(BaseModel):
@@ -685,6 +687,7 @@ async def ssh_file_upload(
     file: UploadFile = File(...),
     remote_dir: str = Form("/"),
     reason: str = Form(...),
+    confirm_target: str = Form(...),
 ) -> dict[str, Any]:
     conn = _get_conn_or_404(connection_id)
     uh = _get_unified_host(conn.get("unified_host_id", ""))
@@ -692,8 +695,7 @@ async def ssh_file_upload(
     if policy_result.status == "blocked":
         return _action_result(policy_result)
 
-    if not reason.strip():
-        raise HTTPException(status_code=400, detail="reason is required")
+    reason_clean, expected_target = _validate_high_risk_confirmation(conn, reason, confirm_target)
     if not file.filename:
         raise HTTPException(status_code=400, detail="file is required")
 
@@ -717,7 +719,8 @@ async def ssh_file_upload(
         message=f"Uploaded '{remote_path}' to '{conn['name']}'",
         metadata={
             "remote_path": remote_path,
-            "reason": reason.strip(),
+            "reason": reason_clean,
+            "confirm_target": expected_target,
             "filename": base,
             "size": len(content),
             "policy": policy_result.policy,
@@ -740,8 +743,7 @@ def ssh_file_delete(connection_id: str, body: FileDeleteRequest) -> dict[str, An
     if policy_result.status == "blocked":
         return _action_result(policy_result)
 
-    if not body.reason.strip():
-        raise HTTPException(status_code=400, detail="reason is required")
+    reason_clean, expected_target = _validate_high_risk_confirmation(conn, body.reason, body.confirm_target)
 
     clean_path = body.path.strip()
     if not clean_path:
@@ -752,6 +754,11 @@ def ssh_file_delete(connection_id: str, body: FileDeleteRequest) -> dict[str, An
         raise HTTPException(
             status_code=400,
             detail=f"confirm_name mismatch (expected '{expected_name}')",
+        )
+    if body.confirm_action.strip().upper() != "DELETE":
+        raise HTTPException(
+            status_code=400,
+            detail="confirm_action mismatch (expected 'DELETE')",
         )
 
     result = delete_file(conn, clean_path)
@@ -766,7 +773,9 @@ def ssh_file_delete(connection_id: str, body: FileDeleteRequest) -> dict[str, An
         metadata={
             "path": clean_path,
             "confirm_name": body.confirm_name.strip(),
-            "reason": body.reason.strip(),
+            "confirm_target": expected_target,
+            "confirm_action": body.confirm_action.strip(),
+            "reason": reason_clean,
             "policy": policy_result.policy,
         },
     )

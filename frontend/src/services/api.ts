@@ -983,11 +983,13 @@ export async function sshFileUpload(
   file: File,
   remote_dir: string,
   reason: string,
+  confirm_target: string,
 ): Promise<ServerActionResult> {
   const form = new FormData();
   form.append('file', file);
   form.append('remote_dir', remote_dir || '/');
   form.append('reason', reason);
+  form.append('confirm_target', confirm_target);
 
   const response = await fetch(`${API_BASE}/server/connections/${id}/ssh/file-upload`, {
     method: 'POST',
@@ -1015,10 +1017,12 @@ export function sshFileDelete(
   path: string,
   reason: string,
   confirm_name: string,
+  confirm_target: string,
+  confirm_action: string,
 ): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/ssh/file-delete`, {
     method: 'POST',
-    body: JSON.stringify({ path, reason, confirm_name }),
+    body: JSON.stringify({ path, reason, confirm_name, confirm_target, confirm_action }),
   });
 }
 

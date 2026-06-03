@@ -6,6 +6,7 @@ Every remote action must pass through check_policy() before executing.
 """
 from __future__ import annotations
 
+import os
 from typing import Any, Optional
 
 from .models import ServerActionResult
@@ -32,8 +33,8 @@ _REQUIRES_UNIFIED_HOST_MATCH: set[str] = {
     "winrm_execute",
 }
 
-# Actions currently enabled by the Server Operations policy
-_ENABLED_ACTIONS = {
+# Actions currently supported by the backend implementation
+_IMPLEMENTED_ACTIONS = {
     "list_connections",
     "create_connection",
     "update_connection",
@@ -80,6 +81,75 @@ _ENABLED_ACTIONS = {
     "firewall_change",
     "user_management",
 }
+
+_SAFE_MODE_ACTIONS = {
+    "list_connections",
+    "create_connection",
+    "update_connection",
+    "delete_connection",
+    "import_legacy",
+    "export_ssh_config",
+    "batch_health",
+    "batch_ping",
+    "batch_port_check",
+    "group_manage",
+    "ping",
+    "dns_lookup",
+    "reverse_dns",
+    "port_check",
+    "traceroute",
+    "arp_lookup",
+    "connection_test",
+    "ssh_host_info",
+    "ssh_readonly_command",
+    "ssh_file_list",
+    "ssh_file_download",
+    "rdp_open",
+    "wol",
+    "health_check",
+}
+
+_ADMIN_MODE_ACTIONS = _SAFE_MODE_ACTIONS | {
+    "ssh_connect",
+    "ssh_interactive_shell",
+    "ssh_arbitrary_command",
+    "ssh_key_deploy",
+    "ssh_port_forward",
+    "ssh_upload",
+    "ssh_delete",
+    "ssh_file_upload",
+    "ssh_file_delete",
+    "winrm_execute",
+    "wazuh_agent_reconnect",
+    "run_syscheck",
+    "run_rootcheck",
+}
+
+_BREAK_GLASS_ACTIONS = _ADMIN_MODE_ACTIONS | {
+    "winrm_ps_remoting",
+    "reboot",
+    "shutdown",
+    "kill_process",
+    "install_software",
+    "firewall_change",
+    "user_management",
+}
+
+
+def _current_remote_mode() -> str:
+    """Return current remote-access operating mode: safe/admin/break_glass."""
+    value = str(os.getenv("REMOTE_ACCESS_MODE", "admin")).strip().lower()
+    if value in {"safe", "admin", "break_glass"}:
+        return value
+    return "admin"
+
+
+def _actions_for_mode(mode: str) -> set[str]:
+    if mode == "safe":
+        return set(_SAFE_MODE_ACTIONS)
+    if mode == "break_glass":
+        return set(_BREAK_GLASS_ACTIONS)
+    return set(_ADMIN_MODE_ACTIONS)
 
 
 def check_policy(
@@ -162,13 +232,26 @@ def check_policy(
                 policy_reason=uh_reason or "Identity review is required before controlled actions.",
             )
 
-    # 5. Enabled action list
-    if action not in _ENABLED_ACTIONS:
+    # 5. Backend implementation guard
+    if action not in _IMPLEMENTED_ACTIONS:
         return ServerActionResult(
             status="blocked",
-            message=f"Action '{action}' is not enabled.",
-            policy="not_enabled",
-            policy_reason="Action has not been added to the current app allowlist.",
+            message=f"Action '{action}' is not implemented.",
+            policy="backend_route_missing",
+            policy_reason="Backend route missing for this action.",
+        )
+
+    # 6. Mode guard
+    mode = _current_remote_mode()
+    allowed_in_mode = _actions_for_mode(mode)
+    if action not in allowed_in_mode:
+        return ServerActionResult(
+            status="blocked",
+            message=f"Action '{action}' is blocked in '{mode}' mode.",
+            policy="mode_blocked",
+            policy_reason=(
+                "Switch to ADMIN mode for confirmed admin actions or BREAK_GLASS for destructive actions."
+            ),
         )
 
     return ServerActionResult(status="ok", message="Action allowed.")
