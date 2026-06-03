@@ -86,6 +86,27 @@ def _action_result(res, audit_id: str = "") -> dict[str, Any]:
     return d
 
 
+def _target_for_confirmation(conn: dict[str, Any]) -> str:
+    return str(conn.get("hostname") or conn.get("ip") or "").strip()
+
+
+def _validate_high_risk_confirmation(conn: dict[str, Any], reason: str, confirm_target: str) -> tuple[str, str]:
+    reason_clean = str(reason or "").strip()
+    if not reason_clean:
+        raise HTTPException(status_code=400, detail="reason is required")
+
+    expected_target = _target_for_confirmation(conn)
+    if not expected_target:
+        raise HTTPException(status_code=400, detail="connection must have host or ip")
+
+    if str(confirm_target or "").strip() != expected_target:
+        raise HTTPException(
+            status_code=400,
+            detail=f"confirm_target mismatch (expected '{expected_target}')",
+        )
+    return reason_clean, expected_target
+
+
 # ── Pydantic models ───────────────────────────────────────────────────
 
 class ConnectionCreate(BaseModel):
@@ -148,11 +169,15 @@ class ArbitraryCommandRequest(BaseModel):
     command: str
     reason: str
     timeout: int = 30
+    confirm_target: str
+    approve_review: bool = False
 
 
 class PublicKeyDeployRequest(BaseModel):
     public_key: str
     reason: str
+    confirm_target: str
+    approve_review: bool = False
 
 
 class PortForwardRequest(BaseModel):
@@ -160,6 +185,14 @@ class PortForwardRequest(BaseModel):
     remote_host: str = "localhost"
     remote_port: int
     reason: str
+    confirm_target: str
+    approve_review: bool = False
+
+
+class WinRmOpenRequest(BaseModel):
+    reason: str
+    confirm_target: str
+    approve_review: bool = False
 
 
 class FileBrowserRequest(BaseModel):
@@ -492,8 +525,10 @@ def ssh_arbitrary_command(connection_id: str, body: ArbitraryCommandRequest) -> 
     policy_result = check_policy("ssh_arbitrary_command", conn, uh)
     if policy_result.status == "blocked":
         return _action_result(policy_result)
-    if not body.reason.strip():
-        raise HTTPException(status_code=400, detail="reason is required")
+    if policy_result.status == "review_required" and not body.approve_review:
+        return _action_result(policy_result)
+
+    reason_clean, expected_target = _validate_high_risk_confirmation(conn, body.reason, body.confirm_target)
 
     result = run_arbitrary_command(conn, body.command, timeout=max(1, min(body.timeout, 300)))
     audit_id = log_server_activity(
@@ -503,7 +538,12 @@ def ssh_arbitrary_command(connection_id: str, body: ArbitraryCommandRequest) -> 
         protocol="ssh",
         status=result.get("status", "error"),
         message=f"Arbitrary SSH command on '{conn['name']}'",
-        metadata={"command": body.command, "reason": body.reason.strip()},
+        metadata={
+            "command": body.command,
+            "reason": reason_clean,
+            "confirm_target": expected_target,
+            "review_override": bool(policy_result.status == "review_required" and body.approve_review),
+        },
     )
     return {"status": result.get("status", "ok"), "policy": policy_result.policy, "data": result, "audit_id": audit_id}
 
@@ -515,8 +555,10 @@ def ssh_key_deploy(connection_id: str, body: PublicKeyDeployRequest) -> dict[str
     policy_result = check_policy("ssh_key_deploy", conn, uh)
     if policy_result.status == "blocked":
         return _action_result(policy_result)
-    if not body.reason.strip():
-        raise HTTPException(status_code=400, detail="reason is required")
+    if policy_result.status == "review_required" and not body.approve_review:
+        return _action_result(policy_result)
+
+    reason_clean, expected_target = _validate_high_risk_confirmation(conn, body.reason, body.confirm_target)
 
     result = deploy_public_key(conn, body.public_key)
     audit_id = log_server_activity(
@@ -526,7 +568,11 @@ def ssh_key_deploy(connection_id: str, body: PublicKeyDeployRequest) -> dict[str
         protocol="ssh",
         status=result.get("status", "error"),
         message=f"SSH public key deploy on '{conn['name']}'",
-        metadata={"reason": body.reason.strip()},
+        metadata={
+            "reason": reason_clean,
+            "confirm_target": expected_target,
+            "review_override": bool(policy_result.status == "review_required" and body.approve_review),
+        },
     )
     return {"status": result.get("status", "ok"), "policy": policy_result.policy, "data": result, "audit_id": audit_id}
 
@@ -538,8 +584,10 @@ def ssh_port_forward(connection_id: str, body: PortForwardRequest) -> dict[str, 
     policy_result = check_policy("ssh_port_forward", conn, uh)
     if policy_result.status == "blocked":
         return _action_result(policy_result)
-    if not body.reason.strip():
-        raise HTTPException(status_code=400, detail="reason is required")
+    if policy_result.status == "review_required" and not body.approve_review:
+        return _action_result(policy_result)
+
+    reason_clean, expected_target = _validate_high_risk_confirmation(conn, body.reason, body.confirm_target)
 
     host = conn.get("hostname") or conn.get("ip", "")
     port = int(conn.get("port") or 22)
@@ -569,9 +617,11 @@ def ssh_port_forward(connection_id: str, body: PortForwardRequest) -> dict[str, 
             "local_port": body.local_port,
             "remote_host": body.remote_host,
             "remote_port": body.remote_port,
-            "reason": body.reason.strip(),
+            "reason": reason_clean,
+            "confirm_target": expected_target,
             "pid": proc.pid,
             "command": " ".join(cmd),
+            "review_override": bool(policy_result.status == "review_required" and body.approve_review),
         },
     )
     return {
@@ -774,16 +824,18 @@ def rdp_open(connection_id: str) -> dict[str, Any]:
 
 
 @router.post("/connections/{connection_id}/winrm/open")
-def winrm_open(connection_id: str) -> dict[str, Any]:
+def winrm_open(connection_id: str, body: WinRmOpenRequest) -> dict[str, Any]:
     conn = _get_conn_or_404(connection_id)
     uh = _get_unified_host(conn.get("unified_host_id", ""))
     policy_result = check_policy("winrm_execute", conn, uh)
     if policy_result.status == "blocked":
         return _action_result(policy_result)
+    if policy_result.status == "review_required" and not body.approve_review:
+        return _action_result(policy_result)
+
+    reason_clean, expected_target = _validate_high_risk_confirmation(conn, body.reason, body.confirm_target)
 
     host = conn.get("hostname") or conn.get("ip", "")
-    if not host:
-        raise HTTPException(status_code=400, detail="connection must have host or ip")
 
     cmd = ["powershell", "-NoLogo", "-NoExit", "-Command", f"Enter-PSSession -ComputerName '{host}'"]
     creationflags = 0
@@ -798,7 +850,13 @@ def winrm_open(connection_id: str) -> dict[str, Any]:
         protocol="winrm",
         status="ok",
         message=f"WinRM session started for '{conn['name']}'",
-        metadata={"pid": proc.pid, "command": " ".join(cmd)},
+        metadata={
+            "pid": proc.pid,
+            "command": " ".join(cmd),
+            "reason": reason_clean,
+            "confirm_target": expected_target,
+            "review_override": bool(policy_result.status == "review_required" and body.approve_review),
+        },
     )
     return {
         "status": "ok",

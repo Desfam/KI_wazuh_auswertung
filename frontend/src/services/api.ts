@@ -932,17 +932,30 @@ export function sshInteractiveShell(id: string): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/ssh/interactive-shell`, { method: 'POST' });
 }
 
-export function sshRunArbitraryCommand(id: string, command: string, reason: string, timeout = 30): Promise<ServerActionResult> {
+export function sshRunArbitraryCommand(
+  id: string,
+  command: string,
+  reason: string,
+  confirm_target: string,
+  approve_review = false,
+  timeout = 30,
+): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/ssh/arbitrary-command`, {
     method: 'POST',
-    body: JSON.stringify({ command, reason, timeout }),
+    body: JSON.stringify({ command, reason, confirm_target, approve_review, timeout }),
   });
 }
 
-export function sshDeployPublicKey(id: string, public_key: string, reason: string): Promise<ServerActionResult> {
+export function sshDeployPublicKey(
+  id: string,
+  public_key: string,
+  reason: string,
+  confirm_target: string,
+  approve_review = false,
+): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/ssh/key-deploy`, {
     method: 'POST',
-    body: JSON.stringify({ public_key, reason }),
+    body: JSON.stringify({ public_key, reason, confirm_target, approve_review }),
   });
 }
 
@@ -952,10 +965,12 @@ export function sshStartPortForward(
   remote_host: string,
   remote_port: number,
   reason: string,
+  confirm_target: string,
+  approve_review = false,
 ): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/ssh/port-forward`, {
     method: 'POST',
-    body: JSON.stringify({ local_port, remote_host, remote_port, reason }),
+    body: JSON.stringify({ local_port, remote_host, remote_port, reason, confirm_target, approve_review }),
   });
 }
 
@@ -1011,8 +1026,16 @@ export function openRdpConnection(id: string): Promise<ServerActionResult> {
   return request(`/server/connections/${id}/rdp/open`, { method: 'POST' });
 }
 
-export function openWinRmConnection(id: string): Promise<ServerActionResult> {
-  return request(`/server/connections/${id}/winrm/open`, { method: 'POST' });
+export function openWinRmConnection(
+  id: string,
+  reason: string,
+  confirm_target: string,
+  approve_review = false,
+): Promise<ServerActionResult> {
+  return request(`/server/connections/${id}/winrm/open`, {
+    method: 'POST',
+    body: JSON.stringify({ reason, confirm_target, approve_review }),
+  });
 }
 
 export function wakeOnLanConnection(id: string, mac?: string): Promise<ServerActionResult & { data: WolResult }> {

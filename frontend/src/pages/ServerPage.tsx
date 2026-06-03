@@ -658,9 +658,19 @@ export function ServerPage({ active }: Props) {
       alert('Command and reason are required.');
       return;
     }
+    const target = (selected.hostname || selected.ip || '').trim();
+    if (!target) {
+      alert('Selected connection has no hostname/ip for confirmation.');
+      return;
+    }
+    const confirmTarget = prompt(`Type target host to confirm action:\n${target}`, '') ?? '';
+    if (confirmTarget.trim() !== target) {
+      alert('Action cancelled: target confirmation mismatch.');
+      return;
+    }
     setArbitraryLoading(true); setArbitraryResult(null);
     try {
-      const r = await sshRunArbitraryCommand(selected.id, arbitraryCommand.trim(), arbitraryReason.trim(), 45);
+      const r = await sshRunArbitraryCommand(selected.id, arbitraryCommand.trim(), arbitraryReason.trim(), target, true, 45);
       setArbitraryResult(r);
       loadActivity();
     } finally { setArbitraryLoading(false); }
@@ -672,9 +682,19 @@ export function ServerPage({ active }: Props) {
       alert('Public key and reason are required.');
       return;
     }
+    const target = (selected.hostname || selected.ip || '').trim();
+    if (!target) {
+      alert('Selected connection has no hostname/ip for confirmation.');
+      return;
+    }
+    const confirmTarget = prompt(`Type target host to confirm action:\n${target}`, '') ?? '';
+    if (confirmTarget.trim() !== target) {
+      alert('Action cancelled: target confirmation mismatch.');
+      return;
+    }
     setKeyDeployLoading(true); setKeyDeployResult(null);
     try {
-      const r = await sshDeployPublicKey(selected.id, publicKey.trim(), keyReason.trim());
+      const r = await sshDeployPublicKey(selected.id, publicKey.trim(), keyReason.trim(), target, true);
       setKeyDeployResult(r);
       loadActivity();
     } finally { setKeyDeployLoading(false); }
@@ -688,9 +708,19 @@ export function ServerPage({ active }: Props) {
       alert('Local port, remote host, remote port and reason are required.');
       return;
     }
+    const target = (selected.hostname || selected.ip || '').trim();
+    if (!target) {
+      alert('Selected connection has no hostname/ip for confirmation.');
+      return;
+    }
+    const confirmTarget = prompt(`Type target host to confirm action:\n${target}`, '') ?? '';
+    if (confirmTarget.trim() !== target) {
+      alert('Action cancelled: target confirmation mismatch.');
+      return;
+    }
     setPfLoading(true); setPfResult(null);
     try {
-      const r = await sshStartPortForward(selected.id, local, pfRemoteHost.trim(), remote, pfReason.trim());
+      const r = await sshStartPortForward(selected.id, local, pfRemoteHost.trim(), remote, pfReason.trim(), target, true);
       setPfResult(r);
       loadActivity();
     } finally { setPfLoading(false); }
@@ -698,9 +728,24 @@ export function ServerPage({ active }: Props) {
 
   async function handleOpenWinRm() {
     if (!selected) return;
+    const reason = prompt('WinRM reason (required for audit):', 'remote troubleshooting') ?? '';
+    if (!reason.trim()) {
+      alert('WinRM cancelled: reason is required.');
+      return;
+    }
+    const target = (selected.hostname || selected.ip || '').trim();
+    if (!target) {
+      alert('Selected connection has no hostname/ip for confirmation.');
+      return;
+    }
+    const confirmTarget = prompt(`Type target host to confirm WinRM session:\n${target}`, '') ?? '';
+    if (confirmTarget.trim() !== target) {
+      alert('WinRM cancelled: target confirmation mismatch.');
+      return;
+    }
     setWinrmLoading(true); setWinrmResult(null);
     try {
-      const r = await openWinRmConnection(selected.id);
+      const r = await openWinRmConnection(selected.id, reason.trim(), target, true);
       setWinrmResult(r);
       loadActivity();
     } finally { setWinrmLoading(false); }

@@ -2102,26 +2102,26 @@ def _run_server_operations_tests() -> list[dict]:
         tests.append(_pass("SSH_READONLY_COMMANDS required entries", CAT,
                            f"All required IDs present: {list(required_cmds)}"))
 
-    # T09–T13: Advanced actions are no longer hard-blocked ────────────────────
+    # T09–T13: High-risk actions stay blocked without connection/host context ─
     try:
         from services.remote_access.remote_policy import check_policy
-        unlocked_actions = {
+        guarded_actions = {
             "ssh_arbitrary_command": "T09",
             "ssh_interactive_shell": "T10",
             "ssh_upload":            "T11",
             "ssh_key_deploy":        "T12",
             "ssh_port_forward":      "T13",
         }
-        for action, tid in unlocked_actions.items():
+        for action, tid in guarded_actions.items():
             result = check_policy(action=action, connection=None)
-            if result.status != "blocked":
-                tests.append(_pass(f"Policy unlock: {action}", CAT,
-                                   f"[{tid}] '{action}' status='{result.status}' (not blocked)"))
+            if result.status == "blocked":
+                tests.append(_pass(f"Policy guard: {action}", CAT,
+                                   f"[{tid}] '{action}' blocked without context as expected"))
             else:
-                tests.append(_fail(f"Policy unlock: {action}", CAT,
-                                   f"[{tid}] '{action}' is still blocked"))
+                tests.append(_fail(f"Policy guard: {action}", CAT,
+                                   f"[{tid}] '{action}' returned status='{result.status}' — expected 'blocked'"))
     except Exception as exc:
-        tests.append(_fail("Advanced action unlock check", CAT, f"Policy check failed: {exc}"))
+        tests.append(_fail("High-risk action guard check", CAT, f"Policy check failed: {exc}"))
 
     # T14: create_connection allowed without connection context ───────────────
     try:

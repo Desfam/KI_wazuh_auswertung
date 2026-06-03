@@ -11,8 +11,26 @@ from typing import Any, Optional
 from .models import ServerActionResult
 
 
-# Safety hard-block list (empty by request: all actions unlocked)
-_SAFETY_BLOCKED_ACTIONS: set[str] = set()
+# Safety hard-block list for destructive or not-yet-controlled operations.
+_SAFETY_BLOCKED_ACTIONS: set[str] = {
+    "rdp_password_inject",
+    "ssh_edit_remote",
+    "winrm_ps_remoting",
+    "reboot",
+    "shutdown",
+    "kill_process",
+    "install_software",
+    "firewall_change",
+    "user_management",
+}
+
+# High-risk actions require a linked and resolved unified host before execution.
+_REQUIRES_UNIFIED_HOST_MATCH: set[str] = {
+    "ssh_arbitrary_command",
+    "ssh_key_deploy",
+    "ssh_port_forward",
+    "winrm_execute",
+}
 
 # Actions currently enabled by the Server Operations policy
 _ENABLED_ACTIONS = {
@@ -109,7 +127,20 @@ def check_policy(
             )
         return ServerActionResult(status="ok", message="Action allowed without connection context.")
 
-    # 3. Unified host policy check
+    # 3. High-risk actions require unified-host linkage/match context.
+    if action in _REQUIRES_UNIFIED_HOST_MATCH:
+        has_link = bool(connection.get("unified_host_id"))
+        if not has_link or not unified_host:
+            return ServerActionResult(
+                status="blocked",
+                message=f"Action '{action}' requires matched host identity.",
+                policy="host_match_required",
+                policy_reason=(
+                    "Link this connection to a unified host and resolve host identity before running high-risk actions."
+                ),
+            )
+
+    # 4. Unified host policy check
     if unified_host:
         uh_policy = unified_host.get("action_policy", "unknown")
         uh_reason = unified_host.get("policy_reason", "")
@@ -117,10 +148,10 @@ def check_policy(
 
         if uh_policy == "blocked":
             return ServerActionResult(
-                status="review_required",
-                message=f"Host requires review before action: {uh_reason or uh_policy}",
-                policy="review_required",
-                policy_reason=uh_reason or "Host identity needs analyst review before remote actions.",
+                status="blocked",
+                message=f"Host action policy blocks '{action}': {uh_reason or uh_policy}",
+                policy="host_blocked",
+                policy_reason=uh_reason or "Host identity policy blocks remote actions for this endpoint.",
             )
 
         if uh_policy == "review_required" or identity in ("unknown", "uncertain", "likely"):
@@ -131,7 +162,7 @@ def check_policy(
                 policy_reason=uh_reason or "Identity review is required before controlled actions.",
             )
 
-    # 4. Enabled action list
+    # 5. Enabled action list
     if action not in _ENABLED_ACTIONS:
         return ServerActionResult(
             status="blocked",
