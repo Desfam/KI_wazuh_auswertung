@@ -1,7 +1,10 @@
 """
 remote_access/ssh_service.py
-SSH operations using paramiko.
-All functions are read-only or information-gathering in Phase 1.
+SSH and SFTP operations using paramiko.
+
+Safe/read-only operations are available directly through Server Operations.
+Write operations are implemented as helpers and must be exposed only through
+controlled routes with confirmation and audit logging.
 """
 from __future__ import annotations
 
@@ -68,6 +71,14 @@ def _run_command(
     err = stderr_.read().decode("utf-8", errors="replace")
     rc = stdout_.channel.recv_exit_status()
     return {"ok": rc == 0, "stdout": out, "stderr": err, "returncode": rc}
+
+
+def _clean_remote_path(path: str) -> str:
+    import posixpath
+    clean = posixpath.normpath("/" + str(path or "").lstrip("/"))
+    if clean in ("", "."):
+        clean = "/"
+    return clean
 
 
 def test_ssh_connection(connection: dict[str, Any]) -> dict[str, Any]:
@@ -152,7 +163,7 @@ def run_readonly_command(
             "status": "blocked",
             "error": (
                 f"command_id '{command_id}' is not in the read-only allowlist. "
-                "Arbitrary commands are disabled in Phase 1."
+                "Raw shell commands require a dedicated controlled action route."
             ),
         }
 
@@ -180,13 +191,11 @@ def list_remote_directory(
     connection: dict[str, Any],
     path: str = "/",
 ) -> dict[str, Any]:
-    """List a remote directory via SFTP (read-only)."""
+    """List a remote directory via SFTP."""
     if not _PARAMIKO_AVAILABLE:
         return _unavailable()
 
-    # Sanitize path — prevent directory traversal
-    import posixpath
-    clean_path = posixpath.normpath("/" + path.lstrip("/"))
+    clean_path = _clean_remote_path(path)
 
     client = None
     sftp = None
@@ -228,7 +237,7 @@ def download_file(
         raise RuntimeError("paramiko not installed")
 
     import posixpath
-    clean_path = posixpath.normpath("/" + remote_path.lstrip("/"))
+    clean_path = _clean_remote_path(remote_path)
     filename = posixpath.basename(clean_path)
 
     client = None
@@ -239,6 +248,63 @@ def download_file(
         buf = io.BytesIO()
         sftp.getfo(clean_path, buf)
         return buf.getvalue(), filename
+    finally:
+        if sftp:
+            sftp.close()
+        if client:
+            client.close()
+
+
+def upload_file(
+    connection: dict[str, Any],
+    remote_path: str,
+    content: bytes,
+    *,
+    max_bytes: int = 25 * 1024 * 1024,
+) -> dict[str, Any]:
+    """Upload bytes to a remote path via SFTP."""
+    if not _PARAMIKO_AVAILABLE:
+        return _unavailable()
+    if not remote_path or remote_path.endswith("/"):
+        return {"status": "error", "error": "remote_path must include a filename"}
+    if len(content) > max_bytes:
+        return {"status": "error", "error": f"Upload too large: {len(content)} bytes > {max_bytes} bytes"}
+
+    clean_path = _clean_remote_path(remote_path)
+    client = None
+    sftp = None
+    try:
+        client = _build_client(connection)
+        sftp = client.open_sftp()
+        with sftp.file(clean_path, "wb") as remote_file:
+            remote_file.write(content)
+        return {"status": "ok", "path": clean_path, "size": len(content)}
+    except Exception as exc:
+        return {"status": "error", "path": clean_path, "error": str(exc)}
+    finally:
+        if sftp:
+            sftp.close()
+        if client:
+            client.close()
+
+
+def delete_file(connection: dict[str, Any], remote_path: str) -> dict[str, Any]:
+    """Delete a single remote file via SFTP."""
+    if not _PARAMIKO_AVAILABLE:
+        return _unavailable()
+    clean_path = _clean_remote_path(remote_path)
+    if clean_path in ("/", ""):
+        return {"status": "error", "error": "Refusing to delete root path"}
+
+    client = None
+    sftp = None
+    try:
+        client = _build_client(connection)
+        sftp = client.open_sftp()
+        sftp.remove(clean_path)
+        return {"status": "ok", "path": clean_path}
+    except Exception as exc:
+        return {"status": "error", "path": clean_path, "error": str(exc)}
     finally:
         if sftp:
             sftp.close()
