@@ -1105,6 +1105,14 @@ export type WazuhAPIDocSection = {
 export type ServerProtocol = 'ssh' | 'rdp' | 'winrm';
 export type ServerAuthType = 'none' | 'key_ref' | 'agent' | 'credential_ref';
 export type ServerActionStatus = 'ok' | 'blocked' | 'review_required' | 'error' | 'unavailable' | 'auth_failed' | 'offline' | 'unreachable';
+export type RemoteAccessMode = 'safe' | 'admin' | 'break_glass';
+
+export type RemoteAccessModeConfig = {
+  mode: RemoteAccessMode;
+  changed_by: string;
+  changed_at: string;
+  reason: string;
+};
 
 export type ServerConnection = {
   id: string;

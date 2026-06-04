@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
@@ -84,3 +85,59 @@ def save_analysis_profile_to_config(payload: AnalysisProfileConfig | dict[str, A
     CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
     CONFIG_PATH.write_text(json.dumps(config, indent=2), encoding="utf-8")
     return AnalysisProfileConfig(**profile_data)
+
+
+def load_remote_access_mode_from_config() -> dict[str, Any]:
+    default = {
+        "mode": "admin",
+        "changed_by": "system",
+        "changed_at": "",
+        "reason": "",
+    }
+    if not CONFIG_PATH.exists():
+        return default
+
+    try:
+        raw = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+    except json.JSONDecodeError:
+        return default
+
+    mode_data = raw.get("remote_access_mode")
+    if not isinstance(mode_data, dict):
+        return default
+
+    mode = str(mode_data.get("mode", "admin")).strip().lower()
+    if mode not in {"safe", "admin", "break_glass"}:
+        mode = "admin"
+
+    return {
+        "mode": mode,
+        "changed_by": str(mode_data.get("changed_by", "system")),
+        "changed_at": str(mode_data.get("changed_at", "")),
+        "reason": str(mode_data.get("reason", "")),
+    }
+
+
+def save_remote_access_mode_to_config(mode: str, changed_by: str, reason: str = "") -> dict[str, Any]:
+    clean_mode = str(mode).strip().lower()
+    if clean_mode not in {"safe", "admin", "break_glass"}:
+        raise ValueError("mode must be one of: safe, admin, break_glass")
+
+    payload = {
+        "mode": clean_mode,
+        "changed_by": str(changed_by or "system").strip() or "system",
+        "changed_at": datetime.now(timezone.utc).isoformat(),
+        "reason": str(reason or "").strip(),
+    }
+
+    config: dict[str, Any] = {}
+    if CONFIG_PATH.exists():
+        try:
+            config = json.loads(CONFIG_PATH.read_text(encoding="utf-8"))
+        except json.JSONDecodeError:
+            config = {}
+
+    config["remote_access_mode"] = payload
+    CONFIG_PATH.parent.mkdir(parents=True, exist_ok=True)
+    CONFIG_PATH.write_text(json.dumps(config, indent=2), encoding="utf-8")
+    return payload

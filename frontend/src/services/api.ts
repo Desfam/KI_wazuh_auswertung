@@ -1,4 +1,4 @@
-﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, AuditEntry, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, ClusterEvidenceSummary, ClusterEvaluation, ClusterExplanation, ClusterKnowledge, ClusterPlaybook, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, NormalisedActionPolicy, RawPreview, Report, ResolvedUnifiedHost, RunAnalysisPayload, ScriptEntry, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, TimelineItem, UnifiedEventEvaluation, UnifiedHost, WazuhAgent, WazuhAgentEnrichment, WazuhAPICapabilitiesResult, WazuhManagerHealth, WazuhSyncReport, ServerConnection, ServerConnectionInput, ServerActionResult, ServerActivityLog, RemoteSession, LegacyImportReport, PingResult, DnsResult, PortCheckResult, SshReadOnlyCommandResult, SshFileBrowserResult, SshHostInfoResult, SshHealthResult, SshReadOnlyCommand, WolResult, LegacyServerFeatureResponse, SshConfigExportResult, ServerHostGroup, ServerHostGroupMember, ServerBatchRun, ServerBatchResult, ServerBatchHealthRequest, ServerBatchHealthResponse } from '../types';
+﻿import type { AIServiceStatus, AIServiceTestResult, AnalysisJob, AnalysisProfileConfig, AuditEntry, BaselineDeviation, BaselineDiff, BaselineFeature, BaselineSnapshot, BaselineSummary, ChatMessage, ChatResponse, ClusterEvidenceSummary, ClusterEvaluation, ClusterExplanation, ClusterKnowledge, ClusterPlaybook, Connection, ConnectionTestResult, FindingGroup, HealthResponse, HostCentralDetail, HostCentralListItem, HostConflict, HostOverview, HostProfile, HostProfileAssignment, HostRanking, HostTrendPoint, NormalisedActionPolicy, RawPreview, Report, ResolvedUnifiedHost, RunAnalysisPayload, ScriptEntry, SnipenAIQueryResult, SnipenAnalysisResult, SnipenEvent, SnipenExplainResult, SnipenHostInfo, SnipenHostOverview, TacticalAgent, TacticalSyncResult, TimelineItem, UnifiedEventEvaluation, UnifiedHost, WazuhAgent, WazuhAgentEnrichment, WazuhAPICapabilitiesResult, WazuhManagerHealth, WazuhSyncReport, ServerConnection, ServerConnectionInput, ServerActionResult, ServerActivityLog, RemoteSession, LegacyImportReport, PingResult, DnsResult, PortCheckResult, SshReadOnlyCommandResult, SshFileBrowserResult, SshHostInfoResult, SshHealthResult, SshReadOnlyCommand, WolResult, LegacyServerFeatureResponse, SshConfigExportResult, ServerHostGroup, ServerHostGroupMember, ServerBatchRun, ServerBatchResult, ServerBatchHealthRequest, ServerBatchHealthResponse, RemoteAccessModeConfig, RemoteAccessMode } from '../types';
 
 // Alias for the agent context embedded in cluster responses
 export type WazuhAgentContextResult = WazuhAgentEnrichment;
@@ -1095,6 +1095,17 @@ export function getSshConfig(id: string): Promise<{ status: string; data: { conf
 
 export function getServerLegacyFeatures(): Promise<LegacyServerFeatureResponse> {
   return request('/server/legacy-features');
+}
+
+export function getRemoteAccessMode(): Promise<{ status: string; data: RemoteAccessModeConfig }> {
+  return request('/server/remote-mode');
+}
+
+export function setRemoteAccessMode(mode: RemoteAccessMode, changed_by: string, reason = ''): Promise<{ status: string; data: RemoteAccessModeConfig; audit_id?: string }> {
+  return request('/server/remote-mode', {
+    method: 'POST',
+    body: JSON.stringify({ mode, changed_by, reason }),
+  });
 }
 
 export function exportSshConfig(params?: {

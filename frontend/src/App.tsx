@@ -21,8 +21,8 @@ import { SettingsModal } from './components/SettingsModal';
 import { VideoBackground } from './components/VideoBackground';
 import { LiquidBackground } from './components/LiquidBackground';
 import { ErrorBoundary } from './components/ErrorBoundary';
-import { getAIServiceStatus, getActiveConnection, getAllProfileAssignments, getAnalysisProfile, getBackendHealth, getHostsCentral, getIndexerHealth, getOllamaHealth, getProfiles, saveAnalysisProfile, sendChatMessage, startAIService } from './services/api';
-import type { AIServiceStatus, AnalysisProfileConfig, ChatMessage, HostProfile, HostProfileAssignment } from './types';
+import { getAIServiceStatus, getActiveConnection, getAllProfileAssignments, getAnalysisProfile, getBackendHealth, getHostsCentral, getIndexerHealth, getOllamaHealth, getProfiles, getRemoteAccessMode, saveAnalysisProfile, sendChatMessage, setRemoteAccessMode, startAIService } from './services/api';
+import type { AIServiceStatus, AnalysisProfileConfig, ChatMessage, HostProfile, HostProfileAssignment, RemoteAccessModeConfig, RemoteAccessMode } from './types';
 
 const LOOKBACK_PRESETS = [24, 168, 720] as const;
 const DEFAULT_ANALYSIS_PROFILE: AnalysisProfileConfig = {
@@ -34,6 +34,13 @@ const DEFAULT_ANALYSIS_PROFILE: AnalysisProfileConfig = {
   include_full_log: false,
   include_agent_info: true,
   include_mitre_mapping: false,
+};
+
+const DEFAULT_REMOTE_ACCESS_MODE: RemoteAccessModeConfig = {
+  mode: 'admin',
+  changed_by: 'system',
+  changed_at: '',
+  reason: '',
 };
 
 function createInitialPreflightChecks(): PreflightCheck[] {
@@ -112,6 +119,7 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [videoSource, setVideoSource] = useState<string | null>(null);
   const [analysisProfile, setAnalysisProfile] = useState<AnalysisProfileConfig>(DEFAULT_ANALYSIS_PROFILE);
+  const [remoteAccessMode, setRemoteAccessModeState] = useState<RemoteAccessModeConfig>(DEFAULT_REMOTE_ACCESS_MODE);
   const [bootReady, setBootReady] = useState(false);
   const [introMinElapsed, setIntroMinElapsed] = useState(false);
   const [introVisible, setIntroVisible] = useState(true);
@@ -282,10 +290,17 @@ function App() {
           const profile = await getAnalysisProfile();
           if (!active) return;
           setAnalysisProfile(profile);
+          try {
+            const modeResp = await getRemoteAccessMode();
+            if (active) setRemoteAccessModeState(modeResp.data);
+          } catch {
+            if (active) setRemoteAccessModeState(DEFAULT_REMOTE_ACCESS_MODE);
+          }
           setCheck('profile', 'success', `Profile ready with min rule level ${profile.min_rule_level}`);
         } catch (error) {
           if (!active) return;
           setAnalysisProfile(DEFAULT_ANALYSIS_PROFILE);
+          setRemoteAccessModeState(DEFAULT_REMOTE_ACCESS_MODE);
           setCheck('profile', 'warning', describeError(error, 'Using default analysis profile'));
         }
 
@@ -376,6 +391,11 @@ function App() {
       setAnalysisProfile(saved);
     } catch {
     }
+  }
+
+  async function handleSaveRemoteAccessMode(mode: RemoteAccessMode, changedBy: string, reason: string) {
+    const saved = await setRemoteAccessMode(mode, changedBy, reason);
+    setRemoteAccessModeState(saved.data);
   }
 
   async function handleChatSend(message: string, runScript: boolean) {
@@ -731,6 +751,8 @@ function App() {
         onClearVideo={handleClearVideo}
         analysisProfile={analysisProfile}
         onSaveAnalysisProfile={handleSaveAnalysisProfile}
+        remoteAccessMode={remoteAccessMode}
+        onSaveRemoteAccessMode={handleSaveRemoteAccessMode}
       />
     </div>
   );

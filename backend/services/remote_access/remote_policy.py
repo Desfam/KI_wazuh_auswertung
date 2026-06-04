@@ -9,6 +9,8 @@ from __future__ import annotations
 import os
 from typing import Any, Optional
 
+from services.app_config import load_remote_access_mode_from_config
+
 from .models import ServerActionResult
 
 
@@ -138,6 +140,13 @@ _BREAK_GLASS_ACTIONS = _ADMIN_MODE_ACTIONS | {
 
 def _current_remote_mode() -> str:
     """Return current remote-access operating mode: safe/admin/break_glass."""
+    try:
+        cfg_mode = str(load_remote_access_mode_from_config().get("mode", "")).strip().lower()
+        if cfg_mode in {"safe", "admin", "break_glass"}:
+            return cfg_mode
+    except Exception:
+        pass
+
     value = str(os.getenv("REMOTE_ACCESS_MODE", "admin")).strip().lower()
     if value in {"safe", "admin", "break_glass"}:
         return value

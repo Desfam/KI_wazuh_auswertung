@@ -26,6 +26,10 @@ from services.remote_access.connection_store import (
     record_session,
     update_connection,
 )
+from services.app_config import (
+    load_remote_access_mode_from_config,
+    save_remote_access_mode_to_config,
+)
 from services.remote_access.host_tools_service import (
     arp_lookup,
     dns_lookup,
@@ -195,6 +199,12 @@ class WinRmOpenRequest(BaseModel):
     approve_review: bool = False
 
 
+class RemoteModeUpdateRequest(BaseModel):
+    mode: str
+    changed_by: str
+    reason: str = ""
+
+
 class FileBrowserRequest(BaseModel):
     path: str = "/"
 
@@ -214,6 +224,36 @@ class FileDeleteRequest(BaseModel):
 class WolRequest(BaseModel):
     mac: Optional[str] = None         # override mac from connection
     broadcast: str = "255.255.255.255"
+
+
+@router.get("/remote-mode")
+def get_remote_mode() -> dict[str, Any]:
+    data = load_remote_access_mode_from_config()
+    return {"status": "ok", "data": data}
+
+
+@router.post("/remote-mode")
+def set_remote_mode(body: RemoteModeUpdateRequest) -> dict[str, Any]:
+    mode = body.mode.strip().lower()
+    if mode not in {"safe", "admin", "break_glass"}:
+        raise HTTPException(status_code=400, detail="mode must be one of: safe, admin, break_glass")
+
+    saved = save_remote_access_mode_to_config(mode=mode, changed_by=body.changed_by, reason=body.reason)
+    audit_id = log_server_activity(
+        action="remote_mode_change",
+        connection_id="",
+        host="",
+        protocol="server",
+        status="ok",
+        message=f"Remote access mode changed to '{saved['mode']}'",
+        metadata={
+            "mode": saved["mode"],
+            "changed_by": saved["changed_by"],
+            "changed_at": saved["changed_at"],
+            "reason": saved["reason"],
+        },
+    )
+    return {"status": "ok", "data": saved, "audit_id": audit_id}
 
 
 # ── CRUD ──────────────────────────────────────────────────────────────

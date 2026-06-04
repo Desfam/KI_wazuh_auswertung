@@ -1,5 +1,5 @@
-import { useRef } from 'react';
-import type { AnalysisProfileConfig } from '../types';
+import { useEffect, useRef, useState } from 'react';
+import type { AnalysisProfileConfig, RemoteAccessMode, RemoteAccessModeConfig } from '../types';
 
 type SettingsModalProps = {
   isOpen: boolean;
@@ -10,6 +10,8 @@ type SettingsModalProps = {
   onClearVideo: () => void;
   analysisProfile: AnalysisProfileConfig;
   onSaveAnalysisProfile: (profile: AnalysisProfileConfig) => void;
+  remoteAccessMode: RemoteAccessModeConfig;
+  onSaveRemoteAccessMode: (mode: RemoteAccessMode, changedBy: string, reason: string) => Promise<void>;
 };
 
 export function SettingsModal({
@@ -21,8 +23,23 @@ export function SettingsModal({
   onClearVideo,
   analysisProfile,
   onSaveAnalysisProfile,
+  remoteAccessMode,
+  onSaveRemoteAccessMode,
 }: SettingsModalProps) {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [modeDraft, setModeDraft] = useState<RemoteAccessMode>('admin');
+  const [changedByDraft, setChangedByDraft] = useState('');
+  const [reasonDraft, setReasonDraft] = useState('');
+  const [modeSaving, setModeSaving] = useState(false);
+  const [modeFeedback, setModeFeedback] = useState('');
+
+  useEffect(() => {
+    if (!isOpen) return;
+    setModeDraft(remoteAccessMode.mode);
+    setChangedByDraft(remoteAccessMode.changed_by || '');
+    setReasonDraft(remoteAccessMode.reason || '');
+    setModeFeedback('');
+  }, [isOpen, remoteAccessMode]);
 
   function handleFileSelect(e: React.ChangeEvent<HTMLInputElement>) {
     const file = e.target.files?.[0];
@@ -42,6 +59,24 @@ export function SettingsModal({
 
   function updateProfile(patch: Partial<AnalysisProfileConfig>) {
     onSaveAnalysisProfile({ ...analysisProfile, ...patch });
+  }
+
+  async function handleSaveMode() {
+    if (!changedByDraft.trim()) {
+      alert('Bitte "Changed by" angeben.');
+      return;
+    }
+    setModeSaving(true);
+    setModeFeedback('');
+    try {
+      await onSaveRemoteAccessMode(modeDraft, changedByDraft.trim(), reasonDraft.trim());
+      setModeFeedback('Remote Access Mode gespeichert.');
+    } catch (error) {
+      const message = error instanceof Error ? error.message : 'Speichern fehlgeschlagen';
+      setModeFeedback(`Fehler: ${message}`);
+    } finally {
+      setModeSaving(false);
+    }
   }
 
   if (!isOpen) return null;
@@ -188,6 +223,64 @@ export function SettingsModal({
                 Include MITRE mapping
               </label>
             </div>
+          </div>
+
+          <div>
+            <h3 className={`mb-3 text-sm font-semibold uppercase tracking-widest ${theme === 'dark' ? 'dark-kicker' : 'text-slate'}`}>
+              Server Operations / Remote Access Mode
+            </h3>
+            <div className="grid gap-3 sm:grid-cols-2">
+              <label className={`text-xs ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
+                Remote Access Mode
+                <select
+                  value={modeDraft}
+                  onChange={(e) => setModeDraft(e.target.value as RemoteAccessMode)}
+                  className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${theme === 'dark' ? 'dark-input' : 'border-ink/15 bg-white text-ink'}`}
+                >
+                  <option value="safe">SAFE</option>
+                  <option value="admin">ADMIN</option>
+                  <option value="break_glass">BREAK_GLASS</option>
+                </select>
+              </label>
+              <label className={`text-xs ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
+                Changed by
+                <input
+                  type="text"
+                  value={changedByDraft}
+                  onChange={(e) => setChangedByDraft(e.target.value)}
+                  className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${theme === 'dark' ? 'dark-input' : 'border-ink/15 bg-white text-ink'}`}
+                  placeholder="Colin"
+                />
+              </label>
+              <label className={`text-xs sm:col-span-2 ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
+                Reason (optional)
+                <textarea
+                  rows={2}
+                  value={reasonDraft}
+                  onChange={(e) => setReasonDraft(e.target.value)}
+                  className={`mt-1 w-full rounded-lg border px-3 py-2 text-sm ${theme === 'dark' ? 'dark-input' : 'border-ink/15 bg-white text-ink'}`}
+                  placeholder="incident response maintenance window"
+                />
+              </label>
+            </div>
+            <div className="mt-3 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={() => void handleSaveMode()}
+                disabled={modeSaving}
+                className={`rounded-xl px-4 py-2 text-sm font-medium transition hover:-translate-y-0.5 ${theme === 'dark' ? 'dark-outline-button' : 'border border-ink/15 bg-shell text-ink hover:bg-ink hover:text-shell'}`}
+              >
+                {modeSaving ? 'Speichern…' : 'Mode speichern'}
+              </button>
+              <span className={`text-xs ${theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
+                Current: {remoteAccessMode.mode.toUpperCase()} · Changed by: {remoteAccessMode.changed_by || 'system'} · Changed at: {remoteAccessMode.changed_at || '—'}
+              </span>
+            </div>
+            {modeFeedback && (
+              <div className={`mt-2 text-xs ${modeFeedback.startsWith('Fehler') ? 'text-red-400' : theme === 'dark' ? 'dark-text-soft' : 'text-slate'}`}>
+                {modeFeedback}
+              </div>
+            )}
           </div>
 
           {/* Info */}

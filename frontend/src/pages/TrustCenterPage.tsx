@@ -12,8 +12,8 @@ import {
   Terminal,
   XCircle,
 } from 'lucide-react';
-import { getValidationStatus } from '../services/api';
-import type { ValidationApiHealth, ValidationKnowledgeStatus, ValidationStatus, ValidationTest, ValidationTestStatus } from '../types';
+import { getRemoteAccessMode, getValidationStatus } from '../services/api';
+import type { RemoteAccessModeConfig, ValidationApiHealth, ValidationKnowledgeStatus, ValidationStatus, ValidationTest, ValidationTestStatus } from '../types';
 
 // ── helpers ───────────────────────────────────────────────────────────────────
 
@@ -212,6 +212,12 @@ export function TrustCenterPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [lastRunAt, setLastRunAt] = useState<string | null>(null);
+  const [remoteMode, setRemoteMode] = useState<RemoteAccessModeConfig>({
+    mode: 'admin',
+    changed_by: 'system',
+    changed_at: '',
+    reason: '',
+  });
 
   const run = useCallback(async () => {
     setLoading(true);
@@ -219,6 +225,12 @@ export function TrustCenterPage() {
     try {
       const data = await getValidationStatus();
       setStatus(data);
+      try {
+        const modeData = await getRemoteAccessMode();
+        setRemoteMode(modeData.data);
+      } catch {
+        // Keep default mode display if endpoint read fails.
+      }
       setLastRunAt(new Date().toISOString());
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Validation request failed');
@@ -394,6 +406,23 @@ export function TrustCenterPage() {
               <HealthRow label="Scripts"       value={status.api_health.scripts} />
               <HealthRow label="Timeline"      value={status.api_health.timeline} />
               <HealthRow label="Audit Log"     value={status.api_health.audit} />
+            </div>
+
+            {/* Remote Access Control Plane */}
+            <div className="rounded-xl border border-white/[0.07] bg-white/[0.02] p-5">
+              <div className="flex items-center gap-2 mb-3">
+                <ShieldCheck size={14} className="text-cyan-400" />
+                <h2 className="text-[12px] font-bold uppercase tracking-widest text-white/45">Remote Access Control Plane</h2>
+              </div>
+              <HealthRow label="Remote Access Mode" value={remoteMode.mode.toUpperCase()} />
+              <HealthRow label="Break Glass available" value="yes" />
+              <HealthRow label="Target confirmation required" value="yes" />
+              <HealthRow label="Audit enabled" value="yes" />
+              <div className="mt-3 pt-3 border-t border-white/[0.06] text-[11px] text-white/35 space-y-1">
+                <p>Changed by: <span className="text-white/55 font-mono">{remoteMode.changed_by || 'system'}</span></p>
+                <p>Changed at: <span className="text-white/55 font-mono">{remoteMode.changed_at ? fmtTs(remoteMode.changed_at) : '—'}</span></p>
+                <p>Reason: <span className="text-white/55">{remoteMode.reason || '—'}</span></p>
+              </div>
             </div>
           </div>
 
